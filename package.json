@@ -1,0 +1,14 @@
+{
+    "name": "Dust",
+    "description": "Massively Multiplayer Physics Simulation",
+    "version": "0.0.1",
+    "dependencies": {
+        "express": "3.3.5",
+        "socket.io": "0.9.16",
+        "box2d": "1.0.0"
+    },
+    "scripts": {
+        "start": "browserify client/main.js -o public/bundle.js && node index.js"
+    },
+    "license": "MIT"
+}

@@ -1,0 +1,11 @@
+#canvainer {
+    width: 400px;
+    height: 400px;
+    border-style: solid;
+    border-width: 5px;
+}
+
+#winMessage {
+    color: blue;
+    font-size: 40px;
+}
