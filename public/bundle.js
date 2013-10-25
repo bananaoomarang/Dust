@@ -18,8 +18,8 @@ function Dust() {
     var self = this;
 
     this.socket = io.connect('http://172.16.0.20:9966');
-    this.width  = $('#canvainer').width().toString(),
-    this.height = $('#canvainer').height().toString(),
+    this.width  = $('#canvainer').width(),
+    this.height = $('#canvainer').height(),
     this.renderer = this.createRenderer();
     this.world = this.initWorld();
 
@@ -57,32 +57,59 @@ Dust.prototype.initWorld = function() {
 
     // Ground Box
     var groundBodyDef = new b2d.b2BodyDef();
-    groundBodyDef.position.Set(200.0, 400.0);
+    groundBodyDef.position.Set(0, this.height - 100);
 
     var groundBody = world.CreateBody(groundBodyDef);
 
     var groundShapeDef = new b2d.b2PolygonDef();
-    groundShapeDef.SetAsBox(500.0, 10.0);
+    groundShapeDef.SetAsBox(this.width, 1.0);
 
     groundBody.CreateShape(groundShapeDef);
 
-    groundBody.w = 500;
-    groundBody.h = 10;
+    groundBody.w = this.width;
+    groundBody.h = 1;
+    
+    // Top Box
+    var topBodyDef = new b2d.b2BodyDef();
+    topBodyDef.position.Set(0, 100);
 
-    // Dynamic Body
-    var bodyDef = new b2d.b2BodyDef();
-    bodyDef.position.Set(300.0, 4.0);
+    var topBody = world.CreateBody(topBodyDef);
 
-    var body = world.CreateBody(bodyDef);
+    var topShapeDef = new b2d.b2PolygonDef();
+    topShapeDef.SetAsBox(this.width, 1.0);
 
-    var shapeDef = new b2d.b2PolygonDef();
-    shapeDef.SetAsBox(50.0, 50.0);
-    shapeDef.density = 1.0;
-    shapeDef.friction = 0.3;
-    body.CreateShape(shapeDef);
-    body.SetMassFromShapes();
-    body.w = 50;
-    body.h = 50;
+    topBody.CreateShape(topShapeDef);
+
+    topBody.w = this.width;
+    topBody.h = 1;
+    
+    // Left Box
+    var leftBodyDef = new b2d.b2BodyDef();
+    leftBodyDef.position.Set(100, this.height);
+
+    var leftBody = world.CreateBody(leftBodyDef);
+
+    var leftShapeDef = new b2d.b2PolygonDef();
+    leftShapeDef.SetAsBox(1, this.height);
+
+    leftBody.CreateShape(leftShapeDef);
+
+    leftBody.w = 1;
+    leftBody.h = this.height;
+    
+    // Left Box
+    var rightBodyDef = new b2d.b2BodyDef();
+    rightBodyDef.position.Set(this.width - 100, this.height);
+
+    var rightBody = world.CreateBody(rightBodyDef);
+
+    var rightShapeDef = new b2d.b2PolygonDef();
+    rightShapeDef.SetAsBox(1, this.height);
+
+    rightBody.CreateShape(rightShapeDef);
+
+    rightBody.w = 1;
+    rightBody.h = this.height;
 
     return world;
 }
@@ -158,6 +185,22 @@ Dust.prototype.drawWorld = function() {
     }
 }
 
+Dust.prototype.spawnDust = function(x, y) {
+    var bodyDef = new b2d.b2BodyDef();
+    bodyDef.position.Set(x, y);
+
+    var body = this.world.CreateBody(bodyDef);
+
+    var shapeDef = new b2d.b2PolygonDef();
+    shapeDef.SetAsBox(1, 1);
+    shapeDef.density = 1.0;
+    shapeDef.friction = 0.3;
+    body.CreateShape(shapeDef);
+    body.SetMassFromShapes();
+    body.w = 1;
+    body.h = 1;
+}
+
 },{"box2d":4,"jquery-browserify":5}],3:[function(require,module,exports){
 var Client = require('./Client'),
     Dust = require('./Dust'),
@@ -168,15 +211,20 @@ $(document).ready(main);
 function main() {
     var DUST = new Dust();
     
-    var offset = $('canvas').offset();
+    var offset = $('canvas').offset(),
+        spawn;
 
-    $('canvas').on('click', function(e) {
+    $('canvas').mousedown(function(e) {
+        $('canvas').mousemove(function(e) {
+            var x = e.pageX - offset.left,
+                y = e.pageY - offset.top;
 
-        var x = e.pageX - offset.left,
-            y = e.pageY - offset.top;
-        
-        alert(x + ' ' + y);
-
+            DUST.spawnDust(x, y);
+        })
+    });
+    
+    $('canvas').mouseup(function(e) {
+        $('canvas').unbind('mousemove');
     });
 
     draw();

@@ -7,13 +7,20 @@ $(document).ready(main);
 function main() {
     var DUST = new Dust();
     
-    var offset = $('canvas').offset();
+    var offset = $('canvas').offset(),
+        spawn;
 
-    $('canvas').on('click', function(e) {
-        var x = e.pageX - offset.left,
-            y = e.pageY - offset.top;
+    $('canvas').mousedown(function(e) {
+        $('canvas').mousemove(function(e) {
+            var x = e.pageX - offset.left,
+                y = e.pageY - offset.top;
 
-        DUST.spawnDust(x, y);
+            DUST.spawnDust(x, y);
+        })
+    });
+    
+    $('canvas').mouseup(function(e) {
+        $('canvas').unbind('mousemove');
     });
 
     draw();
