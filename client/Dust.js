@@ -1,5 +1,7 @@
-var b2d = require('box2d'),
-    $ = require('jquery-browserify')
+var $ = require('jquery-browserify'),
+    Vec = require('./Vector'),
+    Body = require('./Body'),
+    World = require('./World');
 
 module.exports = Dust;
 
@@ -35,144 +37,33 @@ Dust.prototype.resizeRenderer = function(w, h) {
 
 Dust.prototype.initWorld = function() {
     // Define world
-    var worldAABB = new b2d.b2AABB();
-    worldAABB.lowerBound.Set(-10000.0, -10000.0);
-    worldAABB.upperBound.Set(10000.0, 10000.0);
+    var gravity = new Vec(0.0, 9.8);
 
-    var gravity = new b2d.b2Vec2(0.0, 9.8);
-    var doSleep = true;
+    var world = new World();
 
-    var world = new b2d.b2World(worldAABB, gravity, doSleep);
-    console.log(world);
-
-    // Ground Box
-    var groundBodyDef = new b2d.b2BodyDef();
-    groundBodyDef.position.Set(0, this.height - 100);
-
-    var groundBody = world.CreateBody(groundBodyDef);
-
-    var groundShapeDef = new b2d.b2PolygonDef();
-    groundShapeDef.SetAsBox(this.width, 1.0);
-
-    groundBody.CreateShape(groundShapeDef);
-
-    groundBody.w = this.width;
-    groundBody.h = 1;
+    world.addForce(gravity);
     
-    // Top Box
-    var topBodyDef = new b2d.b2BodyDef();
-    topBodyDef.position.Set(0, 100);
-
-    var topBody = world.CreateBody(topBodyDef);
-
-    var topShapeDef = new b2d.b2PolygonDef();
-    topShapeDef.SetAsBox(this.width, 1.0);
-
-    topBody.CreateShape(topShapeDef);
-
-    topBody.w = this.width;
-    topBody.h = 1;
-    
-    // Left Box
-    var leftBodyDef = new b2d.b2BodyDef();
-    leftBodyDef.position.Set(100, this.height);
-
-    var leftBody = world.CreateBody(leftBodyDef);
-
-    var leftShapeDef = new b2d.b2PolygonDef();
-    leftShapeDef.SetAsBox(1, this.height);
-
-    leftBody.CreateShape(leftShapeDef);
-
-    leftBody.w = 1;
-    leftBody.h = this.height;
-    
-    // Left Box
-    var rightBodyDef = new b2d.b2BodyDef();
-    rightBodyDef.position.Set(this.width - 100, this.height);
-
-    var rightBody = world.CreateBody(rightBodyDef);
-
-    var rightShapeDef = new b2d.b2PolygonDef();
-    rightShapeDef.SetAsBox(1, this.height);
-
-    rightBody.CreateShape(rightShapeDef);
-
-    rightBody.w = 1;
-    rightBody.h = this.height;
+    var body = new Body(20, 20, 100, 100);
+    world.pushBody(body);
 
     return world;
 }
 
-Dust.prototype.updateWorld = function() {
-    var timeStep = 1.0 / 60.0;
-
-    var iterations = 10;
-
-    this.world.Step(timeStep, iterations);
+Dust.prototype.updateWorld = function(dt) {
+    this.world.update(dt);
 }
 
 Dust.prototype.drawWorld = function() {
     var self = this;
 
     this.renderer.clearRect(0, 0, this.width, this.height);
+    this.renderer.strokeStyle = 'black';
 
-    for (var j = this.world.m_jointList; j; j = j.m_next) {
-        drawJoint(j, this.renderer);
-    }
-
-    for (var b = this.world.m_bodyList; b; b = b.m_next) {
-        for (var s = b.GetShapeList(); s != null; s = s.GetNext()) {
-            drawShape(s, this.renderer);
-        }
-    }
-
-    function drawJoint(joint, context) {
-        var b1 = joint.m_body1;
-        var b2 = joint.m_body2;
-        var x1 = b1.m_position;
-        var x2 = b2.m_position;
-        var p1 = joint.GetAnchor1();
-        var p2 = joint.GetAnchor2();
-        context.strokeStyle = '#00eeee';
-        context.beginPath();
-
-        switch (joint.m_type) {
-            case b2Joint.e_distanceJoint:
-                context.moveTo(p1.x, p1.y);
-                context.lineTo(p2.x, p2.y);
-                break;
-
-            default:
-                if (b1 == self.world.m_groundBody) {
-                    context.moveTo(p1.x, p1.y);
-                    context.lineTo(x2.x, x2.y);
-                }
-                else if (b2 == self.world.m_groundBody) {
-                    context.moveTo(p1.x, p1.y);
-                    context.lineTo(x1.x, x1.y);
-                }
-                else {
-                    context.moveTo(x1.x, x1.y);
-                    context.lineTo(p1.x, p1.y);
-                    context.lineTo(x2.x, x2.y);
-                    context.lineTo(p2.x, p2.y);
-                }
-                break;
-        }
-        context.stroke();
-    }
-    function drawShape(shape, ctx) {
-        var b = shape.m_body,
-            t = b.m_xf;
-
-        ctx.fillStyle = "#000000";
-        ctx.translate(t.position.x, t.position.y);
-        ctx.rotate(b.GetAngle());
-        ctx.fillRect(-b.w, -b.h, b.w*2, b.h*2);
-        ctx.rotate(-b.GetAngle());
-        ctx.translate(-t.position.x, -t.position.y);
-    }
+    for (var i = 0; i < this.world.bodies.length; i++) {
+        var b = this.world.bodies[i];
+        console.log(b);
+        this.renderer.fillRect(b.pos.x, b.pos.y, b.w, b.h);
+    };
 }
 
 Dust.prototype.spawnDust = function(x, y) {

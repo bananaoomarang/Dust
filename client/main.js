@@ -43,7 +43,7 @@ function main() {
     function draw() {
         requestAnimationFrame(draw);
 
-        DUST.updateWorld();
+        DUST.updateWorld(1);
 
         DUST.drawWorld();
     }
