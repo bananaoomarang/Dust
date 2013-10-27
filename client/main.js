@@ -1,14 +1,14 @@
 var Client = require('./Client'),
     Dust = require('./Dust'),
-    $ = require('jquery-browserify');
+    $ = require('jquery-browserify'),
+    Timer = require('./Timer');
 
 $(document).ready(main);
 
 function main() {
-    var DUST = new Dust();
-    
-    var offset = $('canvas').offset(),
-        spawn;
+    var DUST = new Dust(),
+        offset = $('canvas').offset(),
+        timer = new Timer();
 
     $('canvas').mousedown(function(e) {
         $('canvas').mousemove(function(e) {
@@ -23,12 +23,11 @@ function main() {
         $('canvas').unbind('mousemove');
     });
 
-    draw();
+    tick();
 
     DUST.socket.on('client connected', function(data) {
         var ip = "172.16.0.20"
 
-        console.log(data);
     if(data === 1) {
         DUST.client = new Client(ip, "red");
         DUST.client.turn = true;
@@ -40,11 +39,13 @@ function main() {
 
     });
 
-    function draw() {
-        requestAnimationFrame(draw);
+    function tick() {
+        requestAnimationFrame(tick);
 
-        DUST.updateWorld(1);
+        DUST.updateWorld(timer.getTime() / 1000);
 
         DUST.drawWorld();
+        
+        timer.reset();
     }
 }

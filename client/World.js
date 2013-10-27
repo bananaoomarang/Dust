@@ -1,13 +1,18 @@
 module.exports = World;
 
-function World() {
+function World(opts) {
     var self = this;
 
-    this.bodies = [];
-    this.forces = {
+    this.bodies = opts.bodies || [];
+
+    this.forces = opts.forces || {
         x: 0,
         y: 0
     }
+
+    this.bounds = opts.bounds || {
+        x: 100, y: 100
+    };
 }
 
 World.prototype.pushBody = function(b) {

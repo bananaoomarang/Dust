@@ -39,7 +39,13 @@ Dust.prototype.initWorld = function() {
     // Define world
     var gravity = new Vec(0.0, 9.8);
 
-    var world = new World();
+    var world = new World({
+        bounds: {
+            x: 100,
+            y: 100
+        },
+        forces: gravity
+    });
 
     world.addForce(gravity);
     
@@ -61,7 +67,6 @@ Dust.prototype.drawWorld = function() {
 
     for (var i = 0; i < this.world.bodies.length; i++) {
         var b = this.world.bodies[i];
-        console.log(b);
         this.renderer.fillRect(b.pos.x, b.pos.y, b.w, b.h);
     };
 }
