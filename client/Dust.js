@@ -13,8 +13,8 @@ function Dust() {
     this.world = this.initWorld();
 
     $(window).resize(function() {
-        self.width = $('#canvainer').width().toString();
-        self.height = $('#canvainer').height().toString();
+        self.width = $('#canvainer').width();
+        self.height = $('#canvainer').height();
         
         self.resizeRenderer(self.width, self.height);
     });
@@ -43,6 +43,7 @@ Dust.prototype.initWorld = function() {
     var doSleep = true;
 
     var world = new b2d.b2World(worldAABB, gravity, doSleep);
+    console.log(world);
 
     // Ground Box
     var groundBodyDef = new b2d.b2BodyDef();
@@ -175,10 +176,15 @@ Dust.prototype.drawWorld = function() {
 }
 
 Dust.prototype.spawnDust = function(x, y) {
+    console.log(this.world.m_bodyCount);
     var bodyDef = new b2d.b2BodyDef();
     bodyDef.position.Set(x, y);
 
     var body = this.world.CreateBody(bodyDef);
+    
+    if(this.world.m_bodyCount === 520 || this.world.m_bodyCount === 500) {
+        console.log(this.world.m_broadPhase);
+    }
 
     var shapeDef = new b2d.b2PolygonDef();
     shapeDef.SetAsBox(1, 1);
