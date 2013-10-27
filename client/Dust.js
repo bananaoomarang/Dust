@@ -1,5 +1,6 @@
 var $ = require('jquery-browserify'),
     Vec = require('./Vector'),
+    AABB = require('./AABB')
     Body = require('./Body'),
     World = require('./World');
 
@@ -37,14 +38,12 @@ Dust.prototype.resizeRenderer = function(w, h) {
 
 Dust.prototype.initWorld = function() {
     // Define world
-    var gravity = new Vec(0.0, 9.8);
+    var gravity = new Vec(0.0, 20),
+        worldBounds = new AABB(0, 0, this.width, this.height);
 
     var world = new World({
-        bounds: {
-            x: 100,
-            y: 100
-        },
-        forces: gravity
+        forces: gravity,
+        bounds: worldBounds
     });
 
     world.addForce(gravity);
