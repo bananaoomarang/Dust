@@ -11,8 +11,13 @@ function Body(w, h, x, y) {
 
     this.pos = new Vector(x, y);
     this.vel = new Vector(0, 0);
-    this.acc = new Vector(0, 9);
+    this.acc = new Vector(0, 0);
     this.forces = new Vector(0, 0);
+
+    this.resting = {
+        x: false,
+        y: false
+    };
 
     this.aabb = new AABB(x, y, (x + this.w), (y + this.h));
 }
@@ -20,7 +25,7 @@ function Body(w, h, x, y) {
 Body.prototype.update = function(dt) {
     var dVec = new Vector(0, 0),
         acc = new Vector(this.acc.x * dt, this.acc.y * dt),
-        terminal = 200;
+        terminal = 50;
 
     if(this.vel.y < terminal) {
         this.vel.add(acc);
@@ -29,6 +34,10 @@ Body.prototype.update = function(dt) {
     var vel = new Vector(this.vel.x * dt, this.vel.y * dt);
 
     dVec.add(vel);
+
+    if(this.resting.x) dVec.x = 0;
+
+    if(this.resting.y) dVec.y = 0;
 
     this.addVector(dVec);
 }

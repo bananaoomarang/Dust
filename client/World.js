@@ -10,6 +10,8 @@ function World(opts) {
     this.forces = opts.forces || new Vector(0, 0)
 
     this.bounds = opts.bounds || new AABB(0, 0, 100, 100);
+
+    this.terminalVel = 20;
 }
 
 World.prototype.pushBody = function(b) {
@@ -34,6 +36,17 @@ World.prototype.update = function(dt) {
 
         if(intersect !== false) {
             correctionVector.add(intersect);
+
+            if(Math.abs(intersect.x) > 0) {
+                b.resting.x = true;
+            }
+
+            if(Math.abs(intersect.y) > 0) {
+                b.resting.y = true;
+            }
+        } else {
+            b.resting.x = false;
+            b.resting.y = false;
         }
 
         b.addVector(correctionVector);
