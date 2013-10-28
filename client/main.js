@@ -11,17 +11,17 @@ function main() {
         timer = new Timer();
 
     $('canvas').mousedown(function(e) {
-        $('canvas').mousemove(function(e) {
+        //$('canvas').mousemove(function(e) {
             var x = e.pageX - offset.left,
                 y = e.pageY - offset.top;
 
             DUST.spawnDust(x, y);
-        })
+        //})
     });
     
-    $('canvas').mouseup(function(e) {
-        $('canvas').unbind('mousemove');
-    });
+    //$('canvas').mouseup(function(e) {
+        //$('canvas').unbind('mousemove');
+    //});
 
     tick();
 

@@ -45,8 +45,6 @@ Dust.prototype.initWorld = function() {
         forces: gravity,
         bounds: worldBounds
     });
-
-    world.addForce(gravity);
     
     var body = new Body(20, 20, 100, 100);
     world.pushBody(body);
@@ -71,22 +69,7 @@ Dust.prototype.drawWorld = function() {
 }
 
 Dust.prototype.spawnDust = function(x, y) {
-    console.log(this.world.m_bodyCount);
-    var bodyDef = new b2d.b2BodyDef();
-    bodyDef.position.Set(x, y);
+    var body = new Body(20, 20, x - (20 / 2), y - (20 / 2));
 
-    var body = this.world.CreateBody(bodyDef);
-    
-    if(this.world.m_bodyCount === 520 || this.world.m_bodyCount === 500) {
-        console.log(this.world.m_broadPhase);
-    }
-
-    var shapeDef = new b2d.b2PolygonDef();
-    shapeDef.SetAsBox(1, 1);
-    shapeDef.density = 1.0;
-    shapeDef.friction = 0.3;
-    body.CreateShape(shapeDef);
-    body.SetMassFromShapes();
-    body.w = 1;
-    body.h = 1;
+    this.world.pushBody(body);
 }

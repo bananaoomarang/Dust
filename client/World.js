@@ -13,29 +13,48 @@ function World(opts) {
 }
 
 World.prototype.pushBody = function(b) {
+    b.addAccel(this.forces);
+
     this.bodies.push(b);
 }
 
 World.prototype.addForce = function(f) {
-    this.forces.x += f.x;
-    this.forces.y += f.y;
+    this.forces.add(f);
 }
 
 World.prototype.update = function(dt) {
     for (var i = 0; i < this.bodies.length; i++) {
         var b = this.bodies[i];
 
-        var forceVector = new Vector(this.forces.x * dt, this.forces.y * dt);
-        b.pos.add(forceVector);
+        b.update(dt);
 
         var correctionVector = this.outOfBounds(b);
 
-        b.pos.add(correctionVector);
+        var intersect = this.collides(b);
+
+        if(intersect !== false) {
+            correctionVector.add(intersect);
+        }
+
+        b.addVector(correctionVector);
     };
 }
 
 // Check if a body collides with any other one
 World.prototype.collides = function(b) {
+    for (var i = 0; i < this.bodies.length; i++) {
+        var b2 = this.bodies[i];
+
+        if(b2 !== b) {
+            var intersect = b2.aabb.intersects(b.aabb);
+            if(intersect !== false) {
+                // Return the correction vector
+                return intersect;
+            }
+        }
+    };
+
+    return false;
 }
 
 // Check if a body is out of bounds, and returns the correction vector
