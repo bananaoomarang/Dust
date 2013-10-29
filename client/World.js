@@ -114,22 +114,23 @@ World.prototype.collides = function(b) {
 
 // Check situation around grain and return descriptive object
 World.prototype.sandState = function(s) {
+    var right = new Vector(s.x + 1, s.y),
+        left = new Vector(s.x - 1, s.y),
+        above = new Vector(s.x, s.y - 1),
+        bellow = new Vector(s.x, s.y + 1),
+        leftBellow = new Vector(s.x - 1, s.y + 1),
+        rightBellow = new Vector(s.x + 1, s.y + 1),
+        state = {
+            right: false,
+            left: false,
+            above: false,
+            bellow: false,
+            leftBellow: false,
+            rightBellow: false
+        };
+
     for (var i = 0; i < this.bodies.length; i++) {
-        var b = this.bodies[i],
-            right = new Vector(s.x + 1, s.y),
-                  left = new Vector(s.x - 1, s.y),
-                  above = new Vector(s.x, s.y - 1),
-                  bellow = new Vector(s.x, s.y + 1),
-                  leftBellow = new Vector(s.x - 1, s.y + 1),
-                  rightBellow = new Vector(s.x + 1, s.y + 1),
-                  state = {
-                      right: false,
-                      left: false,
-                      above: false,
-                      bellow: false,
-                      leftBellow: false,
-                      rightBellow: false
-                  };
+        var b = this.bodies[i];
 
         // Check for surrounding newtonian bodies
         if(right.within(b.aabb) || !right.within(this.bounds)) {
@@ -156,41 +157,42 @@ World.prototype.sandState = function(s) {
             state.rightBellow = true;
         }
 
-        // Now for surrounding sand
-        s = window.particleArray[s.x][s.y];
-        right = window.particleArray[right.x][right.y];
-        left = window.particleArray[left.x][left.y];
-        bellow = window.particleArray[bellow.x][bellow.y];
-        above = window.particleArray[above.x][above.y];
-        leftBellow = window.particleArray[leftBellow.x][leftBellow.y];
-        rightBellow = window.particleArray[rightBellow.x][rightBellow.y];
-
-        if(right !== 0) {
-            state.right = true;
-        }
-
-        if(left !== 0) {
-            state.left = true;
-        }
-
-        if(bellow !== 0) {
-            state.bellow = true;
-        }
-
-        if(above !== 0) {
-            state.above = true;
-        }
-
-        if(leftBellow !== 0) {
-            state.leftBellow = true;
-        }
-
-        if(rightBellow !== 0) {
-            state.rightBellow = true;
-        }
-
-        return state;
     };
+
+    // Now for surrounding sand
+    s = window.particleArray[s.x][s.y];
+    right = window.particleArray[right.x][right.y];
+    left = window.particleArray[left.x][left.y];
+    bellow = window.particleArray[bellow.x][bellow.y];
+    above = window.particleArray[above.x][above.y];
+    leftBellow = window.particleArray[leftBellow.x][leftBellow.y];
+    rightBellow = window.particleArray[rightBellow.x][rightBellow.y];
+
+    if(right !== 0) {
+        state.right = true;
+    }
+
+    if(left !== 0) {
+        state.left = true;
+    }
+
+    if(bellow !== 0) {
+        state.bellow = true;
+    }
+
+    if(above !== 0) {
+        state.above = true;
+    }
+
+    if(leftBellow !== 0) {
+        state.leftBellow = true;
+    }
+
+    if(rightBellow !== 0) {
+        state.rightBellow = true;
+    }
+
+    return state;
 }
 
 // Check if a body is out of bounds, and returns the correction vector
