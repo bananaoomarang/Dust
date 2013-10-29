@@ -19,7 +19,7 @@ function Body(w, h, x, y) {
         y: false
     };
 
-    this.aabb = new AABB(x, y, (x + this.w), (y + this.h));
+    this.aabb = new AABB(x, y, (x + this.w - 1), (y + this.h));
 }
 
 Body.prototype.update = function(dt) {
