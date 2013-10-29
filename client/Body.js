@@ -25,7 +25,7 @@ function Body(w, h, x, y) {
 Body.prototype.update = function(dt) {
     var dVec = new Vector(0, 0),
         acc = new Vector(this.acc.x * dt, this.acc.y * dt),
-        terminal = 50;
+        terminal = 80;
 
     if(this.vel.y < terminal) {
         this.vel.add(acc);

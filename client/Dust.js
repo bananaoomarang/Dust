@@ -48,7 +48,7 @@ Dust.prototype.resizeRenderer = function(w, h) {
 
 Dust.prototype.initWorld = function() {
     // Define world
-    var gravity = new Vector(0.0, 20),
+    var gravity = new Vector(0.0, 50),
         worldBounds = new AABB(0, 0, this.width, this.height);
 
     var world = new World({

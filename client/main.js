@@ -13,9 +13,14 @@ function main() {
     $('canvas').mousedown(function(e) {
         switch(event.which) {
             case 1:
+                var x = Math.round(e.pageX - offset.left),
+                    y = Math.round(e.pageY - offset.top);
+
+                DUST.spawnDust(x, y);
+
                 $('canvas').mousemove(function(e) {
-                    var x = Math.round(e.pageX - offset.left),
-                        y = Math.round(e.pageY - offset.top);
+                    x = Math.round(e.pageX - offset.left),
+                    y = Math.round(e.pageY - offset.top);
 
                     DUST.spawnDust(x, y);
                 });
