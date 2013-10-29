@@ -8,6 +8,7 @@ function Vector(x, y) {
 Vector.prototype.add = function(vec) {
     this.x += vec.x;
     this.y += vec.y;
+    return this;
 }
 
 Vector.prototype.within = function(aabb) {
@@ -19,4 +20,10 @@ Vector.prototype.within = function(aabb) {
        } else {
            return true;
        }
+}
+
+Vector.prototype.round = function() {
+    this.x = Math.round(this.x);
+    this.y = Math.round(this.y);
+    return this;
 }

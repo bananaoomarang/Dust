@@ -23,6 +23,7 @@ World.prototype.pushBody = function(b) {
 }
 
 World.prototype.pushSand = function(v) {
+    v.resting = false;
     this.sands.push(v);
 }
 
@@ -61,17 +62,35 @@ World.prototype.update = function(dt) {
 
     // Update sand
     for (var i = 0; i < this.sands.length; i++) {
-        var s = this.sands[i],
-            state = this.sandState(s);
+        var s = this.sands[i];
 
-        if(!state.bellow) {
-            s.y += 1;
-        } else if(!state.leftBellow) {
-            s.y += 1;
-            s.x -= 1;
-        } else if(!state.rightBellow) {
-            s.y += 1;
-            s.x += 1;
+        window.particleArray[s.x][s.y] = 1;
+
+        if(!s.resting) {
+            state = this.sandState(s);
+            var startY = s.y,
+                startX = s.x;
+
+
+            if(!state.bellow) {
+                s.y += 1;
+            } else if(!state.leftBellow) {
+                s.y += 1;
+                s.x -= 1;
+            } else if(!state.rightBellow) {
+                s.y += 1;
+                s.x += 1;
+            } else {
+                //s.resting = true;
+            }
+
+            if(s.y !== startY) {
+               window.particleArray[startX][startY] = 0; 
+            }
+
+            if(s.x !== startX) {
+               window.particleArray[startX][startY] = 0; 
+            }
         }
     };
 }
@@ -98,19 +117,19 @@ World.prototype.sandState = function(s) {
     for (var i = 0; i < this.bodies.length; i++) {
         var b = this.bodies[i],
             right = new Vector(s.x + 1, s.y),
-            left = new Vector(s.x - 1, s.y),
-            above = new Vector(s.x, s.y - 1),
-            bellow = new Vector(s.x, s.y + 1),
-            leftBellow = new Vector(s.x - 1, s.y + 1),
-            rightBellow = new Vector(s.x + 1, s.y + 1),
-            state = {
-                right: false,
-                left: false,
-                above: false,
-                bellow: false,
-                leftBellow: false,
-                rightBellow: false
-            };
+                  left = new Vector(s.x - 1, s.y),
+                  above = new Vector(s.x, s.y - 1),
+                  bellow = new Vector(s.x, s.y + 1),
+                  leftBellow = new Vector(s.x - 1, s.y + 1),
+                  rightBellow = new Vector(s.x + 1, s.y + 1),
+                  state = {
+                      right: false,
+                      left: false,
+                      above: false,
+                      bellow: false,
+                      leftBellow: false,
+                      rightBellow: false
+                  };
 
         // Check for surrounding newtonian bodies
         if(right.within(b.aabb) || !right.within(this.bounds)) {
@@ -128,43 +147,47 @@ World.prototype.sandState = function(s) {
         if(bellow.within(b.aabb) || !bellow.within(this.bounds)) {
             state.bellow = true;
         }
-        
+
         if(leftBellow.within(b.aabb) || !leftBellow.within(this.bounds)) {
             state.leftBellow = true;
         }
-        
+
         if(rightBellow.within(b.aabb) || !rightBellow.within(this.bounds)) {
             state.rightBellow = true;
         }
 
         // Now for surrounding sand
-        for (var j = 0; j < this.sands.length; j++) {
-            var s2 = this.sands[j];
+        s = window.particleArray[s.x][s.y];
+        right = window.particleArray[right.x][right.y];
+        left = window.particleArray[left.x][left.y];
+        bellow = window.particleArray[bellow.x][bellow.y];
+        above = window.particleArray[above.x][above.y];
+        leftBellow = window.particleArray[leftBellow.x][leftBellow.y];
+        rightBellow = window.particleArray[rightBellow.x][rightBellow.y];
 
-            if(s2.x === right.x && s2.y === right.y) {
-                state.right = true;
-            }
+        if(right !== 0) {
+            state.right = true;
+        }
 
-            if(s2.x === left.x && s2.y === left.y) {
-                state.left = true;
-            }
+        if(left !== 0) {
+            state.left = true;
+        }
 
-            if(s2.x === bellow.x && s2.y === bellow.y) {
-                state.bellow = true;
-            }
+        if(bellow !== 0) {
+            state.bellow = true;
+        }
 
-            if(s2.x === above.x && s2.y === above.y) {
-                state.bellow = true;
-            }
+        if(above !== 0) {
+            state.above = true;
+        }
 
-            if(s2.x === leftBellow.x && s2.y === leftBellow.y) {
-                state.leftBellow = true;
-            }
+        if(leftBellow !== 0) {
+            state.leftBellow = true;
+        }
 
-            if(s2.x === rightBellow.x && s2.y === rightBellow.y) {
-                state.rightBellow = true;
-            }
-        };
+        if(rightBellow !== 0) {
+            state.rightBellow = true;
+        }
 
         return state;
     };

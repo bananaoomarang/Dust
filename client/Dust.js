@@ -13,7 +13,17 @@ function Dust() {
     this.width  = $('#canvainer').width(),
     this.height = $('#canvainer').height(),
     this.renderer = this.createRenderer();
+    window.renderer = this.renderer;
     this.world = this.initWorld();
+
+    window.particleArray = [];
+    for (var i = 0; i < this.width; i++) {
+        window.particleArray[i] = [];
+        for (var j = 0; j < this.height; j++) {
+            window.particleArray[i][j] = 0;
+        };
+    };
+    
 
     $(window).resize(function() {
         self.width = $('#canvainer').width();

@@ -43,6 +43,7 @@ Body.prototype.update = function(dt) {
 }
 
 Body.prototype.addVector = function(vec) {
+    vec.round();
     this.pos.add(vec);
     this.aabb.translate(vec);
 }
