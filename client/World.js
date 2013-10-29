@@ -18,12 +18,12 @@ function World(opts) {
 
 World.prototype.pushBody = function(b) {
     b.addAccel(this.forces);
-
     this.bodies.push(b);
 }
 
 World.prototype.pushSand = function(v) {
     v.resting = false;
+    v.forces = this.forces;
     this.sands.push(v);
 }
 
@@ -71,15 +71,12 @@ World.prototype.update = function(dt) {
             var startY = s.y,
                 startX = s.x;
 
-
             if(!state.bellow) {
-                s.y += 1;
+                s.add(new Vector(0, 1));
             } else if(!state.leftBellow) {
-                s.y += 1;
-                s.x -= 1;
+                s.add(new Vector(1, -1));
             } else if(!state.rightBellow) {
-                s.y += 1;
-                s.x += 1;
+                s.add(new Vector(1, 1));
             } else {
                 s.resting = true;
             }
