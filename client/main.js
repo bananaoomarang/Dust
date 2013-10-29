@@ -12,8 +12,8 @@ function main() {
 
     $('canvas').mousedown(function(e) {
         //$('canvas').mousemove(function(e) {
-            var x = e.pageX - offset.left,
-                y = e.pageY - offset.top;
+            var x = Math.round(e.pageX - offset.left),
+                y = Math.round(e.pageY - offset.top);
 
             DUST.spawnDust(x, y);
         //})

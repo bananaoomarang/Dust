@@ -1,5 +1,5 @@
 var $ = require('jquery-browserify'),
-    Vec = require('./Vector'),
+    Vector = require('./Vector'),
     AABB = require('./AABB')
     Body = require('./Body'),
     World = require('./World');
@@ -38,7 +38,7 @@ Dust.prototype.resizeRenderer = function(w, h) {
 
 Dust.prototype.initWorld = function() {
     // Define world
-    var gravity = new Vec(0.0, 20),
+    var gravity = new Vector(0.0, 20),
         worldBounds = new AABB(0, 0, this.width, this.height);
 
     var world = new World({
@@ -62,14 +62,25 @@ Dust.prototype.drawWorld = function() {
     this.renderer.clearRect(0, 0, this.width, this.height);
     this.renderer.strokeStyle = 'black';
 
+    // Draw newtonian bodies
     for (var i = 0; i < this.world.bodies.length; i++) {
         var b = this.world.bodies[i];
         this.renderer.fillRect(b.pos.x, b.pos.y, b.w, b.h);
     };
+
+    // Draw sand
+    for (var i = 0; i < this.world.sands.length; i++) {
+        var s = this.world.sands[i];
+        this.renderer.fillRect(s.x, s.y, 1, 1);
+    };
 }
 
 Dust.prototype.spawnDust = function(x, y) {
-    var body = new Body(20, 20, x - (20 / 2), y - (20 / 2));
-
-    this.world.pushBody(body);
+    var n = 50,
+        area = 10;
+    for (var i = 0; i < n; i++) {
+        x = Math.round((x - area/2) + area*Math.random());
+        y = Math.round((y - area/2) + area*Math.random());
+        this.world.pushSand(new Vector(x, y));
+    };
 }

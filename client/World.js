@@ -12,6 +12,8 @@ function World(opts) {
     this.bounds = opts.bounds || new AABB(0, 0, 100, 100);
 
     this.terminalVel = 20;
+
+    this.sands = []; // Vectors storing a position of sand
 }
 
 World.prototype.pushBody = function(b) {
@@ -20,11 +22,16 @@ World.prototype.pushBody = function(b) {
     this.bodies.push(b);
 }
 
+World.prototype.pushSand = function(v) {
+    this.sands.push(v);
+}
+
 World.prototype.addForce = function(f) {
     this.forces.add(f);
 }
 
 World.prototype.update = function(dt) {
+    // Update newtonian bodies
     for (var i = 0; i < this.bodies.length; i++) {
         var b = this.bodies[i];
 
@@ -51,6 +58,22 @@ World.prototype.update = function(dt) {
 
         b.addVector(correctionVector);
     };
+
+    // Update sand
+    for (var i = 0; i < this.sands.length; i++) {
+        var s = this.sands[i],
+            state = this.sandState(s);
+
+        if(!state.bellow) {
+            s.y += 1;
+        } else if(!state.leftBellow) {
+            s.y += 1;
+            s.x -= 1;
+        } else if(!state.rightBellow) {
+            s.y += 1;
+            s.x += 1;
+        }
+    };
 }
 
 // Check if a body collides with any other one
@@ -68,6 +91,83 @@ World.prototype.collides = function(b) {
     };
 
     return false;
+}
+
+// Check situation around grain and return descriptive object
+World.prototype.sandState = function(s) {
+    for (var i = 0; i < this.bodies.length; i++) {
+        var b = this.bodies[i],
+            right = new Vector(s.x + 1, s.y),
+            left = new Vector(s.x - 1, s.y),
+            above = new Vector(s.x, s.y - 1),
+            bellow = new Vector(s.x, s.y + 1),
+            leftBellow = new Vector(s.x - 1, s.y + 1),
+            rightBellow = new Vector(s.x + 1, s.y + 1),
+            state = {
+                right: false,
+                left: false,
+                above: false,
+                bellow: false,
+                leftBellow: false,
+                rightBellow: false
+            };
+
+        // Check for surrounding newtonian bodies
+        if(right.within(b.aabb) || !right.within(this.bounds)) {
+            state.right = true;
+        }
+
+        if(left.within(b.aabb) || !left.within(this.bounds)) {
+            state.left = true;
+        }
+
+        if(above.within(b.aabb) || !above.within(this.bounds)) {
+            state.above = true;
+        }
+
+        if(bellow.within(b.aabb) || !bellow.within(this.bounds)) {
+            state.bellow = true;
+        }
+        
+        if(leftBellow.within(b.aabb) || !leftBellow.within(this.bounds)) {
+            state.leftBellow = true;
+        }
+        
+        if(rightBellow.within(b.aabb) || !rightBellow.within(this.bounds)) {
+            state.rightBellow = true;
+        }
+
+        // Now for surrounding sand
+        for (var j = 0; j < this.sands.length; j++) {
+            var s2 = this.sands[j];
+
+            if(s2.x === right.x && s2.y === right.y) {
+                state.right = true;
+            }
+
+            if(s2.x === left.x && s2.y === left.y) {
+                state.left = true;
+            }
+
+            if(s2.x === bellow.x && s2.y === bellow.y) {
+                state.bellow = true;
+            }
+
+            if(s2.x === above.x && s2.y === above.y) {
+                state.bellow = true;
+            }
+
+            if(s2.x === leftBellow.x && s2.y === leftBellow.y) {
+                state.leftBellow = true;
+            }
+
+            if(s2.x === rightBellow.x && s2.y === rightBellow.y) {
+                state.rightBellow = true;
+            }
+        };
+
+        return state;
+    };
 }
 
 // Check if a body is out of bounds, and returns the correction vector
