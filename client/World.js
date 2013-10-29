@@ -61,6 +61,7 @@ World.prototype.update = function(dt) {
     };
 
     // Update sand
+    var rest = 0;
     for (var i = 0; i < this.sands.length; i++) {
         var s = this.sands[i];
 
@@ -81,7 +82,7 @@ World.prototype.update = function(dt) {
                 s.y += 1;
                 s.x += 1;
             } else {
-                //s.resting = true;
+                s.resting = true;
             }
 
             if(s.y !== startY) {
@@ -91,8 +92,11 @@ World.prototype.update = function(dt) {
             if(s.x !== startX) {
                window.particleArray[startX][startY] = 0; 
             }
+        } else {
+            rest++
         }
     };
+    console.log(rest);
 }
 
 // Check if a body collides with any other one
