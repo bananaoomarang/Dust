@@ -79,6 +79,7 @@ Dust.prototype.drawWorld = function() {
     };
     
     this.renderer.fillStyle = 'yellow';
+
     // Draw sand
     for (var i = 0; i < this.world.sands.length; i++) {
         var s = this.world.sands[i];

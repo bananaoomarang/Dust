@@ -37,6 +37,9 @@ function main() {
     $('canvas').mouseup(function(e) {
         $('canvas').unbind('mousemove');
     });
+    
+    var frame = 0,
+        fpsTimer = new Timer();
 
     tick();
 
@@ -54,8 +57,16 @@ function main() {
 
     });
 
+
     function tick() {
         requestAnimationFrame(tick);
+
+        frame++;
+        if(fpsTimer.getTime() > 1000) {
+            $('#fps').html(frame + 'fps');
+            fpsTimer.reset();
+            frame = 0;
+        }
 
         DUST.updateWorld(timer.getTime() / 1000);
 
