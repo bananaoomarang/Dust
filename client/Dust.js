@@ -126,3 +126,18 @@ Dust.prototype.spawnDust = function(x, y) {
         if(!this.world.collides(s) && s.within(this.world.bounds)) this.world.pushSand(s);
     };
 }
+
+// If a solid exists here, it will be sandified
+Dust.prototype.sandifySolid = function(vec) {
+    var s = this.world.collides(vec);
+    if(s) {
+        for (var x = 0; x < s.w; x++) {
+            for (var y = 0; y < s.h; y++) {
+                var sand = new Vector(x + s.pos.x, y + s.pos.y);
+                this.world.pushSand(sand);
+            };
+        };
+        var index = this.world.solids.indexOf(s);
+        this.world.solids.splice(index, 1)
+    }
+}

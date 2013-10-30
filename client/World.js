@@ -22,6 +22,7 @@ World.prototype.pushSolid = function(s) {
 World.prototype.pushSand = function(v) {
     v.resting = false;
     v.forces = this.forces;
+    v.type = 'sand'
     this.sands.push(v);
 }
 
@@ -158,12 +159,11 @@ World.prototype.sandState = function(s) {
 
 // Checks if a sand grain is in a solids aabb
 World.prototype.collides = function(sand) {
-
     for (var i = 0; i < this.solids.length; i++) {
         var s = this.solids[i];
 
         if(sand.within(s.aabb)) {
-            return true;
+            return s;
         }
     };
 
