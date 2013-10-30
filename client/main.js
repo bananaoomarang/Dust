@@ -28,8 +28,6 @@ function main() {
             case 3:
                 var x = Math.round(e.pageX - offset.left),
                     y = Math.round(e.pageY - offset.top);
-                
-                DUST.spawnSquare(x, y);
                 break;
         }
     });
@@ -44,7 +42,7 @@ function main() {
     tick();
 
     DUST.socket.on('client connected', function(data) {
-        var ip = "172.16.0.20"
+        var ip = "192.168.1.77"
 
         if(data === 1) {
             DUST.client = new Client(ip, "red");

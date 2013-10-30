@@ -1,7 +1,6 @@
 var $ = require('jquery-browserify'),
     Vector = require('./Vector'),
-    AABB = require('./AABB')
-    Body = require('./Body'),
+    AABB = require('./AABB'),
     World = require('./World');
 
 module.exports = Dust;
@@ -56,9 +55,6 @@ Dust.prototype.initWorld = function() {
         bounds: worldBounds
     });
     
-    var body = new Body(20, 20, 100, 100);
-    world.pushBody(body);
-
     return world;
 }
 
@@ -70,14 +66,6 @@ Dust.prototype.drawWorld = function() {
     var self = this;
 
     this.renderer.clearRect(0, 0, this.width, this.height);
-    this.renderer.fillStyle = 'black';
-
-    // Draw newtonian bodies
-    for (var i = 0; i < this.world.bodies.length; i++) {
-        var b = this.world.bodies[i];
-        this.renderer.fillRect(b.pos.x, b.pos.y, b.w, b.h);
-    };
-    
     this.renderer.fillStyle = 'yellow';
 
     // Draw sand
@@ -95,9 +83,4 @@ Dust.prototype.spawnDust = function(x, y) {
         y = Math.round((y - area/2) + area*Math.random());
         this.world.pushSand(new Vector(x, y));
     };
-}
-
-Dust.prototype.spawnSquare = function(x, y) {
-    var body = new Body(20, 20, x - 10, y - 10);
-    this.world.pushBody(body);
 }
