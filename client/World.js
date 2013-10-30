@@ -11,7 +11,12 @@ function World(opts) {
 
     this.terminalVel = 20;
 
+    this.solids = []; // Solid objects for sand to bump into
     this.sands = []; // Vectors storing a position of sand
+}
+
+World.prototype.pushSolid = function(s) {
+    this.solids.push(s);
 }
 
 World.prototype.pushSand = function(v) {
@@ -25,6 +30,17 @@ World.prototype.addForce = function(f) {
 }
 
 World.prototype.update = function(dt) {
+    // Update solid positions
+    for (var i = 0; i < this.solids.length; i++) {
+        var s = this.solids[i];
+
+        for (var x = s.aabb.min.x; x < s.aabb.max.x; x++) {
+            for(var y = s.aabb.min.y; y < s.aabb.max.y; y++) {
+                window.particleArray[x][y] = 1;
+            }
+        };
+    };
+
     // Update sand
     for (var i = 0; i < this.sands.length; i++) {
         var s = this.sands[i];
@@ -74,7 +90,7 @@ World.prototype.sandState = function(s) {
             rightBellow: false
         };
 
-    // Now for surrounding sand
+    // Check for surrounding sand
     s = window.particleArray[s.x][s.y];
     right = window.particleArray[right.x][right.y];
     left = window.particleArray[left.x][left.y];

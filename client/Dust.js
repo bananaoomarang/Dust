@@ -1,7 +1,8 @@
 var $ = require('jquery-browserify'),
     Vector = require('./Vector'),
     AABB = require('./AABB'),
-    World = require('./World');
+    World = require('./World'),
+    Solid = require('./Solid');
 
 module.exports = Dust;
 
@@ -54,7 +55,10 @@ Dust.prototype.initWorld = function() {
         forces: gravity,
         bounds: worldBounds
     });
-    
+
+    var solid = new Solid(100, 10, 100, 300);
+    world.pushSolid(solid);
+
     return world;
 }
 
@@ -66,6 +70,16 @@ Dust.prototype.drawWorld = function() {
     var self = this;
 
     this.renderer.clearRect(0, 0, this.width, this.height);
+
+    this.renderer.fillStyle = 'black';
+
+    // Draw solids
+    for (var i = 0; i < this.world.solids.length; i++) {
+        var s = this.world.solids[i];
+
+        this.renderer.fillRect(s.pos.x, s.pos.y, s.w, s.h);
+    };
+
     this.renderer.fillStyle = 'yellow';
 
     // Draw sand
