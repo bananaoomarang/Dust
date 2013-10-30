@@ -43,13 +43,12 @@ function main() {
 
                 $('canvas').mousemove(function(e) {
                     w = Math.abs(xOrig - Math.round(e.pageX - offset.left));
-                    h = Math.abs(yOrig - Math.round(e.pageY - offset.top));
+                    h = Math.abs(yOrig - Math.round(e.pageY - offset.top - 20)); //No I'm not entirely clear why that -20 has to be there
 
                     DUST.resizeSelection(w, h);
                 });
 
                 $('canvas').mouseup(function(e) {
-                    console.log('mmup');
                     $('canvas').unbind('mousemove');
 
                     DUST.selectionBox = null;

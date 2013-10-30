@@ -31,7 +31,6 @@ World.prototype.addForce = function(f) {
 
 World.prototype.update = function(dt) {
     // Update solid positions
-    console.log('updating: ' + this.solids.length);
     for (var i = 0; i < this.solids.length; i++) {
         var s = this.solids[i];
 
@@ -46,22 +45,31 @@ World.prototype.update = function(dt) {
     for (var i = 0; i < this.sands.length; i++) {
         var s = this.sands[i];
 
+        if(typeof window.particleArray[s.x] === 'undefined') console.log(s.x + ' ' + this.bounds.max.x)
+
         window.particleArray[s.x][s.y] = 1;
 
         if(!s.resting) {
             state = this.sandState(s);
             var startY = s.y,
-                startX = s.x;
+                startX = s.x,
+                dVec;
 
             if(!state.bellow) {
-                s.add(new Vector(0, 1));
+                dVec = new Vector(0, 1);
             } else if(!state.leftBellow) {
-                s.add(new Vector(1, -1));
+                dVec = new Vector(1, -1);
             } else if(!state.rightBellow) {
-                s.add(new Vector(1, 1));
+                dVec = new Vector(1, 1);
             } else {
                 s.resting = true;
+                dVec = new Vector(0, 0);
             }
+
+            s.add(dVec);
+
+            // If we're out of bounds, reverse
+            if(!s.within(this.bounds)) s.add(new Vector(-dVec.x, -dVec.y));
 
             if(s.y !== startY) {
                window.particleArray[startX][startY] = 0; 
@@ -91,14 +99,35 @@ World.prototype.sandState = function(s) {
             rightBellow: false
         };
 
-    // Check for surrounding sand
+    // Check for surrounding sand, do some of the ugliest out of bounds exception catching ever seen
+    if(s.x === this.bounds.min.x) {
+        left = 1;
+        leftBellow = 1;
+    }
+
+    if(s.x === this.bounds.max.x) {
+        right = 1;
+        rightBellow = 1;
+    }
+
+    if(s.y === this.bounds.min.y) {
+        above = 1;
+    }
+
+    if(s.y === this.bounds.max.y) {
+        bellow = 1;
+        leftBellow = 1;
+        rightBellow = 1;
+    }
+
     s = window.particleArray[s.x][s.y];
-    right = window.particleArray[right.x][right.y];
-    left = window.particleArray[left.x][left.y];
-    bellow = window.particleArray[bellow.x][bellow.y];
-    above = window.particleArray[above.x][above.y];
-    leftBellow = window.particleArray[leftBellow.x][leftBellow.y];
-    rightBellow = window.particleArray[rightBellow.x][rightBellow.y];
+
+    if(left !== 1)        left = window.particleArray[left.x][left.y];
+    if(bellow !== 1)      bellow = window.particleArray[bellow.x][bellow.y];
+    if(above !== 1)       above = window.particleArray[above.x][above.y];
+    if(right !== 1)       right = window.particleArray[right.x][right.y];
+    if(leftBellow !== 1)  leftBellow = window.particleArray[leftBellow.x][leftBellow.y];
+    if(rightBellow !== 1) rightBellow = window.particleArray[rightBellow.x][rightBellow.y];
 
     if(right !== 0) {
         state.right = true;
@@ -125,4 +154,18 @@ World.prototype.sandState = function(s) {
     }
 
     return state;
+}
+
+// Checks if a sand grain is in a solids aabb
+World.prototype.collides = function(sand) {
+
+    for (var i = 0; i < this.solids.length; i++) {
+        var s = this.solids[i];
+
+        if(sand.within(s.aabb)) {
+            return true;
+        }
+    };
+
+    return false;
 }

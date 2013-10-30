@@ -13,14 +13,13 @@ function Dust() {
     this.width  = $('#canvainer').width(),
     this.height = $('#canvainer').height(),
     this.renderer = this.createRenderer();
-    window.renderer = this.renderer;
     this.world = this.initWorld();
     this.selectionBox = null;
 
     window.particleArray = [];
-    for (var i = 0; i < this.width; i++) {
+    for (var i = 0; i <= this.width; i++) {
         window.particleArray[i] = [];
-        for (var j = 0; j < this.height; j++) {
+        for (var j = 0; j <= this.height; j++) {
             window.particleArray[i][j] = 0;
         };
     };
@@ -86,6 +85,7 @@ Dust.prototype.drawWorld = function() {
     // Draw sand
     for (var i = 0; i < this.world.sands.length; i++) {
         var s = this.world.sands[i];
+        if(s.x === 0) console.log('fdfa');
         this.renderer.fillRect(s.x, s.y, 1, 1);
     };
 
@@ -119,8 +119,10 @@ Dust.prototype.spawnDust = function(x, y) {
     var n = 50,
         area = 10;
     for (var i = 0; i < n; i++) {
-        x = Math.round((x - area/2) + area*Math.random());
-        y = Math.round((y - area/2) + area*Math.random());
-        this.world.pushSand(new Vector(x, y));
+        var x = Math.round((x - area/2) + area*Math.random()),
+            y = Math.round((y - area/2) + area*Math.random()),
+            s = new Vector(x, y);
+
+        if(!this.world.collides(s) && s.within(this.world.bounds)) this.world.pushSand(s);
     };
 }
