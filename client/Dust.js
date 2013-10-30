@@ -9,12 +9,13 @@ module.exports = Dust;
 function Dust() {
     var self = this;
 
-    this.socket = io.connect('http://172.16.0.20:9966');
+    this.socket = io.connect('http://192.168.1.77:9966');
     this.width  = $('#canvainer').width(),
     this.height = $('#canvainer').height(),
     this.renderer = this.createRenderer();
     window.renderer = this.renderer;
     this.world = this.initWorld();
+    this.selectionBox = null;
 
     window.particleArray = [];
     for (var i = 0; i < this.width; i++) {
@@ -87,6 +88,31 @@ Dust.prototype.drawWorld = function() {
         var s = this.world.sands[i];
         this.renderer.fillRect(s.x, s.y, 1, 1);
     };
+
+    // Draw Selection Box (if one exists)
+    if(this.selectionBox !== null) {
+        this.renderer.beginPath();
+        this.renderer.strokeStyle = 'gray';
+        this.renderer.rect(this.selectionBox.pos.x, this.selectionBox.pos.y, this.selectionBox.w, this.selectionBox.h);
+        this.renderer.stroke();
+    }
+}
+
+Dust.prototype.resizeSelection = function(w, h) {
+    this.selectionBox.resize(w, h);
+}
+
+Dust.prototype.moveSelection = function(vec) {
+    this.selectionBox.move(vec);
+}
+
+Dust.prototype.drawSelection = function(x, y, w, h) {
+    this.selectionBox = new Solid(w, h, x, y);
+}
+
+Dust.prototype.spawnSolid = function(x, y, w, h) {
+    var s = new Solid(w, h, x, y);
+    this.world.pushSolid(s);
 }
 
 Dust.prototype.spawnDust = function(x, y) {

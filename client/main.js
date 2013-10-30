@@ -1,7 +1,8 @@
 var Client = require('./Client'),
     Dust = require('./Dust'),
     $ = require('jquery-browserify'),
-    Timer = require('./Timer');
+    Timer = require('./Timer'),
+    Vector = require('./Vector');
 
 $(document).ready(main);
 
@@ -11,7 +12,10 @@ function main() {
         timer = new Timer();
 
     $('canvas').mousedown(function(e) {
-        switch(event.which) {
+        e.preventDefault();
+        e.stopPropagation();
+        $('canvas').unbind('mouseup');
+        switch(e.which) {
             case 1:
                 var x = Math.round(e.pageX - offset.left),
                     y = Math.round(e.pageY - offset.top);
@@ -24,17 +28,39 @@ function main() {
 
                     DUST.spawnDust(x, y);
                 });
+                
+                $('canvas').mouseup(function(e) {
+                    $('canvas').unbind('mousemove');
+                });
                 break;
-            case 3:
-                var x = Math.round(e.pageX - offset.left),
-                    y = Math.round(e.pageY - offset.top);
+            case 2:
+                var xOrig = Math.round(e.pageX - offset.left),
+                    yOrig = Math.round(e.pageY - offset.top),
+                    w = 0,
+                    h = 0;
+                
+                    DUST.drawSelection(xOrig, yOrig, 0, 0);
+
+                $('canvas').mousemove(function(e) {
+                    w = Math.abs(xOrig - Math.round(e.pageX - offset.left));
+                    h = Math.abs(yOrig - Math.round(e.pageY - offset.top));
+
+                    DUST.resizeSelection(w, h);
+                });
+
+                $('canvas').mouseup(function(e) {
+                    console.log('mmup');
+                    $('canvas').unbind('mousemove');
+
+                    DUST.selectionBox = null;
+
+                    DUST.spawnSolid(xOrig, yOrig, w, h);
+                });
+
                 break;
         }
     });
     
-    $('canvas').mouseup(function(e) {
-        $('canvas').unbind('mousemove');
-    });
     
     var frame = 0,
         fpsTimer = new Timer();

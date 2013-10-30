@@ -17,3 +17,10 @@ Solid.prototype.move = function(dVec) {
     this.pos.add(vec);
     this.aabb.translate(vec);
 }
+
+Solid.prototype.resize = function(w, h) {
+    this.w = w;
+    this.h = h;
+    this.aabb.max.x = this.pos.x + w;
+    this.aabb.max.y = this.pos.y + h;
+}

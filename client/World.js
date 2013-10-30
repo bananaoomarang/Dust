@@ -31,6 +31,7 @@ World.prototype.addForce = function(f) {
 
 World.prototype.update = function(dt) {
     // Update solid positions
+    console.log('updating: ' + this.solids.length);
     for (var i = 0; i < this.solids.length; i++) {
         var s = this.solids[i];
 
