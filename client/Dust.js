@@ -2,7 +2,8 @@ var $ = require('jquery-browserify'),
     Vector = require('./Vector'),
     AABB = require('./AABB'),
     World = require('./World'),
-    Solid = require('./Solid');
+    Solid = require('./Solid'),
+    PIXI = require('pixi');
 
 module.exports = Dust;
 
@@ -13,8 +14,12 @@ function Dust() {
     this.width  = $('#canvainer').width(),
     this.height = $('#canvainer').height(),
     this.renderer = this.createRenderer();
+    this.stage = this.setStage();
+    this.shapes = new PIXI.Graphics();
     this.world = this.initWorld();
     this.selectionBox = null;
+
+    this.stage.addChild(this.shapes);
 
     window.particleArray = [];
     for (var i = 0; i <= this.width; i++) {
@@ -34,11 +39,20 @@ function Dust() {
 };
 
 Dust.prototype.createRenderer = function() {
-    htmlCanvas = "<canvas width=" + "\"" + this.width + "\"" + "height=" + "\"" + this.height + "\"" + "></canvas>";
+    var renderer = PIXI.autoDetectRenderer(this.width, this.height);
+    renderer.view.style.display= 'block';
 
-    $('#canvainer').append(htmlCanvas);
+    $('#canvainer').append(renderer.view);
 
-    return $('canvas').get(0).getContext('2d');
+    return renderer;
+}
+
+Dust.prototype.setStage = function() {
+    var stage = new PIXI.Stage(0xFFFFFF, true);
+    stage.setInteractive(true);
+
+
+    return stage;
 }
 
 Dust.prototype.resizeRenderer = function(w, h) {
@@ -68,34 +82,35 @@ Dust.prototype.updateWorld = function(dt) {
 
 Dust.prototype.drawWorld = function() {
     var self = this;
-
-    this.renderer.clearRect(0, 0, this.width, this.height);
-
-    this.renderer.fillStyle = 'black';
+    
+    this.shapes.clear();
 
     // Draw solids
     for (var i = 0; i < this.world.solids.length; i++) {
         var s = this.world.solids[i];
-
-        this.renderer.fillRect(s.pos.x, s.pos.y, s.w, s.h);
+    
+        this.shapes.beginFill(0xFF3300);
+        this.shapes.drawRect(s.pos.x, s.pos.y, s.w, s.h);
+        this.shapes.endFill();
     };
-
-    this.renderer.fillStyle = 'yellow';
 
     // Draw sand
     for (var i = 0; i < this.world.sands.length; i++) {
         var s = this.world.sands[i];
-        if(s.x === 0) console.log('fdfa');
-        this.renderer.fillRect(s.x, s.y, 1, 1);
+
+        this.shapes.beginFill(0xD4A519);
+        this.shapes.drawRect(s.x, s.y, 1, 1);
+        this.shapes.endFill();
     };
 
     // Draw Selection Box (if one exists)
     if(this.selectionBox !== null) {
-        this.renderer.beginPath();
-        this.renderer.strokeStyle = 'gray';
-        this.renderer.rect(this.selectionBox.pos.x, this.selectionBox.pos.y, this.selectionBox.w, this.selectionBox.h);
-        this.renderer.stroke();
+        this.shapes.beginFill(0xB3B3B3);
+        this.shapes.drawRect(this.selectionBox.pos.x, this.selectionBox.pos.y, this.selectionBox.w, this.selectionBox.h);
+        this.shapes.endFill();
     }
+    
+    this.renderer.render(this.stage);
 }
 
 Dust.prototype.resizeSelection = function(w, h) {
