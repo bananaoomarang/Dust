@@ -15,11 +15,13 @@ function Dust() {
     this.height = $('#canvainer').height(),
     this.renderer = this.createRenderer();
     this.stage = this.setStage();
-    this.shapes = new PIXI.Graphics();
+    this.solidainer = new PIXI.Graphics();
+    this.sandainer = new PIXI.DisplayObjectContainer()
     this.world = this.initWorld();
     this.selectionBox = null;
 
-    this.stage.addChild(this.shapes);
+    this.stage.addChild(this.solidainer);
+    this.stage.addChild(this.sandainer);
 
     window.particleArray = [];
     for (var i = 0; i <= this.width; i++) {
@@ -82,32 +84,24 @@ Dust.prototype.updateWorld = function(dt) {
 
 Dust.prototype.drawWorld = function() {
     var self = this;
-    
-    this.shapes.clear();
 
     // Draw solids
     for (var i = 0; i < this.world.solids.length; i++) {
         var s = this.world.solids[i];
     
-        this.shapes.beginFill(0xFF3300);
-        this.shapes.drawRect(s.pos.x, s.pos.y, s.w, s.h);
-        this.shapes.endFill();
     };
 
     // Draw sand
     for (var i = 0; i < this.world.sands.length; i++) {
         var s = this.world.sands[i];
 
-        this.shapes.beginFill(0xD4A519);
-        this.shapes.drawRect(s.x, s.y, 1, 1);
-        this.shapes.endFill();
     };
 
     // Draw Selection Box (if one exists)
     if(this.selectionBox !== null) {
-        this.shapes.beginFill(0xB3B3B3);
-        this.shapes.drawRect(this.selectionBox.pos.x, this.selectionBox.pos.y, this.selectionBox.w, this.selectionBox.h);
-        this.shapes.endFill();
+        //this.shapes.beginFill(0xB3B3B3);
+        //this.shapes.drawRect(this.selectionBox.pos.x, this.selectionBox.pos.y, this.selectionBox.w, this.selectionBox.h);
+        //this.shapes.endFill();
     }
     
     this.renderer.render(this.stage);
@@ -123,12 +117,23 @@ Dust.prototype.moveSelection = function(vec) {
 
 Dust.prototype.drawSelection = function(x, y, w, h) {
     this.selectionBox = new Solid(w, h, x, y);
+            
+    //this.shapes.beginFill(0xD4A519);
+    //this.shapes.drawRect(this.selectionBox.pos.x, this.selectionBox.pos.y, this.selectionBox.w, this.selectionBox.h);
+    //this.shapes.endFill();
 }
 
 Dust.prototype.spawnSolid = function(x, y, w, h) {
     var s = new Solid(w, h, x, y);
+    
+    this.solidainer.beginFill(0xFF3300);
+    this.solidainer.drawRect(s.pos.x, s.pos.y, s.w, s.h);
+    this.solidainer.endFill();
+    
     this.world.pushSolid(s);
 }
+
+var sandTex = new PIXI.Texture.fromImage('sand.png');
 
 Dust.prototype.spawnDust = function(x, y) {
     var n = 50,
@@ -138,7 +143,20 @@ Dust.prototype.spawnDust = function(x, y) {
             y = Math.round((y - area/2) + area*Math.random()),
             s = new Vector(x, y);
 
-        if(!this.world.collides(s) && s.within(this.world.bounds)) this.world.pushSand(s);
+        if(!this.world.collides(s) && s.within(this.world.bounds)) {
+            var shape = new PIXI.Sprite(sandTex);
+
+            shape.position.x = x;
+            shape.position.y = y;
+            shape.width = 1;
+            shape.height = 1;
+
+            s.sprite = shape;
+
+            this.sandainer.addChild(s.sprite);
+            
+            this.world.pushSand(s);
+        }
     };
 }
 

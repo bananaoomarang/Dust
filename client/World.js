@@ -68,6 +68,8 @@ World.prototype.update = function(dt) {
             }
 
             s.add(dVec);
+            s.sprite.position.x += dVec.x;
+            s.sprite.position.y += dVec.y;
 
             // If we're out of bounds, reverse
             if(!s.within(this.bounds)) s.add(new Vector(-dVec.x, -dVec.y));
