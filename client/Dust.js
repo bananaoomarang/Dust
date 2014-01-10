@@ -2,7 +2,10 @@ var $ = require('jquery-browserify'),
     Vector = require('./Vector'),
     AABB = require('./AABB'),
     World = require('./World'),
-    Solid = require('./Solid');
+    Solid = require('./Solid'),
+    fs = require('fs'),
+    vertShader = fs.readFileSync(__dirname + '/vert.glsl'),
+    fragShader = fs.readFileSync(__dirname + '/frag.glsl');
 
 module.exports = Dust;
 
@@ -10,23 +13,21 @@ function Dust() {
     var self = this;
 
     this.socket = io.connect('http://192.168.1.77:9966');
-    this.width  = $('#canvainer').width();
-    this.height = $('#canvainer').height();
+
+    this.WIDTH  = $('#canvainer').width();
+    this.HEIGHT = $('#canvainer').height();
+
     this.gl = this.getGL();
+    this.shaderProgram = this.getShaderProgram(vertShader, fragShader);
+    this.gl.useProgram(this.shaderProgram);
+
     this.world = this.initWorld();
     this.selectionBox = null;
-
-    window.particleArray = [];
-    for (var i = 0; i <= this.width; i++) {
-        window.particleArray[i] = [];
-        for (var j = 0; j <= this.height; j++) {
-            window.particleArray[i][j] = 0;
-        }
-    }
+    this.grid = new Array2D(this.WIDTH, this.HEIGHT);
 }
 
 Dust.prototype.getGL = function() {
-    htmlCanvas = "<canvas width=" + "\"" + this.width + "\"" + "height=" + "\"" + this.height + "\"" + "></canvas>";
+    htmlCanvas = "<canvas width=" + "\"" + this.WIDTH + "\"" + "height=" + "\"" + this.HEIGHT + "\"" + "></canvas>";
 
     $('#canvainer').append(htmlCanvas);
 
@@ -36,7 +37,7 @@ Dust.prototype.getGL = function() {
 Dust.prototype.initWorld = function() {
     // Define world
     var gravity = new Vector(0.0, 50),
-        worldBounds = new AABB(0, 0, this.width, this.height);
+        worldBounds = new AABB(0, 0, this.WIDTH, this.HEIGHT);
 
     var world = new World({
         forces: gravity,
@@ -46,15 +47,48 @@ Dust.prototype.initWorld = function() {
     var solid = new Solid(100, 10, 100, 300);
     world.pushSolid(solid);
 
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    var projectionMatrix = makeProjectionMatrix(this.WIDTH, this.HEIGHT);
+    var modelViewMatrix = [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            10, -100, 0, 1
+        ];
+
+    var uProjectionMatrix = this.gl.getUniformLocation(this.shaderProgram, 'projectionMatrix');
+    this.gl.uniformMatrix4fv(uProjectionMatrix, false, new Float32Array(projectionMatrix));
+    var uModelViewMatrix = this.gl.getUniformLocation(this.shaderProgram, 'modelViewMatrix');
+    this.gl.uniformMatrix4fv(uModelViewMatrix, false, new Float32Array(modelViewMatrix));
+
+    var buffer = this.gl.createBuffer(),
+        floatArray = new Float32Array([
+                -1.0, -1.0, 
+                1.0, -1.0, 
+                -1.0,  1.0, 
+                -1.0,  1.0, 
+                1.0, -1.0, 
+                1.0,  1.0]),
+        positionAttribute = this.gl.getAttribLocation(this.shaderProgram, "position");
+    
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, floatArray, this.gl.STATIC_DRAW);
+    this.gl.enableVertexAttribArray(positionAttribute);
+    this.gl.vertexAttribPointer(positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
+
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+
     return world;
 };
 
 Dust.prototype.updateWorld = function(dt) {
-    this.world.update(dt);
+    //this.world.update(dt);
 };
+
 
 Dust.prototype.drawWorld = function() {
     var self = this;
+
 };
 
 Dust.prototype.resizeSelection = function(w, h) {
@@ -100,3 +134,54 @@ Dust.prototype.sandifySolid = function(vec) {
         this.world.solids.splice(index, 1);
     }
 };
+
+// Compiles a shader program from given sources
+Dust.prototype.getShaderProgram = function(vert, frag) {
+    var vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER),
+        fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+
+    this.gl.shaderSource(vertexShader, vert);
+    this.gl.shaderSource(fragmentShader, frag);
+
+    this.gl.compileShader(vertexShader);
+    this.gl.compileShader(fragmentShader);
+
+    if(!this.gl.getShaderParameter(vertexShader, this.gl.COMPILE_STATUS)) {
+        console.error("Vertex shader won't compile mate: ", this.gl.getShaderInfoLog(vertexShader));
+    }
+    
+    if(!this.gl.getShaderParameter(fragmentShader, this.gl.COMPILE_STATUS)) {
+        console.error("Fragment shader won't compile mate: ", this.gl.getShaderInfoLog(fragmentShader));
+    }
+
+    var program = this.gl.createProgram();
+
+    this.gl.attachShader(program, vertexShader);
+    this.gl.attachShader(program, fragmentShader);
+    this.gl.linkProgram(program);
+
+    return program;
+};
+
+// Assorted functions
+function Array2D(w, h) {
+    var array = [];
+
+    for (var x = 1; x < w; x++) {
+        array[x] = 0;
+        for (var y = 0; y < h; y++) {
+            array[x][y] = 0;
+        }
+    }
+}
+
+function makeProjectionMatrix(width, height) {
+    return [
+        2 / width, 0,           0, 0,
+        0,         -2 / height, 0, 0,
+        0,         0,           1, 0,
+        0,         0,           0, 1
+    ];
+}
+//new THREE.OrthographicCamera(this.WIDTH / -2, this.WIDTH / 2, this.HEIGHT / 2, this.HEIGHT / -2, 1, -1);
+

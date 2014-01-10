@@ -8,7 +8,7 @@
         "box2d": "1.0.0"
     },
     "scripts": {
-        "start": "browserify client/main.js -o public/bundle.js && node index.js"
+        "start": "browserify -d -t brfs client/main.js -o public/bundle.js && node index.js"
     },
     "license": "MIT"
 }
