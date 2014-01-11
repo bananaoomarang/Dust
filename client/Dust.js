@@ -67,28 +67,44 @@ Dust.prototype.drawWorld = function() {
     
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
 
-    this.mvTranslate(100, 50, 0);
-    
-    this.gl.uniformMatrix4fv(this.uProjectionMatrix, false, new Float32Array(this.projectionMatrix));
+    for (var x = 0; x < this.grid.length; x++) {
+        for (var y = 0; y < this.grid[x].length; y++) {
+            var cell = this.grid[x][y];
 
-    this.gl.uniformMatrix4fv(this.uModelViewMatrix, false, new Float32Array(this.modelViewMatrix));
-    
-    var buffer = this.gl.createBuffer(),
-        floatArray = new Float32Array([
-                -1.0, -1.0, 
-                1.0, -1.0, 
-                -1.0,  1.0, 
-                -1.0,  1.0, 
-                1.0, -1.0, 
-                1.0,  1.0]),
-        positionAttribute = this.gl.getAttribLocation(this.shaderProgram, "position");
-    
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, floatArray, this.gl.STATIC_DRAW);
-    this.gl.enableVertexAttribArray(positionAttribute);
-    this.gl.vertexAttribPointer(positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
+            switch(cell) {
+                case 0:
+                    break;
+                case 1:
+                    this.mvTranslate(x, y, 0);
 
-    this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+                    this.gl.uniformMatrix4fv(this.uProjectionMatrix, false, new Float32Array(this.projectionMatrix));
+
+                    this.gl.uniformMatrix4fv(this.uModelViewMatrix, false, new Float32Array(this.modelViewMatrix));
+
+                    var buffer = this.gl.createBuffer(),
+                        floatArray = new Float32Array([
+                                -1.0, -1.0, 
+                                1.0, -1.0, 
+                                -1.0,  1.0, 
+                                -1.0,  1.0, 
+                                1.0, -1.0, 
+                                1.0,  1.0]),
+                        positionAttribute = this.gl.getAttribLocation(this.shaderProgram, "position");
+
+                    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
+                    this.gl.bufferData(this.gl.ARRAY_BUFFER, floatArray, this.gl.STATIC_DRAW);
+                    this.gl.enableVertexAttribArray(positionAttribute);
+                    this.gl.vertexAttribPointer(positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
+
+                    this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
 };
 
 Dust.prototype.resizeSelection = function(w, h) {
@@ -116,7 +132,9 @@ Dust.prototype.spawnDust = function(x, y) {
         y = Math.round((y - area/2) + area*Math.random());
         s = new Vector(x, y);
 
-        if(!this.world.collides(s) && s.within(this.world.bounds)) this.world.pushSand(s);
+        //if(!this.world.collides(s) && s.within(this.world.bounds)) this.world.pushSand(s);
+
+        this.grid[s.x][s.y] = 1;
     }
 };
 
@@ -173,6 +191,9 @@ Dust.prototype.loadIdentity = function() {
 };
 
 Dust.prototype.mvTranslate = function(x, y, z) {
+    x -= this.WIDTH / 2;
+    y -= this.HEIGHT / 2;
+    
     this.modelViewMatrix[12] = x;
     this.modelViewMatrix[13] = y;
     this.modelViewMatrix[14] = z;
@@ -182,12 +203,14 @@ Dust.prototype.mvTranslate = function(x, y, z) {
 function Array2D(w, h) {
     var array = [];
 
-    for (var x = 1; x < w; x++) {
-        array[x] = 0;
+    for (var x = 0; x < w; x++) {
+        array[x] = [];
         for (var y = 0; y < h; y++) {
             array[x][y] = 0;
         }
     }
+
+    return array;
 }
 
 function makeProjectionMatrix(width, height) {
