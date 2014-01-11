@@ -21,6 +21,12 @@ function Dust() {
     this.shaderProgram = this.getShaderProgram(vertShader, fragShader);
     this.gl.useProgram(this.shaderProgram);
 
+    this.projectionMatrix = makeProjectionMatrix(this.WIDTH, this.HEIGHT);
+    this.modelViewMatrix = [];
+    
+    this.uProjectionMatrix = this.gl.getUniformLocation(this.shaderProgram, 'projectionMatrix');
+    this.uModelViewMatrix = this.gl.getUniformLocation(this.shaderProgram, 'modelViewMatrix');
+    
     this.world = this.initWorld();
     this.selectionBox = null;
     this.grid = new Array2D(this.WIDTH, this.HEIGHT);
@@ -46,21 +52,27 @@ Dust.prototype.initWorld = function() {
 
     var solid = new Solid(100, 10, 100, 300);
     world.pushSolid(solid);
+    
+    this.loadIdentity();
 
+    return world;
+};
+
+Dust.prototype.updateWorld = function(dt) {
+    //this.world.update(dt);
+};
+
+Dust.prototype.drawWorld = function() {
+    var self = this;
+    
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-    var projectionMatrix = makeProjectionMatrix(this.WIDTH, this.HEIGHT);
-    var modelViewMatrix = [
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            10, -100, 0, 1
-        ];
 
-    var uProjectionMatrix = this.gl.getUniformLocation(this.shaderProgram, 'projectionMatrix');
-    this.gl.uniformMatrix4fv(uProjectionMatrix, false, new Float32Array(projectionMatrix));
-    var uModelViewMatrix = this.gl.getUniformLocation(this.shaderProgram, 'modelViewMatrix');
-    this.gl.uniformMatrix4fv(uModelViewMatrix, false, new Float32Array(modelViewMatrix));
+    this.mvTranslate(100, 50, 0);
+    
+    this.gl.uniformMatrix4fv(this.uProjectionMatrix, false, new Float32Array(this.projectionMatrix));
 
+    this.gl.uniformMatrix4fv(this.uModelViewMatrix, false, new Float32Array(this.modelViewMatrix));
+    
     var buffer = this.gl.createBuffer(),
         floatArray = new Float32Array([
                 -1.0, -1.0, 
@@ -77,18 +89,6 @@ Dust.prototype.initWorld = function() {
     this.gl.vertexAttribPointer(positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
 
     this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
-
-    return world;
-};
-
-Dust.prototype.updateWorld = function(dt) {
-    //this.world.update(dt);
-};
-
-
-Dust.prototype.drawWorld = function() {
-    var self = this;
-
 };
 
 Dust.prototype.resizeSelection = function(w, h) {
@@ -161,6 +161,21 @@ Dust.prototype.getShaderProgram = function(vert, frag) {
     this.gl.linkProgram(program);
 
     return program;
+};
+
+Dust.prototype.loadIdentity = function() {
+    this.modelViewMatrix = [
+            1, 0, 0, 0,
+            0, 1, 0, 0,
+            0, 0, 1, 0,
+            0, 0, 0, 1
+        ];
+};
+
+Dust.prototype.mvTranslate = function(x, y, z) {
+    this.modelViewMatrix[12] = x;
+    this.modelViewMatrix[13] = y;
+    this.modelViewMatrix[14] = z;
 };
 
 // Assorted functions
