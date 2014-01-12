@@ -27,12 +27,17 @@ function Dust() {
     this.uProjectionMatrix = this.gl.getUniformLocation(this.shaderProgram, 'projectionMatrix');
     this.uModelViewMatrix = this.gl.getUniformLocation(this.shaderProgram, 'modelViewMatrix');
     
+    this.gl.uniformMatrix4fv(this.uProjectionMatrix, false, this.projectionMatrix);
+    
     this.loadIdentity();
     this.setBuffer();
 
-    this.world = this.initWorld();
-    this.selectionBox = null;
+    this.world = null; //this.initWorld();
     this.grid = new Array2D(this.WIDTH, this.HEIGHT);
+    this.bounds = new AABB(0, 0, this.WIDTH, this.HEIGHT); // TODO make code use AABB
+    this.sands = [];
+
+    this.selectionBox = null;
 }
 
 Dust.prototype.getGL = function() {
@@ -61,6 +66,19 @@ Dust.prototype.initWorld = function() {
 
 Dust.prototype.updateWorld = function(dt) {
     //this.world.update(dt);
+
+    for (var i = 0; i < this.sands.length; i++) {
+        var sand = this.sands[i];
+        
+        if(sand.x >= 0 && sand.y >= 0 && sand.x <= (this.WIDTH - 1) && sand.y <= (this.HEIGHT - 1)) {
+
+            if(this.grid[sand.x][sand.y + 1] === 0) { 
+                sand.y += 1;
+                this.grid[sand.x][sand.y - 1] = 0;
+                this.grid[sand.x][sand.y] = 1;
+            }
+        }
+    }
 };
 
 
@@ -79,11 +97,8 @@ Dust.prototype.drawWorld = function() {
                 case 1:
                     this.mvTranslate(x, y, 0);
 
-                    this.gl.uniformMatrix4fv(this.uProjectionMatrix, false, this.projectionMatrix);
-
                     this.gl.uniformMatrix4fv(this.uModelViewMatrix, false, this.modelViewMatrix);
 
-                    //this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
                     this.gl.drawElements(this.gl.TRIANGLE_STRIP, 4, this.gl.UNSIGNED_SHORT, 0);
 
                     break;
@@ -115,14 +130,18 @@ Dust.prototype.spawnSolid = function(x, y, w, h) {
 Dust.prototype.spawnDust = function(x, y) {
     var n = 50,
         area = 10;
+
     for (var i = 0; i < n; i++) {
-        x = Math.round((x - area/2) + area*Math.random());
-        y = Math.round((y - area/2) + area*Math.random());
-        s = new Vector(x, y);
+        x = Math.round((x - area/2) + area*Math.random()) - 1;
+        y = Math.round((y - area/2) + area*Math.random()) - 1;
 
-        //if(!this.world.collides(s) && s.within(this.world.bounds)) this.world.pushSand(s);
+        if(x >= 0 && y >= 0 && (x <= this.WIDTH) && y <= (this.HEIGHT - 1)) {
+            var s = new Vector(x, y);
 
-        this.grid[s.x][s.y] = 1;
+            //if(!this.world.collides(s) && s.within(this.world.bounds)) this.world.pushSand(s);
+
+            this.sands.push(s);
+        }
     }
 };
 
