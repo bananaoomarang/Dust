@@ -71,7 +71,7 @@ function main() {
     tick();
 
     DUST.socket.on('client connected', function(data) {
-        var ip = "192.168.1.77"
+        var ip = "192.168.1.77";
 
         if(data === 1) {
             DUST.client = new Client(ip, "red");
@@ -95,9 +95,9 @@ function main() {
             frame = 0;
         }
 
-        DUST.updateWorld(timer.getTime() / 1000);
+        DUST.update(timer.getTime() / 1000);
 
-        DUST.drawWorld();
+        DUST.draw();
 
         timer.reset();
     }

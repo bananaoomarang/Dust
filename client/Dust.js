@@ -54,23 +54,7 @@ Dust.prototype.getGL = function() {
     return $('canvas').get(0).getContext('webgl');
 };
 
-Dust.prototype.initWorld = function() {
-    // Define world
-    var gravity = new Vector(0.0, 50),
-        worldBounds = new AABB(0, 0, this.WIDTH, this.HEIGHT);
-
-    var world = new World({
-        forces: gravity,
-        bounds: worldBounds
-    });
-
-    var solid = new Solid(100, 10, 100, 300);
-    world.pushSolid(solid);
-    
-    return world;
-};
-
-Dust.prototype.updateWorld = function(dt) {
+Dust.prototype.update = function(dt) {
     //this.world.update(dt);
 
     for (var i = 0; i < this.sands.length; i++) {
@@ -101,7 +85,7 @@ Dust.prototype.updateWorld = function(dt) {
 };
 
 
-Dust.prototype.drawWorld = function() {
+Dust.prototype.draw = function() {
     var self = this;
     
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
