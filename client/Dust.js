@@ -1,7 +1,6 @@
 var $ = require('jquery-browserify'),
     Vector = require('./Vector'),
     AABB = require('./AABB'),
-    World = require('./World'),
     Solid = require('./Solid'),
     fs = require('fs'),
     vertShader = fs.readFileSync(__dirname + '/vert.glsl'),
@@ -30,20 +29,26 @@ function Dust() {
     this.setUniforms();
     
     this.loadIdentity();
-    this.setBuffer();
+    this.loadSandBuffers();
 
     this.world = null; //this.initWorld();
     this.grid = new Array2D(this.WIDTH, this.HEIGHT);
     this.bounds = new AABB(0, 0, this.WIDTH, this.HEIGHT); // TODO make code use AABB
     this.sands = [];
+    this.solids = [];
 
     this.materials = {
         sand: {
             uColor: [0.9, 0.7, 0.2, 1.0]
+        },
+        solid: {
+            uColor: [0, 0, 0, 1]
         }
     };
 
     this.selectionBox = null;
+
+    this.spawnSolid(250, 200, 100, 10);
 }
 
 Dust.prototype.getGL = function() {
@@ -57,7 +62,7 @@ Dust.prototype.getGL = function() {
 Dust.prototype.update = function(dt) {
     //this.world.update(dt);
 
-    for (var i = 0; i < this.sands.length; i++) {
+    for (i = 0; i < this.sands.length; i++) {
         var sand = this.sands[i];
         
         if(sand.x >= 0 && sand.y >= 0 && sand.x <= (this.WIDTH - 1) && sand.y <= (this.HEIGHT - 1)) {
@@ -90,6 +95,23 @@ Dust.prototype.draw = function() {
     
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
+    var material;
+    
+    for(var i = 0; i < this.solids.length; i++) {
+        var solid = this.solids[i];
+        material = this.materials.solid;
+
+        solid.setBuffers(this.gl);
+        
+        this.mvScale(solid.w, solid.h);
+        this.mvTranslate(solid.pos.x, solid.pos.y);
+
+        this.gl.uniformMatrix3fv(this.uModelViewMatrix, false, this.modelViewMatrix);
+        this.gl.uniform4fv(this.uColor, material.uColor);
+
+        this.gl.drawElements(this.gl.TRIANGLE_STRIP, 4, this.gl.UNSIGNED_SHORT, 0);
+    }
+
     for (var x = 0; x < this.grid.length; x++) {
         for (var y = 0; y < this.grid[x].length; y++) {
             var cell = this.grid[x][y];
@@ -98,8 +120,11 @@ Dust.prototype.draw = function() {
                 case 0:
                     break;
                 case 1:
-                    var material = this.materials.sand;
+                    material = this.materials.sand;
 
+                    this.setSandBuffers();
+        
+                    this.mvScale(1, 1);
                     this.mvTranslate(x, y);
 
                     this.gl.uniformMatrix3fv(this.uModelViewMatrix, false, this.modelViewMatrix);
@@ -125,12 +150,14 @@ Dust.prototype.moveSelection = function(vec) {
 };
 
 Dust.prototype.drawSelection = function(x, y, w, h) {
-    this.selectionBox = new Solid(w, h, x, y);
+    this.selectionBox = new Solid(x, y, w, h);
 };
 
 Dust.prototype.spawnSolid = function(x, y, w, h) {
-    var s = new Solid(w, h, x, y);
-    this.world.pushSolid(s);
+    var s = new Solid(x, y, w, h);
+    s.bufferUp(this.gl);
+
+    this.solids.push(s);
 };
 
 Dust.prototype.spawnDust = function(x, y) {
@@ -202,7 +229,7 @@ Dust.prototype.setUniforms = function() {
     this.gl.uniformMatrix3fv(this.uProjectionMatrix, false, this.projectionMatrix);
 };
 
-Dust.prototype.setBuffer = function() {
+Dust.prototype.loadSandBuffers = function() {
     this.dustBuffer = this.gl.createBuffer();
     this.indexBuffer = this.gl.createBuffer();
 
@@ -223,6 +250,13 @@ Dust.prototype.setBuffer = function() {
 
     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
     this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, this.indexArray, this.gl.STATIC_DRAW);
+
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null);
+};
+
+Dust.prototype.setSandBuffers = function() {
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.dustBuffer);
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 };
 
 Dust.prototype.loadIdentity = function() {
@@ -236,6 +270,11 @@ Dust.prototype.loadIdentity = function() {
 Dust.prototype.mvTranslate = function(x, y) {
     this.modelViewMatrix[6] = x;
     this.modelViewMatrix[7] = y;
+};
+
+Dust.prototype.mvScale = function(xs, ys) {
+    this.modelViewMatrix[0] = xs;
+    this.modelViewMatrix[4] = ys;
 };
 
 // Assorted functions
