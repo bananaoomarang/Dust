@@ -174,12 +174,10 @@ Dust.prototype.setBuffer = function() {
     this.indexBuffer = this.gl.createBuffer();
 
     this.floatArray = new Float32Array([
+            -1.0,  1.0, 
             -1.0, -1.0, 
-            1.0, -1.0, 
-            -1.0,  1.0, 
-            -1.0,  1.0, 
-            1.0, -1.0, 
-            1.0,  1.0]);
+            1.0,   1.0, 
+            1.0,  -1.0]);
     this.indexArray = new Uint16Array([
             0, 1, 2, 3]);
 
