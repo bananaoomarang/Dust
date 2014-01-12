@@ -216,15 +216,18 @@ Dust.prototype.spawnSolid = function(x, y, w, h) {
 
 Dust.prototype.spawnDust = function(x, y) {
     var n = 50,
-        area = 10;
+        area = 20;
+
+    x -= area / 2;
+    y -= area / 2;
 
     for (var i = 0; i < n; i++) {
-        x = Math.round((x - area/2) + area*Math.random()) - 1;
-        y = Math.round((y - area/2) + area*Math.random()) - 1;
+        var spawnX = Math.round(x + area*Math.random()),
+            spawnY = Math.round(y + area*Math.random());
         
-        var s = new Vector(x, y);
+        var s = new Vector(spawnX, spawnY);
 
-        if(s.x >= 0 && s.y >= 0 && (s.x <= this.WIDTH) && s.y <= (this.HEIGHT) && !this.sandCollides(s)) {
+        if(!this.sandCollides(s)) {
 
             //if(!this.world.collides(s) && s.within(this.world.bounds)) this.world.pushSand(s);
 

@@ -8,8 +8,13 @@ $(document).ready(main);
 
 function main() {
     var DUST = new Dust(),
-        offset = $('canvas').offset(),
-        timer = new Timer();
+        timer = new Timer(),
+        frame = 0,
+        fpsTimer = new Timer();
+
+    
+    $('#fps').html(0 + 'fps');
+    var offset = $('canvas').offset();
 
     $('canvas').mousedown(function(e) {
         e.preventDefault();
@@ -17,13 +22,13 @@ function main() {
         $('canvas').unbind('mouseup');
         switch(e.which) {
             case 1:
-                var x = Math.round(e.pageX - offset.left),
+                var x = Math.round(e.pageX - offset.left);
                     y = Math.round(e.pageY - offset.top);
 
                 DUST.spawnDust(x, y);
 
                 $('canvas').mousemove(function(e) {
-                    x = Math.round(e.pageX - offset.left),
+                    x = Math.round(e.pageX - offset.left);
                     y = Math.round(e.pageY - offset.top);
 
                     DUST.spawnDust(x, y);
@@ -57,33 +62,15 @@ function main() {
                 });
                 break;
             case 3:
-                var x = Math.round(e.pageX - offset.left),
-                    y = Math.round(e.pageY - offset.top);
+                x = Math.round(e.pageX - offset.left);
+                y = Math.round(e.pageY - offset.top);
 
                 DUST.sandifySolid(new Vector(x, y));
         }
     });
     
     
-    var frame = 0,
-        fpsTimer = new Timer();
-
     tick();
-
-    DUST.socket.on('client connected', function(data) {
-        var ip = "192.168.1.77";
-
-        if(data === 1) {
-            DUST.client = new Client(ip, "red");
-            DUST.client.turn = true;
-        } else if(data === 2) {
-            DUST.client = new Client(ip, "blue");
-        } else if(data > 2) {
-            DUST.client = new Client(ip);
-        }
-
-    });
-
 
     function tick() {
         requestAnimationFrame(tick);
@@ -101,4 +88,19 @@ function main() {
 
         timer.reset();
     }
+    
+    DUST.socket.on('client connected', function(data) {
+        var ip = "192.168.1.77";
+
+        if(data === 1) {
+            DUST.client = new Client(ip, "red");
+            DUST.client.turn = true;
+        } else if(data === 2) {
+            DUST.client = new Client(ip, "blue");
+        } else if(data > 2) {
+            DUST.client = new Client(ip);
+        }
+
+    });
+
 }
