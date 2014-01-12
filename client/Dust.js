@@ -60,32 +60,37 @@ Dust.prototype.getGL = function() {
 };
 
 Dust.prototype.update = function(dt) {
-    //this.world.update(dt);
-
     for (i = 0; i < this.sands.length; i++) {
         var sand = this.sands[i];
         
         if(sand.x >= 0 && sand.y >= 0 && sand.x <= (this.WIDTH - 1) && sand.y <= (this.HEIGHT - 1)) {
-
             if(this.grid[sand.x][sand.y + 1] === 0) { 
-                sand.y += 1;
+                sand.add(new Vector(0, 1));
                 
                 if(!this.sandCollides(sand)) {
                     this.grid[sand.x][sand.y - 1] = 0;
                     this.grid[sand.x][sand.y] = 1;
+                } else {
+                    sand.add(new Vector(0, -1));
                 }
             } else if(this.grid[sand.x - 1][sand.y + 1] === 0) {
-                sand.x -= 1;
-                sand.y += 1;
+                sand.add(new Vector(-1, 1));
 
-                this.grid[sand.x + 1][sand.y - 1] = 0;
-                this.grid[sand.x][sand.y] = 1;
+                if(!this.sandCollides(sand)) {
+                    this.grid[sand.x + 1][sand.y - 1] = 0;
+                    this.grid[sand.x][sand.y] = 1;
+                } else {
+                    sand.add(new Vector(1, -1));
+                }
             } else if(this.grid[sand.x + 1][sand.y + 1] === 0) {
-                sand.x += 1;
-                sand.y += 1;
+                sand.add(new Vector(1, 1));
 
-                this.grid[sand.x - 1][sand.y - 1] = 0;
-                this.grid[sand.x][sand.y] = 1;
+                if(!this.sandCollides(sand)) {
+                    this.grid[sand.x - 1][sand.y - 1] = 0;
+                    this.grid[sand.x][sand.y] = 1;
+                } else {
+                    sand.add(new Vector(-1, -1));
+                }
             }
         }
     }
@@ -105,8 +110,7 @@ Dust.prototype.draw = function() {
 
         solid.setBuffers(this.gl);
         this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
-        
-        //this.mvScale(solid.w, solid.h);
+    
         this.mvTranslate(solid.pos.x, solid.pos.y);
 
         this.gl.uniformMatrix3fv(this.uModelViewMatrix, false, this.modelViewMatrix);
@@ -114,6 +118,9 @@ Dust.prototype.draw = function() {
 
         this.gl.drawElements(this.gl.TRIANGLE_STRIP, 4, this.gl.UNSIGNED_SHORT, 0);
     }
+
+    this.setSandBuffers();
+    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
 
     for (var x = 0; x < this.grid.length; x++) {
         for (var y = 0; y < this.grid[x].length; y++) {
@@ -125,10 +132,6 @@ Dust.prototype.draw = function() {
                 case 1:
                     material = this.materials.sand;
 
-                    this.setSandBuffers();
-                    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
-        
-                    this.mvScale(1, 1);
                     this.mvTranslate(x, y);
 
                     this.gl.uniformMatrix3fv(this.uModelViewMatrix, false, this.modelViewMatrix);
