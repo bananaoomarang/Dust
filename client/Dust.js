@@ -74,7 +74,20 @@ Dust.prototype.updateWorld = function(dt) {
 
             if(this.grid[sand.x][sand.y + 1] === 0) { 
                 sand.y += 1;
+                
                 this.grid[sand.x][sand.y - 1] = 0;
+                this.grid[sand.x][sand.y] = 1;
+            } else if(this.grid[sand.x - 1][sand.y + 1] === 0) {
+                sand.x -= 1;
+                sand.y += 1;
+
+                this.grid[sand.x + 1][sand.y - 1] = 0;
+                this.grid[sand.x][sand.y] = 1;
+            } else if(this.grid[sand.x + 1][sand.y + 1] === 0) {
+                sand.x += 1;
+                sand.y += 1;
+
+                this.grid[sand.x - 1][sand.y - 1] = 0;
                 this.grid[sand.x][sand.y] = 1;
             }
         }
