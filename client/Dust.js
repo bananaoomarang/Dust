@@ -27,6 +27,9 @@ function Dust() {
     this.uProjectionMatrix = this.gl.getUniformLocation(this.shaderProgram, 'projectionMatrix');
     this.uModelViewMatrix = this.gl.getUniformLocation(this.shaderProgram, 'modelViewMatrix');
     
+    this.loadIdentity();
+    this.setBuffer();
+
     this.world = this.initWorld();
     this.selectionBox = null;
     this.grid = new Array2D(this.WIDTH, this.HEIGHT);
@@ -53,14 +56,13 @@ Dust.prototype.initWorld = function() {
     var solid = new Solid(100, 10, 100, 300);
     world.pushSolid(solid);
     
-    this.loadIdentity();
-
     return world;
 };
 
 Dust.prototype.updateWorld = function(dt) {
     //this.world.update(dt);
 };
+
 
 Dust.prototype.drawWorld = function() {
     var self = this;
@@ -77,26 +79,12 @@ Dust.prototype.drawWorld = function() {
                 case 1:
                     this.mvTranslate(x, y, 0);
 
-                    this.gl.uniformMatrix4fv(this.uProjectionMatrix, false, new Float32Array(this.projectionMatrix));
+                    this.gl.uniformMatrix4fv(this.uProjectionMatrix, false, this.projectionMatrix);
 
-                    this.gl.uniformMatrix4fv(this.uModelViewMatrix, false, new Float32Array(this.modelViewMatrix));
+                    this.gl.uniformMatrix4fv(this.uModelViewMatrix, false, this.modelViewMatrix);
 
-                    var buffer = this.gl.createBuffer(),
-                        floatArray = new Float32Array([
-                                -1.0, -1.0, 
-                                1.0, -1.0, 
-                                -1.0,  1.0, 
-                                -1.0,  1.0, 
-                                1.0, -1.0, 
-                                1.0,  1.0]),
-                        positionAttribute = this.gl.getAttribLocation(this.shaderProgram, "position");
-
-                    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, buffer);
-                    this.gl.bufferData(this.gl.ARRAY_BUFFER, floatArray, this.gl.STATIC_DRAW);
-                    this.gl.enableVertexAttribArray(positionAttribute);
-                    this.gl.vertexAttribPointer(positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
-
-                    this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+                    //this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+                    this.gl.drawElements(this.gl.TRIANGLE_STRIP, 4, this.gl.UNSIGNED_SHORT, 0);
 
                     break;
                 default:
@@ -179,6 +167,31 @@ Dust.prototype.getShaderProgram = function(vert, frag) {
     this.gl.linkProgram(program);
 
     return program;
+};
+
+Dust.prototype.setBuffer = function() {
+    this.dustBuffer = this.gl.createBuffer();
+    this.indexBuffer = this.gl.createBuffer();
+
+    this.floatArray = new Float32Array([
+            -1.0, -1.0, 
+            1.0, -1.0, 
+            -1.0,  1.0, 
+            -1.0,  1.0, 
+            1.0, -1.0, 
+            1.0,  1.0]);
+    this.indexArray = new Uint16Array([
+            0, 1, 2, 3]);
+
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.dustBuffer);
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, this.floatArray, this.gl.STATIC_DRAW);
+    
+    this.positionAttribute = this.gl.getAttribLocation(this.shaderProgram, "position");
+    this.gl.enableVertexAttribArray(this.positionAttribute);
+    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
+
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
+    this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, this.indexArray, this.gl.STATIC_DRAW);
 };
 
 Dust.prototype.loadIdentity = function() {
