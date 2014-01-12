@@ -98,7 +98,7 @@ Dust.prototype.updateWorld = function(dt) {
 Dust.prototype.drawWorld = function() {
     var self = this;
     
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
     for (var x = 0; x < this.grid.length; x++) {
         for (var y = 0; y < this.grid[x].length; y++) {
@@ -206,10 +206,10 @@ Dust.prototype.setBuffer = function() {
     this.indexBuffer = this.gl.createBuffer();
 
     this.floatArray = new Float32Array([
-            -1.0,  1.0, 
             -1.0, -1.0, 
-            1.0,   1.0, 
-            1.0,  -1.0]);
+            -1.0,  1.0, 
+            1.0,  -1.0, 
+            1.0,   1.0]);
     this.indexArray = new Uint16Array([
             0, 1, 2, 3]);
 
