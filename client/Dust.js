@@ -24,10 +24,10 @@ function Dust() {
     this.projectionMatrix = makeProjectionMatrix(this.WIDTH, this.HEIGHT);
     this.modelViewMatrix = [];
     
-    this.uProjectionMatrix = this.gl.getUniformLocation(this.shaderProgram, 'projectionMatrix');
-    this.uModelViewMatrix = this.gl.getUniformLocation(this.shaderProgram, 'modelViewMatrix');
-    
-    this.gl.uniformMatrix3fv(this.uProjectionMatrix, false, this.projectionMatrix);
+    this.uProjectionMatrix = null;
+    this.uModelViewMatrix = null;
+    this.uColor = null;
+    this.setUniforms();
     
     this.loadIdentity();
     this.setBuffer();
@@ -36,6 +36,12 @@ function Dust() {
     this.grid = new Array2D(this.WIDTH, this.HEIGHT);
     this.bounds = new AABB(0, 0, this.WIDTH, this.HEIGHT); // TODO make code use AABB
     this.sands = [];
+
+    this.materials = {
+        sand: {
+            uColor: [0.9, 0.7, 0.2, 1.0]
+        }
+    };
 
     this.selectionBox = null;
 }
@@ -108,9 +114,12 @@ Dust.prototype.drawWorld = function() {
                 case 0:
                     break;
                 case 1:
+                    var material = this.materials.sand;
+
                     this.mvTranslate(x, y);
 
                     this.gl.uniformMatrix3fv(this.uModelViewMatrix, false, this.modelViewMatrix);
+                    this.gl.uniform4fv(this.uColor, material.uColor);
 
                     this.gl.drawElements(this.gl.TRIANGLE_STRIP, 4, this.gl.UNSIGNED_SHORT, 0);
 
@@ -199,6 +208,14 @@ Dust.prototype.getShaderProgram = function(vert, frag) {
     this.gl.linkProgram(program);
 
     return program;
+};
+
+Dust.prototype.setUniforms = function() {
+    this.uProjectionMatrix = this.gl.getUniformLocation(this.shaderProgram, 'projectionMatrix');
+    this.uModelViewMatrix = this.gl.getUniformLocation(this.shaderProgram, 'modelViewMatrix');
+    this.uColor = this.gl.getUniformLocation(this.shaderProgram, 'uColor');
+
+    this.gl.uniformMatrix3fv(this.uProjectionMatrix, false, this.projectionMatrix);
 };
 
 Dust.prototype.setBuffer = function() {
