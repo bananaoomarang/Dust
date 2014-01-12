@@ -5,8 +5,6 @@ body {
 }
 
 #canvainer {
-    border-style: solid;
-    border-width: 1px;
     width: 500px;
     height: 500px;
     margin: 0 auto;

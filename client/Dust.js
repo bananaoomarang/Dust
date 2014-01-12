@@ -27,13 +27,16 @@ function Dust() {
     this.uModelViewMatrix = null;
     this.uColor = null;
     this.setUniforms();
+
+    this.DustVertexArray = new Float32Array(this.WIDTH * this.HEIGHT * 2 * 6);
+    this.dustBuffer = this.gl.createBuffer();
+    
+    this.positionAttribute = this.gl.getAttribLocation(this.shaderProgram, "position");
+    this.gl.enableVertexAttribArray(this.positionAttribute);
     
     this.loadIdentity();
-    this.loadSandBuffers();
 
-    this.world = null; //this.initWorld();
     this.grid = new Array2D(this.WIDTH, this.HEIGHT);
-    this.bounds = new AABB(0, 0, this.WIDTH, this.HEIGHT); // TODO make code use AABB
     this.sands = [];
     this.solids = [];
 
@@ -49,6 +52,14 @@ function Dust() {
     this.selectionBox = null;
 
     this.spawnSolid(250, 200, 100, 10);
+
+    // Walls
+
+    var width = 1;
+    this.spawnSolid(0, 0, this.WIDTH, width);
+    this.spawnSolid(0, 0, width, this.HEIGHT);
+    this.spawnSolid(0, this.HEIGHT, this.WIDTH, width);
+    this.spawnSolid(this.WIDTH, 0, width, this.HEIGHT);
 }
 
 Dust.prototype.getGL = function() {
@@ -103,7 +114,8 @@ Dust.prototype.draw = function() {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
     var material,
-        mvpMatrix;
+        mvpMatrix,
+        vertexCount = 0;
         
     material = this.materials.solid;
     this.gl.uniform4fv(this.uColor, material.uColor);
@@ -125,8 +137,12 @@ Dust.prototype.draw = function() {
 
     this.setSandBuffers();
     material = this.materials.sand;
-    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
     this.gl.uniform4fv(this.uColor, material.uColor);
+    this.loadIdentity();
+
+    for (i = 0; i < this.DustVertexArray.length; i++) {
+        this.DustVertexArray[i] = 0;
+    }
 
     for (var x = 0; x < this.grid.length; x++) {
         for (var y = 0; y < this.grid[x].length; y++) {
@@ -136,15 +152,23 @@ Dust.prototype.draw = function() {
                 case 0:
                     break;
                 case 1:
+                    var offset = vertexCount * 2 * 6;
 
-                    this.mvTranslate(x, y);
+                    this.DustVertexArray[offset] = x - 1;
+                    this.DustVertexArray[offset + 1] = y - 1;
+                    this.DustVertexArray[offset + 2] = x + 1;
+                    this.DustVertexArray[offset + 3] = y - 1;
+                    this.DustVertexArray[offset + 4] = x - 1;
+                    this.DustVertexArray[offset + 5] = y + 1;
 
-                    mvpMatrix = matrixMultiply(this.modelViewMatrix, this.projectionMatrix);
+                    this.DustVertexArray[offset + 6] = x - 1;
+                    this.DustVertexArray[offset + 7] = y + 1;
+                    this.DustVertexArray[offset + 8] = x + 1;
+                    this.DustVertexArray[offset + 9] = y - 1;
+                    this.DustVertexArray[offset + 10] = x + 1;
+                    this.DustVertexArray[offset + 11] = y + 1;
 
-                    this.gl.uniformMatrix3fv(this.uModelViewProjectionMatrix, false, mvpMatrix);
-
-                    this.gl.drawElements(this.gl.TRIANGLE_STRIP, 4, this.gl.UNSIGNED_SHORT, 0);
-
+                    vertexCount++;
                     break;
                 default:
                     break;
@@ -152,16 +176,23 @@ Dust.prototype.draw = function() {
         }
     }
 
+    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 16, 0); // Still don't fully understand the stride of 16.
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, this.DustVertexArray, this.gl.STATIC_DRAW);
+    mvpMatrix = matrixMultiply(this.modelViewMatrix, this.projectionMatrix);
+    this.gl.uniformMatrix3fv(this.uModelViewProjectionMatrix, false, mvpMatrix);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, vertexCount * 4);
 };
 
 Dust.prototype.sandCollides = function(s) {
     for (var i = 0; i < this.solids.length; i++) {
         if(s.within(this.solids[i].aabb)) {
             return true;
-        } else {
-            return false;
+        } else if(s.x < 0 || s.y < 0 || s.x > this.WIDTH || s.y > this.HEIGHT) {
+            return true;
         }
     }
+
+    return false;
 };
 
 Dust.prototype.resizeSelection = function(w, h) {
@@ -190,9 +221,10 @@ Dust.prototype.spawnDust = function(x, y) {
     for (var i = 0; i < n; i++) {
         x = Math.round((x - area/2) + area*Math.random()) - 1;
         y = Math.round((y - area/2) + area*Math.random()) - 1;
+        
+        var s = new Vector(x, y);
 
-        if(x >= 0 && y >= 0 && (x <= this.WIDTH) && y <= (this.HEIGHT - 1)) {
-            var s = new Vector(x, y);
+        if(s.x >= 0 && s.y >= 0 && (s.x <= this.WIDTH) && s.y <= (this.HEIGHT) && !this.sandCollides(s)) {
 
             //if(!this.world.collides(s) && s.within(this.world.bounds)) this.world.pushSand(s);
 
@@ -249,34 +281,8 @@ Dust.prototype.setUniforms = function() {
     this.uColor = this.gl.getUniformLocation(this.shaderProgram, 'uColor');
 };
 
-Dust.prototype.loadSandBuffers = function() {
-    this.dustBuffer = this.gl.createBuffer();
-    this.indexBuffer = this.gl.createBuffer();
-
-    this.floatArray = new Float32Array([
-            -1.0, -1.0, 
-            -1.0,  1.0, 
-             1.0, -1.0, 
-             1.0,  1.0]);
-    this.indexArray = new Uint16Array([
-            0, 1, 2, 3]);
-
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.dustBuffer);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, this.floatArray, this.gl.STATIC_DRAW);
-    
-    this.positionAttribute = this.gl.getAttribLocation(this.shaderProgram, "position");
-    this.gl.enableVertexAttribArray(this.positionAttribute);
-    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
-
-    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
-    this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, this.indexArray, this.gl.STATIC_DRAW);
-
-    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, null);
-};
-
 Dust.prototype.setSandBuffers = function() {
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.dustBuffer);
-    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 };
 
 Dust.prototype.loadIdentity = function() {
@@ -319,6 +325,8 @@ function makeProjectionMatrix(width, height) {
     ];
 }
 
+
+// Yeah I did steal this one. How did you know?
 function matrixMultiply(a, b) {
   var a00 = a[0*3+0];
   var a01 = a[0*3+1];
