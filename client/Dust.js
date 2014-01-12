@@ -27,7 +27,7 @@ function Dust() {
     this.uProjectionMatrix = this.gl.getUniformLocation(this.shaderProgram, 'projectionMatrix');
     this.uModelViewMatrix = this.gl.getUniformLocation(this.shaderProgram, 'modelViewMatrix');
     
-    this.gl.uniformMatrix4fv(this.uProjectionMatrix, false, this.projectionMatrix);
+    this.gl.uniformMatrix3fv(this.uProjectionMatrix, false, this.projectionMatrix);
     
     this.loadIdentity();
     this.setBuffer();
@@ -108,9 +108,9 @@ Dust.prototype.drawWorld = function() {
                 case 0:
                     break;
                 case 1:
-                    this.mvTranslate(x, y, 0);
+                    this.mvTranslate(x, y);
 
-                    this.gl.uniformMatrix4fv(this.uModelViewMatrix, false, this.modelViewMatrix);
+                    this.gl.uniformMatrix3fv(this.uModelViewMatrix, false, this.modelViewMatrix);
 
                     this.gl.drawElements(this.gl.TRIANGLE_STRIP, 4, this.gl.UNSIGNED_SHORT, 0);
 
@@ -226,20 +226,15 @@ Dust.prototype.setBuffer = function() {
 
 Dust.prototype.loadIdentity = function() {
     this.modelViewMatrix = [
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 1, 0,
-            0, 0, 0, 1
+            1, 0, 0,
+            0, 1, 0,
+            0, 0, 1
         ];
 };
 
-Dust.prototype.mvTranslate = function(x, y, z) {
-    x -= this.WIDTH / 2;
-    y -= this.HEIGHT / 2;
-    
-    this.modelViewMatrix[12] = x;
-    this.modelViewMatrix[13] = y;
-    this.modelViewMatrix[14] = z;
+Dust.prototype.mvTranslate = function(x, y) {
+    this.modelViewMatrix[6] = x;
+    this.modelViewMatrix[7] = y;
 };
 
 // Assorted functions
@@ -258,10 +253,9 @@ function Array2D(w, h) {
 
 function makeProjectionMatrix(width, height) {
     return [
-        2 / width, 0,           0, 0,
-        0,         -2 / height, 0, 0,
-        0,         0,           1, 0,
-        0,         0,           0, 1
+        2 / width, 0,          0,
+        0,        -2 / height, 0,
+       -1,         1,          1
     ];
 }
 //new THREE.OrthographicCamera(this.WIDTH / -2, this.WIDTH / 2, this.HEIGHT / 2, this.HEIGHT / -2, 1, -1);
