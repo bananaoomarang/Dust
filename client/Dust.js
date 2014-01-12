@@ -70,8 +70,10 @@ Dust.prototype.update = function(dt) {
             if(this.grid[sand.x][sand.y + 1] === 0) { 
                 sand.y += 1;
                 
-                this.grid[sand.x][sand.y - 1] = 0;
-                this.grid[sand.x][sand.y] = 1;
+                if(!this.sandCollides(sand)) {
+                    this.grid[sand.x][sand.y - 1] = 0;
+                    this.grid[sand.x][sand.y] = 1;
+                }
             } else if(this.grid[sand.x - 1][sand.y + 1] === 0) {
                 sand.x -= 1;
                 sand.y += 1;
@@ -102,8 +104,9 @@ Dust.prototype.draw = function() {
         material = this.materials.solid;
 
         solid.setBuffers(this.gl);
+        this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
         
-        this.mvScale(solid.w, solid.h);
+        //this.mvScale(solid.w, solid.h);
         this.mvTranslate(solid.pos.x, solid.pos.y);
 
         this.gl.uniformMatrix3fv(this.uModelViewMatrix, false, this.modelViewMatrix);
@@ -123,6 +126,7 @@ Dust.prototype.draw = function() {
                     material = this.materials.sand;
 
                     this.setSandBuffers();
+                    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
         
                     this.mvScale(1, 1);
                     this.mvTranslate(x, y);
@@ -139,6 +143,16 @@ Dust.prototype.draw = function() {
         }
     }
 
+};
+
+Dust.prototype.sandCollides = function(s) {
+    for (var i = 0; i < this.solids.length; i++) {
+        if(s.within(this.solids[i].aabb)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 };
 
 Dust.prototype.resizeSelection = function(w, h) {
@@ -236,8 +250,8 @@ Dust.prototype.loadSandBuffers = function() {
     this.floatArray = new Float32Array([
             -1.0, -1.0, 
             -1.0,  1.0, 
-            1.0,  -1.0, 
-            1.0,   1.0]);
+             1.0, -1.0, 
+             1.0,  1.0]);
     this.indexArray = new Uint16Array([
             0, 1, 2, 3]);
 

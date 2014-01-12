@@ -9,7 +9,7 @@ function Solid(x, y, w, h) {
     
     this.pos = new Vector(x, y);
 
-    this.aabb = new AABB(x, y, (x + this.w - 1), (y + this.h));
+    this.aabb = new AABB(x - this.w, y - this.h, (x + this.w), (y + this.h));
 }
 
 Solid.prototype.bufferUp = function(gl) {
@@ -21,8 +21,6 @@ Solid.prototype.bufferUp = function(gl) {
             -this.w,   this.h, 
              this.w,  -this.h, 
              this.w,   this.h]);
-
-    console.dir(floatArray);
 
     var indexArray = new Uint16Array([
             0, 1, 2, 3]);
