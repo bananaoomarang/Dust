@@ -104,10 +104,12 @@ Dust.prototype.draw = function() {
 
     var material,
         mvpMatrix;
+        
+    material = this.materials.solid;
+    this.gl.uniform4fv(this.uColor, material.uColor);
     
     for(var i = 0; i < this.solids.length; i++) {
         var solid = this.solids[i];
-        material = this.materials.solid;
 
         solid.setBuffers(this.gl);
         this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
@@ -117,13 +119,14 @@ Dust.prototype.draw = function() {
         mvpMatrix = matrixMultiply(this.modelViewMatrix, this.projectionMatrix);
 
         this.gl.uniformMatrix3fv(this.uModelViewProjectionMatrix, false, mvpMatrix);
-        this.gl.uniform4fv(this.uColor, material.uColor);
 
         this.gl.drawElements(this.gl.TRIANGLE_STRIP, 4, this.gl.UNSIGNED_SHORT, 0);
     }
 
     this.setSandBuffers();
+    material = this.materials.sand;
     this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
+    this.gl.uniform4fv(this.uColor, material.uColor);
 
     for (var x = 0; x < this.grid.length; x++) {
         for (var y = 0; y < this.grid[x].length; y++) {
@@ -133,14 +136,12 @@ Dust.prototype.draw = function() {
                 case 0:
                     break;
                 case 1:
-                    material = this.materials.sand;
 
                     this.mvTranslate(x, y);
 
                     mvpMatrix = matrixMultiply(this.modelViewMatrix, this.projectionMatrix);
 
                     this.gl.uniformMatrix3fv(this.uModelViewProjectionMatrix, false, mvpMatrix);
-                    this.gl.uniform4fv(this.uColor, material.uColor);
 
                     this.gl.drawElements(this.gl.TRIANGLE_STRIP, 4, this.gl.UNSIGNED_SHORT, 0);
 
