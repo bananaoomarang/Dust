@@ -25,7 +25,8 @@ function main() {
                 var x = Math.round(e.pageX - offset.left);
                     y = Math.round(e.pageY - offset.top);
 
-                DUST.spawnDust(x, y);
+                var type = $('input[name=dustType]:checked', '#menu').val();
+                DUST.spawnDust(x, y, type);
 
                 $('canvas').mousemove(function(e) {
                     x = Math.round(e.pageX - offset.left);

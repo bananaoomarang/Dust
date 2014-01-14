@@ -12,3 +12,10 @@ body {
     -webkit-user-select: none;
     user-select: none;
 }
+
+#menu {
+    width: 200px;
+    float: right;
+    margin-top: -500px;
+    margin-right: 100px;
+}
