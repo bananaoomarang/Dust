@@ -44,6 +44,9 @@ function Dust() {
         sand: {
             uColor: [0.9, 0.7, 0.2, 1.0]
         },
+        oil: {
+            uColor: [0.5, 0.4, 0.1, 1.0]
+        },
         solid: {
             uColor: [0, 0, 0, 1]
         }
@@ -140,10 +143,6 @@ Dust.prototype.draw = function() {
     this.gl.uniform4fv(this.uColor, material.uColor);
     this.loadIdentity();
 
-    for (i = 0; i < this.DustVertexArray.length; i++) {
-        this.DustVertexArray[i] = 0;
-    }
-
     for (var x = 0; x < this.grid.length; x++) {
         for (var y = 0; y < this.grid[x].length; y++) {
             var cell = this.grid[x][y];
@@ -154,19 +153,24 @@ Dust.prototype.draw = function() {
                 case 1:
                     var offset = vertexCount * 2 * 6;
 
-                    this.DustVertexArray[offset] = x - 1;
-                    this.DustVertexArray[offset + 1] = y - 1;
+                    this.DustVertexArray[offset]     = x;
+                    this.DustVertexArray[offset + 1] = y;
                     this.DustVertexArray[offset + 2] = x + 1;
-                    this.DustVertexArray[offset + 3] = y - 1;
-                    this.DustVertexArray[offset + 4] = x - 1;
+                    this.DustVertexArray[offset + 3] = y;
+                    this.DustVertexArray[offset + 4] = x;
                     this.DustVertexArray[offset + 5] = y + 1;
 
-                    this.DustVertexArray[offset + 6] = x - 1;
+                    this.DustVertexArray[offset + 6] = x;
                     this.DustVertexArray[offset + 7] = y + 1;
                     this.DustVertexArray[offset + 8] = x + 1;
-                    this.DustVertexArray[offset + 9] = y - 1;
+                    this.DustVertexArray[offset + 9] = y;
                     this.DustVertexArray[offset + 10] = x + 1;
                     this.DustVertexArray[offset + 11] = y + 1;
+
+                    //this.DustVertexArray[offset + 12] = material.uColor[0];
+                    //this.DustVertexArray[offset + 13] = material.uColor[1];
+                    //this.DustVertexArray[offset + 14] = material.uColor[2];
+                    //this.DustVertexArray[offset + 15] = material.uColor[3];
 
                     vertexCount++;
                     break;
@@ -176,11 +180,11 @@ Dust.prototype.draw = function() {
         }
     }
 
-    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 16, 0); // Still don't fully understand the stride of 16.
+    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 8, 0);
     this.gl.bufferData(this.gl.ARRAY_BUFFER, this.DustVertexArray, this.gl.STATIC_DRAW);
     mvpMatrix = matrixMultiply(this.modelViewMatrix, this.projectionMatrix);
     this.gl.uniformMatrix3fv(this.uModelViewProjectionMatrix, false, mvpMatrix);
-    this.gl.drawArrays(this.gl.TRIANGLES, 0, vertexCount * 4);
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, vertexCount * 6);
 };
 
 Dust.prototype.sandCollides = function(s) {
@@ -214,7 +218,7 @@ Dust.prototype.spawnSolid = function(x, y, w, h) {
     this.solids.push(s);
 };
 
-Dust.prototype.spawnDust = function(x, y) {
+Dust.prototype.spawnDust = function(x, y, type) {
     var n = 50,
         area = 20;
 
@@ -226,6 +230,8 @@ Dust.prototype.spawnDust = function(x, y) {
             spawnY = Math.round(y + area*Math.random());
         
         var s = new Vector(spawnX, spawnY);
+        
+        s.type = type;
 
         if(!this.sandCollides(s)) {
 
