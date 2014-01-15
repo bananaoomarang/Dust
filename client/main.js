@@ -32,7 +32,7 @@ function main() {
                     x = Math.round(e.pageX - offset.left);
                     y = Math.round(e.pageY - offset.top);
 
-                    DUST.spawnDust(x, y);
+                    DUST.spawnDust(x, y, type);
                 });
                 
                 $('canvas').mouseup(function(e) {

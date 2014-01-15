@@ -32,6 +32,7 @@ function Dust() {
     this.dustBuffer = this.gl.createBuffer();
     
     this.positionAttribute = this.gl.getAttribLocation(this.shaderProgram, "position");
+
     this.gl.enableVertexAttribArray(this.positionAttribute);
     
     this.loadIdentity();
@@ -76,35 +77,35 @@ Dust.prototype.getGL = function() {
 Dust.prototype.update = function(dt) {
     for (i = 0; i < this.sands.length; i++) {
         var sand = this.sands[i];
-        
-        if(sand.x >= 0 && sand.y >= 0 && sand.x <= (this.WIDTH - 1) && sand.y <= (this.HEIGHT - 1)) {
-            if(this.grid[sand.x][sand.y + 1] === 0) { 
-                sand.add(new Vector(0, 1));
-                
-                if(!this.sandCollides(sand)) {
-                    this.grid[sand.x][sand.y - 1] = 0;
-                    this.grid[sand.x][sand.y] = 1;
-                } else {
-                    sand.add(new Vector(0, -1));
-                }
-            } else if(this.grid[sand.x - 1][sand.y + 1] === 0) {
-                sand.add(new Vector(-1, 1));
 
-                if(!this.sandCollides(sand)) {
-                    this.grid[sand.x + 1][sand.y - 1] = 0;
-                    this.grid[sand.x][sand.y] = 1;
-                } else {
-                    sand.add(new Vector(1, -1));
-                }
-            } else if(this.grid[sand.x + 1][sand.y + 1] === 0) {
-                sand.add(new Vector(1, 1));
+        if(this.grid[sand.x][sand.y + 1] === 0) { 
+            sand.add(new Vector(0, 1));
 
-                if(!this.sandCollides(sand)) {
-                    this.grid[sand.x - 1][sand.y - 1] = 0;
-                    this.grid[sand.x][sand.y] = 1;
-                } else {
-                    sand.add(new Vector(-1, -1));
-                }
+            if(!this.sandCollides(sand)) {
+                this.grid[sand.x][sand.y - 1] = 0;
+
+                this.grid[sand.x][sand.y] = sand.type;
+            } else {
+                sand.add(new Vector(0, -1));
+            }
+        } else if(this.grid[sand.x - 1][sand.y + 1] === 0) {
+            sand.add(new Vector(-1, 1));
+
+            if(!this.sandCollides(sand)) {
+                this.grid[sand.x + 1][sand.y - 1] = 0;
+
+                this.grid[sand.x][sand.y] = sand.type;
+            } else {
+                sand.add(new Vector(1, -1));
+            }
+        } else if(this.grid[sand.x + 1][sand.y + 1] === 0) {
+            sand.add(new Vector(1, 1));
+
+            if(!this.sandCollides(sand)) {
+                this.grid[sand.x - 1][sand.y - 1] = 0;
+                this.grid[sand.x][sand.y] = sand.type;
+            } else {
+                sand.add(new Vector(-1, -1));
             }
         }
     }
@@ -113,22 +114,22 @@ Dust.prototype.update = function(dt) {
 
 Dust.prototype.draw = function() {
     var self = this;
-    
+
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
     var material,
         mvpMatrix,
         vertexCount = 0;
-        
+
     material = this.materials.solid;
     this.gl.uniform4fv(this.uColor, material.uColor);
-    
+
     for(var i = 0; i < this.solids.length; i++) {
         var solid = this.solids[i];
 
         solid.setBuffers(this.gl);
         this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
-    
+
         this.mvTranslate(solid.pos.x, solid.pos.y);
 
         mvpMatrix = matrixMultiply(this.modelViewMatrix, this.projectionMatrix);
@@ -166,11 +167,6 @@ Dust.prototype.draw = function() {
                     this.DustVertexArray[offset + 9] = y;
                     this.DustVertexArray[offset + 10] = x + 1;
                     this.DustVertexArray[offset + 11] = y + 1;
-
-                    //this.DustVertexArray[offset + 12] = material.uColor[0];
-                    //this.DustVertexArray[offset + 13] = material.uColor[1];
-                    //this.DustVertexArray[offset + 14] = material.uColor[2];
-                    //this.DustVertexArray[offset + 15] = material.uColor[3];
 
                     vertexCount++;
                     break;
@@ -231,14 +227,25 @@ Dust.prototype.spawnDust = function(x, y, type) {
         
         var s = new Vector(spawnX, spawnY);
         
-        s.type = type;
+        s.type = this.getType(type);
 
         if(!this.sandCollides(s)) {
-
-            //if(!this.world.collides(s) && s.within(this.world.bounds)) this.world.pushSand(s);
-
             this.sands.push(s);
         }
+    }
+};
+
+// Returns numerical code for material type
+Dust.prototype.getType = function(typeString) {
+    switch(typeString) {
+        case 'sand':
+            return 1;
+        case 'oil':
+            return 2;
+        case 'fire':
+            return 3;
+        default:
+            return 0;
     }
 };
 
