@@ -5,7 +5,8 @@
     "dependencies": {
         "express": "3.3.5",
         "socket.io": "0.9.16",
-        "box2d": "1.0.0"
+        "jquery-browserify": "*",
+        "brfs": "0.0.8"
     },
     "scripts": {
         "start": "browserify -d -t brfs client/main.js -o public/bundle.js && node index.js"
