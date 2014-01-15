@@ -45,13 +45,16 @@ function Dust() {
 
     this.materials = {
         sand: {
-            color: [9, 7, 2, 1.0]
+            color: [9, 7, 2, 1.0],
+            friction: 0.99
         },
         oil: {
-            color: [5, 4, 1, 1.0]
+            color: [5, 4, 1, 1.0],
+            friction: 1
         },
         fire: {
-            color: [10, 5, 0, 1.0]
+            color: [10, 5, 0, 1.0],
+            friction: 1
         },
         solid: {
             color: [0, 0, 0, 1]
@@ -94,23 +97,35 @@ Dust.prototype.update = function(dt) {
                 sand.add(new Vector(0, -1));
             }
         } else if(this.grid[sand.x - 1][sand.y + 1] === 0) {
-            sand.add(new Vector(-1, 1));
+            if(Math.random() > sand.friction) {
+                sand.resting = true;
+            }
 
-            if(!this.sandCollides(sand)) {
-                this.grid[sand.x + 1][sand.y - 1] = 0;
+            if(!sand.resting) {
+                sand.add(new Vector(-1, 1));
 
-                this.grid[sand.x][sand.y] = sand.type;
-            } else {
-                sand.add(new Vector(1, -1));
+                if(!this.sandCollides(sand)) {
+                    this.grid[sand.x + 1][sand.y - 1] = 0;
+
+                    this.grid[sand.x][sand.y] = sand.type;
+                } else {
+                    sand.add(new Vector(1, -1));
+                }
             }
         } else if(this.grid[sand.x + 1][sand.y + 1] === 0) {
-            sand.add(new Vector(1, 1));
+            if(Math.random() > sand.friction) {
+                sand.resting = true;
+            }
 
-            if(!this.sandCollides(sand)) {
-                this.grid[sand.x - 1][sand.y - 1] = 0;
-                this.grid[sand.x][sand.y] = sand.type;
-            } else {
-                sand.add(new Vector(-1, -1));
+            if(!sand.resting) {
+                sand.add(new Vector(1, 1));
+
+                if(!this.sandCollides(sand)) {
+                    this.grid[sand.x - 1][sand.y - 1] = 0;
+                    this.grid[sand.x][sand.y] = sand.type;
+                } else {
+                    sand.add(new Vector(-1, -1));
+                }
             }
         }
     }
@@ -255,7 +270,22 @@ Dust.prototype.spawnDust = function(x, y, type) {
         
         var s = new Vector(spawnX, spawnY);
         
+        s.resting = false;
         s.type = this.getType(type);
+        
+        switch(s.type) {
+            case 1:
+                s.friction = this.materials.sand.friction;
+                break;
+            case 2:
+                s.friction = this.materials.oil.friction;
+                break;
+            case 3:
+                s.friction = this.materials.fire.friction;
+                break;
+            default:
+                break;
+        }
 
         if(!this.sandCollides(s)) {
             this.sands.push(s);
