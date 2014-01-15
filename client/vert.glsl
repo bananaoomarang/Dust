@@ -7,6 +7,7 @@ uniform mat3 modelViewProjectionMatrix;
 
 varying vec3 vColor;
 
+// Credit to 'AHM' on StackOverflow
 vec3 unpackColor(float f) {
     vec3 color;
 

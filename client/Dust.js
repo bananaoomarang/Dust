@@ -404,13 +404,3 @@ function matrixMultiply(a, b) {
 function packColor(color) {
     return color[0] + color[1] * 256 + color[2] * 256 * 256;
 }
-
-function unpackColor(f) {
-    var color = [0, 0, 0];
-
-    color[2] = Math.floor(f / (256 * 256));
-    color[1] = Math.floor((f - color[2] * 256 * 256) / 256);
-    color[0] = Math.floor(f % 256);
-
-    return color;
-}
