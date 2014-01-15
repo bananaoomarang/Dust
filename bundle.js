@@ -73,8 +73,6 @@ module.exports = Dust;
 function Dust() {
     var self = this;
 
-    this.socket = io.connect('http://192.168.1.77:9966');
-
     this.WIDTH  = $('#canvainer').width();
     this.HEIGHT = $('#canvainer').height();
     this.MAX_DUST = 80000;
@@ -658,21 +656,6 @@ function main() {
 
         timer.reset();
     }
-    
-    DUST.socket.on('client connected', function(data) {
-        var ip = "192.168.1.77";
-
-        if(data === 1) {
-            DUST.client = new Client(ip, "red");
-            DUST.client.turn = true;
-        } else if(data === 2) {
-            DUST.client = new Client(ip, "blue");
-        } else if(data > 2) {
-            DUST.client = new Client(ip);
-        }
-
-    });
-
 }
 
 },{"./Client":2,"./Dust":3,"./Timer":5,"./Vector":6,"jquery-browserify":8}],8:[function(require,module,exports){
