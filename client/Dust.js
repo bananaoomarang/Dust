@@ -45,16 +45,16 @@ function Dust() {
 
     this.materials = {
         sand: {
-            uColor: [0.9, 0.7, 0.2, 1.0]
+            color: [0.9, 0.7, 0.2, 1.0]
         },
         oil: {
-            uColor: [0.5, 0.4, 0.1, 1.0]
+            color: [0.5, 0.4, 0.1, 1.0]
         },
         fire: {
-            uColor: [1.0, 0.5, 0, 1.0]
+            color: [1.0, 0.5, 0, 1.0]
         },
         solid: {
-            uColor: [0, 0, 0, 1]
+            color: [0, 0, 0, 1]
         }
     };
 
@@ -173,40 +173,40 @@ Dust.prototype.draw = function() {
         if(vertexCount < this.MAX_DUST) {
             this.sandVertexArray[offset]     = x;
             this.sandVertexArray[offset + 1] = y;
-            this.sandVertexArray[offset + 2] = material.uColor[0];
-            this.sandVertexArray[offset + 3] = material.uColor[1];
-            this.sandVertexArray[offset + 4] = material.uColor[2];
+            this.sandVertexArray[offset + 2] = material.color[0];
+            this.sandVertexArray[offset + 3] = material.color[1];
+            this.sandVertexArray[offset + 4] = material.color[2];
 
             this.sandVertexArray[offset + 5] = x + 1;
             this.sandVertexArray[offset + 6] = y;
-            this.sandVertexArray[offset + 7] = material.uColor[0];
-            this.sandVertexArray[offset + 8] = material.uColor[1];
-            this.sandVertexArray[offset + 9] = material.uColor[2];
+            this.sandVertexArray[offset + 7] = material.color[0];
+            this.sandVertexArray[offset + 8] = material.color[1];
+            this.sandVertexArray[offset + 9] = material.color[2];
 
             this.sandVertexArray[offset + 10] = x;
             this.sandVertexArray[offset + 11] = y + 1;
-            this.sandVertexArray[offset + 12] = material.uColor[0];
-            this.sandVertexArray[offset + 13] = material.uColor[1];
-            this.sandVertexArray[offset + 14] = material.uColor[2];
+            this.sandVertexArray[offset + 12] = material.color[0];
+            this.sandVertexArray[offset + 13] = material.color[1];
+            this.sandVertexArray[offset + 14] = material.color[2];
 
 
             this.sandVertexArray[offset + 15] = x;
             this.sandVertexArray[offset + 16] = y + 1;
-            this.sandVertexArray[offset + 17] = material.uColor[0];
-            this.sandVertexArray[offset + 18] = material.uColor[1];
-            this.sandVertexArray[offset + 19] = material.uColor[2];
+            this.sandVertexArray[offset + 17] = material.color[0];
+            this.sandVertexArray[offset + 18] = material.color[1];
+            this.sandVertexArray[offset + 19] = material.color[2];
 
             this.sandVertexArray[offset + 20] = x + 1;
             this.sandVertexArray[offset + 21] = y;
-            this.sandVertexArray[offset + 22] = material.uColor[0];
-            this.sandVertexArray[offset + 23] = material.uColor[1];
-            this.sandVertexArray[offset + 24] = material.uColor[2];
+            this.sandVertexArray[offset + 22] = material.color[0];
+            this.sandVertexArray[offset + 23] = material.color[1];
+            this.sandVertexArray[offset + 24] = material.color[2];
 
             this.sandVertexArray[offset + 25] = x + 1;
             this.sandVertexArray[offset + 26] = y + 1;
-            this.sandVertexArray[offset + 27] = material.uColor[0];
-            this.sandVertexArray[offset + 28] = material.uColor[1];
-            this.sandVertexArray[offset + 29] = material.uColor[2];
+            this.sandVertexArray[offset + 27] = material.color[0];
+            this.sandVertexArray[offset + 28] = material.color[1];
+            this.sandVertexArray[offset + 29] = material.color[2];
 
             vertexCount++;
         }
