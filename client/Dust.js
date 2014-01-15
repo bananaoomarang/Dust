@@ -15,6 +15,7 @@ function Dust() {
 
     this.WIDTH  = $('#canvainer').width();
     this.HEIGHT = $('#canvainer').height();
+    this.MAX_DUST = 80000;
 
     this.gl = this.getGL();
     this.shaderProgram = this.getShaderProgram(vertShader, fragShader);
@@ -25,15 +26,16 @@ function Dust() {
     
     this.uProjectionMatrix = null;
     this.uModelViewMatrix = null;
-    this.uColor = null;
     this.setUniforms();
 
-    this.DustVertexArray = new Float32Array(this.WIDTH * this.HEIGHT * 2 * 6);
+    this.sandVertexArray = new Float32Array(this.MAX_DUST * 5 * 6);
     this.dustBuffer = this.gl.createBuffer();
     
     this.positionAttribute = this.gl.getAttribLocation(this.shaderProgram, "position");
+    this.colorAttribute = this.gl.getAttribLocation(this.shaderProgram, "aColor");
 
     this.gl.enableVertexAttribArray(this.positionAttribute);
+    this.gl.enableVertexAttribArray(this.colorAttribute);
     
     this.loadIdentity();
 
@@ -47,6 +49,9 @@ function Dust() {
         },
         oil: {
             uColor: [0.5, 0.4, 0.1, 1.0]
+        },
+        fire: {
+            uColor: [1.0, 0.5, 0, 1.0]
         },
         solid: {
             uColor: [0, 0, 0, 1]
@@ -109,6 +114,7 @@ Dust.prototype.update = function(dt) {
             }
         }
     }
+
 };
 
 
@@ -122,13 +128,13 @@ Dust.prototype.draw = function() {
         vertexCount = 0;
 
     material = this.materials.solid;
-    this.gl.uniform4fv(this.uColor, material.uColor);
 
     for(var i = 0; i < this.solids.length; i++) {
         var solid = this.solids[i];
 
         solid.setBuffers(this.gl);
-        this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 0, 0);
+        this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 20, 0);
+        this.gl.vertexAttribPointer(this.colorAttribute, 3, this.gl.FLOAT, false, 20, 8);
 
         this.mvTranslate(solid.pos.x, solid.pos.y);
 
@@ -136,49 +142,81 @@ Dust.prototype.draw = function() {
 
         this.gl.uniformMatrix3fv(this.uModelViewProjectionMatrix, false, mvpMatrix);
 
-        this.gl.drawElements(this.gl.TRIANGLE_STRIP, 4, this.gl.UNSIGNED_SHORT, 0);
+        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
     }
 
     this.setSandBuffers();
-    material = this.materials.sand;
-    this.gl.uniform4fv(this.uColor, material.uColor);
     this.loadIdentity();
 
-    for (var x = 0; x < this.grid.length; x++) {
-        for (var y = 0; y < this.grid[x].length; y++) {
-            var cell = this.grid[x][y];
+    for (i = 0; i < this.sands.length; i++) {
+        var s = this.sands[i];
 
-            switch(cell) {
-                case 0:
-                    break;
-                case 1:
-                    var offset = vertexCount * 2 * 6;
+        switch(s.type) {
+            case 1:
+                material = this.materials.sand;
+                break;
+            case 2:
+                material = this.materials.oil;
+                break;
+            case 3:
+                material = this.materials.fire;
+                break;
+            default:
+                break;
+        }
 
-                    this.DustVertexArray[offset]     = x;
-                    this.DustVertexArray[offset + 1] = y;
-                    this.DustVertexArray[offset + 2] = x + 1;
-                    this.DustVertexArray[offset + 3] = y;
-                    this.DustVertexArray[offset + 4] = x;
-                    this.DustVertexArray[offset + 5] = y + 1;
+        var x = s.x,
+            y = s.y;
 
-                    this.DustVertexArray[offset + 6] = x;
-                    this.DustVertexArray[offset + 7] = y + 1;
-                    this.DustVertexArray[offset + 8] = x + 1;
-                    this.DustVertexArray[offset + 9] = y;
-                    this.DustVertexArray[offset + 10] = x + 1;
-                    this.DustVertexArray[offset + 11] = y + 1;
+        var offset = vertexCount * 5 * 6;
 
-                    vertexCount++;
-                    break;
-                default:
-                    break;
-            }
+        if(vertexCount < this.MAX_DUST) {
+            this.sandVertexArray[offset]     = x;
+            this.sandVertexArray[offset + 1] = y;
+            this.sandVertexArray[offset + 2] = material.uColor[0];
+            this.sandVertexArray[offset + 3] = material.uColor[1];
+            this.sandVertexArray[offset + 4] = material.uColor[2];
+
+            this.sandVertexArray[offset + 5] = x + 1;
+            this.sandVertexArray[offset + 6] = y;
+            this.sandVertexArray[offset + 7] = material.uColor[0];
+            this.sandVertexArray[offset + 8] = material.uColor[1];
+            this.sandVertexArray[offset + 9] = material.uColor[2];
+
+            this.sandVertexArray[offset + 10] = x;
+            this.sandVertexArray[offset + 11] = y + 1;
+            this.sandVertexArray[offset + 12] = material.uColor[0];
+            this.sandVertexArray[offset + 13] = material.uColor[1];
+            this.sandVertexArray[offset + 14] = material.uColor[2];
+
+
+            this.sandVertexArray[offset + 15] = x;
+            this.sandVertexArray[offset + 16] = y + 1;
+            this.sandVertexArray[offset + 17] = material.uColor[0];
+            this.sandVertexArray[offset + 18] = material.uColor[1];
+            this.sandVertexArray[offset + 19] = material.uColor[2];
+
+            this.sandVertexArray[offset + 20] = x + 1;
+            this.sandVertexArray[offset + 21] = y;
+            this.sandVertexArray[offset + 22] = material.uColor[0];
+            this.sandVertexArray[offset + 23] = material.uColor[1];
+            this.sandVertexArray[offset + 24] = material.uColor[2];
+
+            this.sandVertexArray[offset + 25] = x + 1;
+            this.sandVertexArray[offset + 26] = y + 1;
+            this.sandVertexArray[offset + 27] = material.uColor[0];
+            this.sandVertexArray[offset + 28] = material.uColor[1];
+            this.sandVertexArray[offset + 29] = material.uColor[2];
+
+            vertexCount++;
         }
     }
 
-    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 8, 0);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, this.DustVertexArray, this.gl.STATIC_DRAW);
+    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 20, 0);
+    this.gl.vertexAttribPointer(this.colorAttribute, 3, this.gl.FLOAT, false, 20, 8);
     mvpMatrix = matrixMultiply(this.modelViewMatrix, this.projectionMatrix);
+
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, this.sandVertexArray, this.gl.STATIC_DRAW);
     this.gl.uniformMatrix3fv(this.uModelViewProjectionMatrix, false, mvpMatrix);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, vertexCount * 6);
 };
@@ -215,6 +253,10 @@ Dust.prototype.spawnSolid = function(x, y, w, h) {
 };
 
 Dust.prototype.spawnDust = function(x, y, type) {
+    if(this.sands.length >= this.MAX_DUST) {
+        return;
+    }
+
     var n = 50,
         area = 20;
 
@@ -294,7 +336,6 @@ Dust.prototype.getShaderProgram = function(vert, frag) {
 
 Dust.prototype.setUniforms = function() {
     this.uModelViewProjectionMatrix = this.gl.getUniformLocation(this.shaderProgram, 'modelViewProjectionMatrix');
-    this.uColor = this.gl.getUniformLocation(this.shaderProgram, 'uColor');
 };
 
 Dust.prototype.setSandBuffers = function() {
