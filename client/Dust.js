@@ -28,7 +28,7 @@ function Dust() {
     this.uModelViewMatrix = null;
     this.setUniforms();
 
-    this.sandVertexArray = new Float32Array(this.MAX_DUST * 5 * 6);
+    this.sandVertexArray = new Float32Array(this.MAX_DUST * 3 * 6);
     this.dustBuffer = this.gl.createBuffer();
     
     this.positionAttribute = this.gl.getAttribLocation(this.shaderProgram, "position");
@@ -45,13 +45,13 @@ function Dust() {
 
     this.materials = {
         sand: {
-            color: [0.9, 0.7, 0.2, 1.0]
+            color: [9, 7, 2, 1.0]
         },
         oil: {
-            color: [0.5, 0.4, 0.1, 1.0]
+            color: [5, 4, 1, 1.0]
         },
         fire: {
-            color: [1.0, 0.5, 0, 1.0]
+            color: [10, 5, 0, 1.0]
         },
         solid: {
             color: [0, 0, 0, 1]
@@ -127,14 +127,12 @@ Dust.prototype.draw = function() {
         mvpMatrix,
         vertexCount = 0;
 
-    material = this.materials.solid;
-
     for(var i = 0; i < this.solids.length; i++) {
         var solid = this.solids[i];
 
         solid.setBuffers(this.gl);
-        this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 20, 0);
-        this.gl.vertexAttribPointer(this.colorAttribute, 3, this.gl.FLOAT, false, 20, 8);
+        this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 12, 0);
+        this.gl.vertexAttribPointer(this.colorAttribute, 1, this.gl.FLOAT, false, 12, 8);
 
         this.mvTranslate(solid.pos.x, solid.pos.y);
 
@@ -168,52 +166,40 @@ Dust.prototype.draw = function() {
         var x = s.x,
             y = s.y;
 
-        var offset = vertexCount * 5 * 6;
+        var offset = vertexCount * 3 * 6;
 
         if(vertexCount < this.MAX_DUST) {
             this.sandVertexArray[offset]     = x;
             this.sandVertexArray[offset + 1] = y;
-            this.sandVertexArray[offset + 2] = material.color[0];
-            this.sandVertexArray[offset + 3] = material.color[1];
-            this.sandVertexArray[offset + 4] = material.color[2];
+            this.sandVertexArray[offset + 2] = packColor(material.color);
 
-            this.sandVertexArray[offset + 5] = x + 1;
-            this.sandVertexArray[offset + 6] = y;
-            this.sandVertexArray[offset + 7] = material.color[0];
-            this.sandVertexArray[offset + 8] = material.color[1];
-            this.sandVertexArray[offset + 9] = material.color[2];
+            this.sandVertexArray[offset + 3] = x + 1;
+            this.sandVertexArray[offset + 4] = y;
+            this.sandVertexArray[offset + 5] = packColor(material.color);
 
-            this.sandVertexArray[offset + 10] = x;
-            this.sandVertexArray[offset + 11] = y + 1;
-            this.sandVertexArray[offset + 12] = material.color[0];
-            this.sandVertexArray[offset + 13] = material.color[1];
-            this.sandVertexArray[offset + 14] = material.color[2];
+            this.sandVertexArray[offset + 6] = x;
+            this.sandVertexArray[offset + 7] = y + 1;
+            this.sandVertexArray[offset + 8] = packColor(material.color);
 
 
-            this.sandVertexArray[offset + 15] = x;
+            this.sandVertexArray[offset + 9]= x;
+            this.sandVertexArray[offset + 10] = y + 1;
+            this.sandVertexArray[offset + 11] = packColor(material.color);
+
+            this.sandVertexArray[offset + 12] = x + 1;
+            this.sandVertexArray[offset + 13] = y;
+            this.sandVertexArray[offset + 14] = packColor(material.color);
+
+            this.sandVertexArray[offset + 15] = x + 1;
             this.sandVertexArray[offset + 16] = y + 1;
-            this.sandVertexArray[offset + 17] = material.color[0];
-            this.sandVertexArray[offset + 18] = material.color[1];
-            this.sandVertexArray[offset + 19] = material.color[2];
-
-            this.sandVertexArray[offset + 20] = x + 1;
-            this.sandVertexArray[offset + 21] = y;
-            this.sandVertexArray[offset + 22] = material.color[0];
-            this.sandVertexArray[offset + 23] = material.color[1];
-            this.sandVertexArray[offset + 24] = material.color[2];
-
-            this.sandVertexArray[offset + 25] = x + 1;
-            this.sandVertexArray[offset + 26] = y + 1;
-            this.sandVertexArray[offset + 27] = material.color[0];
-            this.sandVertexArray[offset + 28] = material.color[1];
-            this.sandVertexArray[offset + 29] = material.color[2];
+            this.sandVertexArray[offset + 17] = packColor(material.color);
 
             vertexCount++;
         }
     }
 
-    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 20, 0);
-    this.gl.vertexAttribPointer(this.colorAttribute, 3, this.gl.FLOAT, false, 20, 8);
+    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 12, 0);
+    this.gl.vertexAttribPointer(this.colorAttribute, 1, this.gl.FLOAT, false, 12, 8);
     mvpMatrix = matrixMultiply(this.modelViewMatrix, this.projectionMatrix);
 
     this.gl.bufferData(this.gl.ARRAY_BUFFER, this.sandVertexArray, this.gl.STATIC_DRAW);
@@ -412,4 +398,19 @@ function matrixMultiply(a, b) {
           a20 * b00 + a21 * b10 + a22 * b20,
           a20 * b01 + a21 * b11 + a22 * b21,
           a20 * b02 + a21 * b12 + a22 * b22];
+}
+
+// Credit to 'AHM' on StackOverflow
+function packColor(color) {
+    return color[0] + color[1] * 256 + color[2] * 256 * 256;
+}
+
+function unpackColor(f) {
+    var color = [0, 0, 0];
+
+    color[2] = Math.floor(f / (256 * 256));
+    color[1] = Math.floor((f - color[2] * 256 * 256) / 256);
+    color[0] = Math.floor(f % 256);
+
+    return color;
 }

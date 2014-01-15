@@ -11,7 +11,7 @@ function Solid(x, y, w, h) {
 
     this.aabb = new AABB(x - this.w, y - this.h, (x + this.w), (y + this.h));
 
-    this.color = [0, 0, 0];
+    this.color = 0;
 }
 
 Solid.prototype.bufferUp = function(gl) {
@@ -19,10 +19,10 @@ Solid.prototype.bufferUp = function(gl) {
     this.indexBuffer = gl.createBuffer();
 
     var floatArray = new Float32Array([
-            -this.w,  -this.h, this.color[0], this.color[1], this.color[2],
-            -this.w,   this.h, this.color[0], this.color[1], this.color[2],
-             this.w,  -this.h, this.color[0], this.color[1], this.color[2],
-             this.w,   this.h, this.color[0], this.color[1], this.color[2]]);
+            -this.w,  -this.h, this.color,
+            -this.w,   this.h, this.color,
+             this.w,  -this.h, this.color,
+             this.w,   this.h, this.color]);
 
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
