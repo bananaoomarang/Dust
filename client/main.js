@@ -12,7 +12,10 @@ function main() {
         frame = 0,
         fpsTimer = new Timer();
 
-    
+    $('#fps').css('position', 'absolute');
+    $('#fps').css('top', $('canvas').position().top);
+    $('#fps').css('left', $('canvas').position().left - 50);
+
     $('#fps').html(0 + 'fps');
     var offset = $('canvas').offset();
 
