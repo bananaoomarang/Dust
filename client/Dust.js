@@ -86,45 +86,49 @@ Dust.prototype.update = function(dt) {
     for (i = 0; i < this.sands.length; i++) {
         var sand = this.sands[i];
 
-        if(this.grid[sand.x][sand.y + 1] === 0) { 
-            sand.add(new Vector(0, 1));
+        var down = new Vector(0, 1),
+            left = new Vector(-1, 1),
+            right = new Vector(1, 1);
+
+        if(this.grid[sand.x][sand.y + down.y] === 0) { 
+            sand.add(down);
 
             if(!this.sandCollides(sand)) {
-                this.grid[sand.x][sand.y - 1] = 0;
+                this.grid[sand.x + down.reverse().x][sand.y + down.reverse().y] = 0;
 
                 this.grid[sand.x][sand.y] = sand.type;
             } else {
-                sand.add(new Vector(0, -1));
+                sand.add(down.reverse());
             }
-        } else if(this.grid[sand.x - 1][sand.y + 1] === 0) {
+        } else if(this.grid[sand.x + left.x][sand.y + left.y] === 0) {
             if(Math.random() > sand.friction) {
                 sand.resting = true;
             }
 
             if(!sand.resting) {
-                sand.add(new Vector(-1, 1));
+                sand.add(left);
 
                 if(!this.sandCollides(sand)) {
-                    this.grid[sand.x + 1][sand.y - 1] = 0;
+                    this.grid[sand.x + left.reverse().x][sand.y + left.reverse().y] = 0;
 
                     this.grid[sand.x][sand.y] = sand.type;
                 } else {
-                    sand.add(new Vector(1, -1));
+                    sand.add(left.reverse());
                 }
             }
-        } else if(this.grid[sand.x + 1][sand.y + 1] === 0) {
+        } else if(this.grid[sand.x + right.x][sand.y + right.y] === 0) {
             if(Math.random() > sand.friction) {
                 sand.resting = true;
             }
 
             if(!sand.resting) {
-                sand.add(new Vector(1, 1));
+                sand.add(right);
 
                 if(!this.sandCollides(sand)) {
-                    this.grid[sand.x - 1][sand.y - 1] = 0;
+                    this.grid[sand.x + right.reverse().x][sand.y + right.reverse().y] = 0;
                     this.grid[sand.x][sand.y] = sand.type;
                 } else {
-                    sand.add(new Vector(-1, -1));
+                    sand.add(right.reverse());
                 }
             }
         }
@@ -227,6 +231,8 @@ Dust.prototype.sandCollides = function(s) {
         if(s.within(this.solids[i].aabb)) {
             return true;
         } else if(s.x < 0 || s.y < 0 || s.x > this.WIDTH || s.y > this.HEIGHT) {
+            return true;
+        } else if(this.grid[s.x][s.y] !== 0) {
             return true;
         }
     }
