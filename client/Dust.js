@@ -92,57 +92,38 @@ Dust.prototype.getGL = function() {
 };
 
 Dust.prototype.update = function(dt) {
-    for (i = 0; i < this.sands.length; i++) {
-        var sand = this.sands[i];
+    var blacklist = new Array2D(this.WIDTH, this.HEIGHT);
 
-        var down = new Vector(0, 1),
-            left = new Vector(-1, 1),
-            right = new Vector(1, 1);
+    for (var x = 1; x < this.grid.length - 1; x++) {
+        for (var y = 1; y < this.grid[x].length - 1; y++) {
+            var d = this.grid[x][y];
 
-        if(this.grid[sand.x][sand.y + down.y] === 0) { 
-            sand.add(down);
+            if(d === 0) continue;
 
-            if(!this.sandCollides(sand)) {
-                this.grid[sand.x + down.reverse().x][sand.y + down.reverse().y] = 0;
+            if(blacklist[x][y] === true) continue;
 
-                this.grid[sand.x][sand.y] = sand.type;
-            } else {
-                sand.add(down.reverse());
-            }
-        } else if(this.grid[sand.x + left.x][sand.y + left.y] === 0) {
-            if(Math.random() > sand.friction) {
-                sand.resting = true;
-            }
+            var n = new Vector(x, y - 1),
+                e = new Vector(x + 1, y),
+                s = new Vector(x, y + 1),
+                w = new Vector(x - 1, y),
+                se = new Vector(x + 1, y + 1),
+                sw = new Vector(x - 1, y + 1);
 
-            if(!sand.resting) {
-                sand.add(left);
-
-                if(!this.sandCollides(sand)) {
-                    this.grid[sand.x + left.reverse().x][sand.y + left.reverse().y] = 0;
-
-                    this.grid[sand.x][sand.y] = sand.type;
-                } else {
-                    sand.add(left.reverse());
-                }
-            }
-        } else if(this.grid[sand.x + right.x][sand.y + right.y] === 0) {
-            if(Math.random() > sand.friction) {
-                sand.resting = true;
-            }
-
-            if(!sand.resting) {
-                sand.add(right);
-
-                if(!this.sandCollides(sand)) {
-                    this.grid[sand.x + right.reverse().x][sand.y + right.reverse().y] = 0;
-                    this.grid[sand.x][sand.y] = sand.type;
-                } else {
-                    sand.add(right.reverse());
-                }
+            if(this.grid[s.x][s.y] === 0 && !this.sandCollides(s)) { 
+                    this.grid[s.x][s.y] = d;
+                    blacklist[s.x][s.y] = true;
+                    this.grid[x][y] = 0;
+            } else if(this.grid[sw.x][sw.y] === 0 && !this.sandCollides(sw)) {
+                    this.grid[sw.x][sw.y] = d;
+                    blacklist[sw.x][sw.y] = true;
+                    this.grid[x][y] = 0;
+            } else if(this.grid[se.x][se.y] === 0 && !this.sandCollides(se)) {
+                    this.grid[se.x][se.y] = d;
+                    blacklist[se.x][se.y] = true;
+                    this.grid[x][y] = 0;
             }
         }
     }
-
 };
 
 
@@ -174,58 +155,59 @@ Dust.prototype.draw = function() {
     this.setSandBuffers();
     this.loadIdentity();
 
-    for (i = 0; i < this.sands.length; i++) {
-        var s = this.sands[i];
+    for (var x = 0; x < this.grid.length; x++) {
+        for (var y = 0; y < this.grid[x].length; y++) {
+            var s = this.grid[x][y];
 
-        switch(s.type) {
-            case SAND:
-                material = this.materials.sand;
-                break;
-            case OIL:
-                material = this.materials.oil;
-                break;
-            case FIRE:
-                material = this.materials.fire;
-                break;
-            case WATER:
-                material = this.materials.water;
-                break;
-            default:
-                break;
-        }
+            switch(s) {
+                case 0:
+                    continue;
+                case SAND:
+                    material = this.materials.sand;
+                    break;
+                case OIL:
+                    material = this.materials.oil;
+                    break;
+                case FIRE:
+                    material = this.materials.fire;
+                    break;
+                case WATER:
+                    material = this.materials.water;
+                    break;
+                default:
+                    break;
+            }
 
-        var x = s.x,
-            y = s.y;
+            var offset = vertexCount * 3 * 6;
 
-        var offset = vertexCount * 3 * 6;
+            if(vertexCount < this.MAX_DUST) {
+                this.sandVertexArray[offset]     = x;
+                this.sandVertexArray[offset + 1] = y;
+                this.sandVertexArray[offset + 2] = packColor(material.color);
 
-        if(vertexCount < this.MAX_DUST) {
-            this.sandVertexArray[offset]     = x;
-            this.sandVertexArray[offset + 1] = y;
-            this.sandVertexArray[offset + 2] = packColor(material.color);
+                this.sandVertexArray[offset + 3] = x + 1;
+                this.sandVertexArray[offset + 4] = y;
+                this.sandVertexArray[offset + 5] = packColor(material.color);
 
-            this.sandVertexArray[offset + 3] = x + 1;
-            this.sandVertexArray[offset + 4] = y;
-            this.sandVertexArray[offset + 5] = packColor(material.color);
-
-            this.sandVertexArray[offset + 6] = x;
-            this.sandVertexArray[offset + 7] = y + 1;
-            this.sandVertexArray[offset + 8] = packColor(material.color);
+                this.sandVertexArray[offset + 6] = x;
+                this.sandVertexArray[offset + 7] = y + 1;
+                this.sandVertexArray[offset + 8] = packColor(material.color);
 
 
-            this.sandVertexArray[offset + 9]= x;
-            this.sandVertexArray[offset + 10] = y + 1;
-            this.sandVertexArray[offset + 11] = packColor(material.color);
+                this.sandVertexArray[offset + 9]= x;
+                this.sandVertexArray[offset + 10] = y + 1;
+                this.sandVertexArray[offset + 11] = packColor(material.color);
 
-            this.sandVertexArray[offset + 12] = x + 1;
-            this.sandVertexArray[offset + 13] = y;
-            this.sandVertexArray[offset + 14] = packColor(material.color);
+                this.sandVertexArray[offset + 12] = x + 1;
+                this.sandVertexArray[offset + 13] = y;
+                this.sandVertexArray[offset + 14] = packColor(material.color);
 
-            this.sandVertexArray[offset + 15] = x + 1;
-            this.sandVertexArray[offset + 16] = y + 1;
-            this.sandVertexArray[offset + 17] = packColor(material.color);
+                this.sandVertexArray[offset + 15] = x + 1;
+                this.sandVertexArray[offset + 16] = y + 1;
+                this.sandVertexArray[offset + 17] = packColor(material.color);
 
-            vertexCount++;
+                vertexCount++;
+            }
         }
     }
 
@@ -306,7 +288,7 @@ Dust.prototype.spawnDust = function(x, y, type) {
         }
 
         if(!this.sandCollides(s)) {
-            this.sands.push(s);
+            this.grid[s.x][s.y] = s.type;
         }
     }
 };
