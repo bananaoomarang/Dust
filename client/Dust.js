@@ -8,6 +8,11 @@ var $ = require('jquery-browserify'),
 
 module.exports = Dust;
 
+var SAND = 1,
+    OIL = 2,
+    FIRE = 3,
+    WATER = 4;
+
 function Dust() {
     var self = this;
 
@@ -54,6 +59,10 @@ function Dust() {
         },
         fire: {
             color: [10, 5, 0, 1.0],
+            friction: 1
+        },
+        water: {
+            color: [0, 5, 10, 1.0],
             friction: 1
         },
         solid: {
@@ -169,14 +178,17 @@ Dust.prototype.draw = function() {
         var s = this.sands[i];
 
         switch(s.type) {
-            case 1:
+            case SAND:
                 material = this.materials.sand;
                 break;
-            case 2:
+            case OIL:
                 material = this.materials.oil;
                 break;
-            case 3:
+            case FIRE:
                 material = this.materials.fire;
+                break;
+            case WATER:
+                material = this.materials.water;
                 break;
             default:
                 break;
@@ -303,11 +315,13 @@ Dust.prototype.spawnDust = function(x, y, type) {
 Dust.prototype.getType = function(typeString) {
     switch(typeString) {
         case 'sand':
-            return 1;
+            return SAND;
         case 'oil':
-            return 2;
+            return OIL;
         case 'fire':
-            return 3;
+            return FIRE;
+        case 'water':
+            return WATER;
         default:
             return 0;
     }
