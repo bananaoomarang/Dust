@@ -108,8 +108,6 @@ Dust.prototype.update = function(dt) {
 
             if(d & RESTING) continue;
 
-            //if(Math.random() > 0.95) continue;
-
             if(blacklist[x][ry]) continue;
 
             switch(d) {
@@ -130,6 +128,8 @@ Dust.prototype.update = function(dt) {
                     break;
             }
 
+            //if(this.surrounded(new Vector(x, ry))) this.grid[x][ry] ^= RESTING;
+
             var n = new Vector(x, ry - 1),
                 e = new Vector(x + 1, ry),
                 s = new Vector(x, ry + 1),
@@ -143,7 +143,7 @@ Dust.prototype.update = function(dt) {
                 blacklist[s.x][s.y] = true;
             } else if(!this.sandCollides(se)) {
                 if(Math.random() > m.friction) {
-                    this.grid[x][ry] |= RESTING;
+                    //this.grid[x][ry] |= RESTING;
                 } else {
                     this.grid[x][ry] = 0;
                     this.grid[se.x][se.y] = d;
@@ -151,11 +151,25 @@ Dust.prototype.update = function(dt) {
                 }
             } else if(!this.sandCollides(sw)) {
                 if(Math.random() > m.friction) {
-                    this.grid[x][ry] |= RESTING;
+                    //this.grid[x][ry] |= RESTING;
                 } else {
                     this.grid[x][ry] = 0;
                     this.grid[sw.x][sw.y] = d;
                     blacklist[sw.x][sw.y] = true;
+                }
+            } else {
+                // Check if the particle should be RESTING
+                var bellow = new Vector(x, ry);
+
+                while(bellow.y <= this.HEIGHT) {
+                    if(this.grid[bellow.x][bellow.y] === 0 && this.sandCollides(bellow)) {
+                        this.grid[x][ry] ^= RESTING;
+                        bellow.y = this.HEIGHT + 1;
+                    } else if(this.grid[bellow.x][bellow.y] === 0) {
+                        bellow.y = this.HEIGHT + 1;
+                    }
+                    
+                    bellow.y++;
                 }
             }
         }
@@ -211,6 +225,7 @@ Dust.prototype.draw = function() {
                     material = this.materials.water;
                     break;
                 default:
+                    material = this.materials.sand;
                     break;
             }
 
@@ -294,8 +309,8 @@ Dust.prototype.spawnDust = function(x, y, type) {
         return;
     }
 
-    var n = 50,
-        area = 20;
+    var n = 20,
+        area = 30;
 
     x -= area / 2;
     y -= area / 2;
@@ -306,7 +321,7 @@ Dust.prototype.spawnDust = function(x, y, type) {
         
         var s = new Vector(spawnX, spawnY);
         s.type = this.getType(type);
-        
+
         if(!this.sandCollides(s)) {
             this.grid[s.x][s.y] = s.type;
             this.dustCount++;
@@ -328,6 +343,15 @@ Dust.prototype.getType = function(typeString) {
         default:
             return 0;
     }
+};
+
+// Returns true if the particle is surrounded by itself
+Dust.prototype.surrounded = function(v) {
+    if(this.grid[v.x][v.y] === (this.grid[v.x + 1][v.y] && this.grid[v.x - 1][v.y] && this.grid[v.x][v.y + 1] && 
+       this.grid[v.x][v.y - 1] && this.grid[v.x + 1][v.y + 1] && this.grid[v.x + 1][v.y - 1] && this.grid[v.x - 1][v.y + 1] && this.grid[v.x - 1][v.y - 1]))
+        return true;
+    else
+        return false;
 };
 
 // If a solid exists here, it will be sandified
