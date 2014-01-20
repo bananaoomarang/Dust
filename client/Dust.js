@@ -10,8 +10,9 @@ module.exports = Dust;
 
 var SAND = 1,
     OIL = 2,
-    FIRE = 3,
-    WATER = 4;
+    FIRE = 4,
+    WATER = 8,
+    RESTING = 16;
 
 function Dust() {
     var self = this;
@@ -45,7 +46,7 @@ function Dust() {
     this.loadIdentity();
 
     this.grid = new Array2D(this.WIDTH, this.HEIGHT);
-    this.sands = [];
+    this.dustCount = 0;
     this.solids = [];
 
     this.materials = {
@@ -95,32 +96,67 @@ Dust.prototype.update = function(dt) {
     var blacklist = new Array2D(this.WIDTH, this.HEIGHT);
 
     for (var x = 1; x < this.grid.length - 1; x++) {
-        for (var y = 1; y < this.grid[x].length - 1; y++) {
-            var d = this.grid[x][y];
+        var ry = Math.floor(Math.random() * 500)  % (this.grid.length -1),
+            yIncrement = 2;
 
+        for (var y = this.grid[x].length - 1; y > 1; y--) {
+            ry = (ry + yIncrement) % (this.grid.length - 1);
+            var d = this.grid[x][ry],
+                m = null;
+            
             if(d === 0) continue;
 
-            if(blacklist[x][y] === true) continue;
+            if(d & RESTING) continue;
 
-            var n = new Vector(x, y - 1),
-                e = new Vector(x + 1, y),
-                s = new Vector(x, y + 1),
-                w = new Vector(x - 1, y),
-                se = new Vector(x + 1, y + 1),
-                sw = new Vector(x - 1, y + 1);
+            //if(Math.random() > 0.95) continue;
 
-            if(this.grid[s.x][s.y] === 0 && !this.sandCollides(s)) { 
-                    this.grid[s.x][s.y] = d;
-                    blacklist[s.x][s.y] = true;
-                    this.grid[x][y] = 0;
-            } else if(this.grid[sw.x][sw.y] === 0 && !this.sandCollides(sw)) {
-                    this.grid[sw.x][sw.y] = d;
-                    blacklist[sw.x][sw.y] = true;
-                    this.grid[x][y] = 0;
-            } else if(this.grid[se.x][se.y] === 0 && !this.sandCollides(se)) {
+            if(blacklist[x][ry]) continue;
+
+            switch(d) {
+                case (d & SAND):
+                    m = this.materials.sand;
+                    break;
+                case (d & OIL):
+                    m = this.materials.oil;
+                    break;
+                case (d & FIRE):
+                    m = this.materials.fire;
+                    break;
+                case (d & WATER):
+                    m = this.materials.water;
+                    break;
+                default:
+                    m = this.materials.sand;
+                    break;
+            }
+
+            var n = new Vector(x, ry - 1),
+                e = new Vector(x + 1, ry),
+                s = new Vector(x, ry + 1),
+                w = new Vector(x - 1, ry),
+                se = new Vector(x + 1, ry + 1),
+                sw = new Vector(x - 1, ry + 1);
+
+            if(!this.sandCollides(s)) {
+                this.grid[x][ry] = 0;
+                this.grid[s.x][s.y] = d;
+                blacklist[s.x][s.y] = true;
+            } else if(!this.sandCollides(se)) {
+                if(Math.random() > m.friction) {
+                    this.grid[x][ry] |= RESTING;
+                } else {
+                    this.grid[x][ry] = 0;
                     this.grid[se.x][se.y] = d;
                     blacklist[se.x][se.y] = true;
-                    this.grid[x][y] = 0;
+                }
+            } else if(!this.sandCollides(sw)) {
+                if(Math.random() > m.friction) {
+                    this.grid[x][ry] |= RESTING;
+                } else {
+                    this.grid[x][ry] = 0;
+                    this.grid[sw.x][sw.y] = d;
+                    blacklist[sw.x][sw.y] = true;
+                }
             }
         }
     }
@@ -162,16 +198,16 @@ Dust.prototype.draw = function() {
             switch(s) {
                 case 0:
                     continue;
-                case SAND:
+                case (s & SAND):
                     material = this.materials.sand;
                     break;
-                case OIL:
+                case (s & OIL):
                     material = this.materials.oil;
                     break;
-                case FIRE:
+                case (s & FIRE):
                     material = this.materials.fire;
                     break;
-                case WATER:
+                case (s & WATER):
                     material = this.materials.water;
                     break;
                 default:
@@ -254,7 +290,7 @@ Dust.prototype.spawnSolid = function(x, y, w, h) {
 };
 
 Dust.prototype.spawnDust = function(x, y, type) {
-    if(this.sands.length >= this.MAX_DUST) {
+    if(this.dustCount >= this.MAX_DUST) {
         return;
     }
 
@@ -269,26 +305,11 @@ Dust.prototype.spawnDust = function(x, y, type) {
             spawnY = Math.round(y + area*Math.random());
         
         var s = new Vector(spawnX, spawnY);
-        
-        s.resting = false;
         s.type = this.getType(type);
         
-        switch(s.type) {
-            case 1:
-                s.friction = this.materials.sand.friction;
-                break;
-            case 2:
-                s.friction = this.materials.oil.friction;
-                break;
-            case 3:
-                s.friction = this.materials.fire.friction;
-                break;
-            default:
-                break;
-        }
-
         if(!this.sandCollides(s)) {
             this.grid[s.x][s.y] = s.type;
+            this.dustCount++;
         }
     }
 };
