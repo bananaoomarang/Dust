@@ -162,14 +162,18 @@ Dust.prototype.update = function(dt) {
                 var bellow = new Vector(x, ry);
 
                 while(bellow.y <= this.HEIGHT) {
+                    bellow.y++;
                     if(this.grid[bellow.x][bellow.y] === 0 && this.sandCollides(bellow)) {
-                        this.grid[x][ry] ^= RESTING;
-                        bellow.y = this.HEIGHT + 1;
+                        if(this.grid[bellow.x + 1][bellow.y] !== 0 && this.grid[bellow.x - 1][bellow.y] !== 0 && this.grid[bellow.x][bellow.y - 1] !== 0 && 
+                                this.grid[bellow.x][bellow.y + 1] !== 0)
+                        {
+                            this.grid[x][ry] |= RESTING;
+                            break;
+                        }
                     } else if(this.grid[bellow.x][bellow.y] === 0) {
-                        bellow.y = this.HEIGHT + 1;
+                        break;
                     }
                     
-                    bellow.y++;
                 }
             }
         }
