@@ -1,7 +1,6 @@
 var $ = require('jquery-browserify'),
     Vector = require('./Vector'),
     AABB = require('./AABB'),
-    Rect = require('./Rect'),
     fs = require('fs'),
     vertShader = fs.readFileSync(__dirname + '/vert.glsl'),
     fragShader = fs.readFileSync(__dirname + '/frag.glsl');
@@ -44,11 +43,12 @@ function Dust() {
     this.gl.enableVertexAttribArray(this.positionAttribute);
     this.gl.enableVertexAttribArray(this.colorAttribute);
     
+    this.setSandBuffers();
     this.loadIdentity();
+    this.mvpMatrix = matrixMultiply(this.modelViewMatrix, this.projectionMatrix);
 
     this.grid = new Array2D(this.WIDTH, this.HEIGHT);
     this.dustCount = 0;
-    this.rects = [];
 
     this.materials = {
         sand: {
@@ -74,15 +74,15 @@ function Dust() {
 
     this.selectionBox = null;
 
-    this.spawnRect(250, 200, 100, 10);
+    this.spawnRect(250, 200, 200, 20);
 
     // Walls
 
     var width = 1;
     this.spawnRect(0, 0, this.WIDTH, width);
     this.spawnRect(0, 0, width, this.HEIGHT);
-    this.spawnRect(0, this.HEIGHT, this.WIDTH, width);
-    this.spawnRect(this.WIDTH, 0, width, this.HEIGHT);
+    this.spawnRect(0, this.HEIGHT - width, this.WIDTH, width);
+    this.spawnRect(this.WIDTH - width, 0, width, this.HEIGHT);
 }
 
 Dust.prototype.getGL = function() {
@@ -103,7 +103,7 @@ Dust.prototype.update = function(dt) {
         for (var y = this.grid[x].length - 1; y > 1; y--) {
             ry = (ry + yIncrement) % (this.grid.length - 1);
             var d = this.grid[x][ry],
-                m = null;
+                m = this.getMaterial(d);
             
             if(d === 0) continue;
 
@@ -112,24 +112,6 @@ Dust.prototype.update = function(dt) {
             if(d & RESTING) continue;
 
             if(this.blacklist[x][ry]) continue;
-
-            switch(d) {
-                case (d & SAND):
-                    m = this.materials.sand;
-                    break;
-                case (d & OIL):
-                    m = this.materials.oil;
-                    break;
-                case (d & FIRE):
-                    m = this.materials.fire;
-                    break;
-                case (d & WATER):
-                    m = this.materials.water;
-                    break;
-                default:
-                    m = this.materials.sand;
-                    break;
-            }
 
             var n = new Vector(x, ry - 1),
                 e = new Vector(x + 1, ry),
@@ -141,30 +123,22 @@ Dust.prototype.update = function(dt) {
             if(!this.sandCollides(s)) {
                 this.move(new Vector(x, ry), s);
             } else if(!this.sandCollides(se)) {
-                if(Math.random() > m.friction) {
-                    //this.grid[x][ry] |= RESTING;
-                } else {
-                    this.move(new Vector(x, ry), se);
-                }
+                this.move(new Vector(x, ry), se);
             } else if(!this.sandCollides(sw)) {
-                if(Math.random() > m.friction) {
-                    //this.grid[x][ry] |= RESTING;
-                } else {
-                    this.move(new Vector(x, ry), sw);
-                }
+                this.move(new Vector(x, ry), sw);
             } else {
                 // Check if the particle should be RESTING
                 var bellow = new Vector(x, ry);
 
                 while(bellow.y <= this.HEIGHT) {
-                    bellow.y++;
                     if(this.grid[bellow.x][bellow.y] === 0 && this.sandCollides(bellow)) {
+                        this.grid[x][ry] = SAND;
                         this.grid[x][ry] |= RESTING;
                         break;
                     } else if(this.grid[bellow.x][bellow.y] === 0) {
                         break;
                     }
-                    
+                    bellow.y++;
                 }
             }
         }
@@ -178,54 +152,15 @@ Dust.prototype.draw = function() {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
     var material,
-        mvpMatrix,
         vertexCount = 0;
-
-    for(var i = 0; i < this.rects.length; i++) {
-        var solid = this.rects[i];
-
-        solid.setBuffers(this.gl);
-        this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 12, 0);
-        this.gl.vertexAttribPointer(this.colorAttribute, 1, this.gl.FLOAT, false, 12, 8);
-
-        this.mvTranslate(solid.pos.x, solid.pos.y);
-
-        mvpMatrix = matrixMultiply(this.modelViewMatrix, this.projectionMatrix);
-
-        this.gl.uniformMatrix3fv(this.uModelViewProjectionMatrix, false, mvpMatrix);
-
-        this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, 4);
-    }
-
-    this.setSandBuffers();
-    this.loadIdentity();
 
     for (var x = 0; x < this.grid.length; x++) {
         for (var y = 0; y < this.grid[x].length; y++) {
             var s = this.grid[x][y];
+    
+            if(s === 0) continue;
 
-            switch(s) {
-                case 0:
-                    continue;
-                case (s & SAND):
-                    material = this.materials.sand;
-                    break;
-                case (s & OIL):
-                    material = this.materials.oil;
-                    break;
-                case (s & FIRE):
-                    material = this.materials.fire;
-                    break;
-                case (s & WATER):
-                    material = this.materials.water;
-                    break;
-                case (s & SOLID):
-                    material = this.materials.solid;
-                    break;
-                default:
-                    material = this.materials.sand;
-                    break;
-            }
+            material = this.getMaterial(s);
 
             var offset = vertexCount * 3 * 6;
 
@@ -262,20 +197,13 @@ Dust.prototype.draw = function() {
 
     this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 12, 0);
     this.gl.vertexAttribPointer(this.colorAttribute, 1, this.gl.FLOAT, false, 12, 8);
-    mvpMatrix = matrixMultiply(this.modelViewMatrix, this.projectionMatrix);
 
     this.gl.bufferData(this.gl.ARRAY_BUFFER, this.sandVertexArray, this.gl.STATIC_DRAW);
-    this.gl.uniformMatrix3fv(this.uModelViewProjectionMatrix, false, mvpMatrix);
+    this.gl.uniformMatrix3fv(this.uModelViewProjectionMatrix, false, this.mvpMatrix);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, vertexCount * 6);
 };
 
 Dust.prototype.sandCollides = function(s) {
-    for (var i = 0; i < this.rects.length; i++) {
-        if(s.within(this.rects[i].aabb)) {
-            return true;
-        }
-    }
-    
     if(this.grid[s.x][s.y] !== 0) 
         return true;
     else 
@@ -295,10 +223,11 @@ Dust.prototype.drawSelection = function(x, y, w, h) {
 };
 
 Dust.prototype.spawnRect = function(x, y, w, h) {
-    var s = new Rect(x, y, w, h);
-    s.bufferUp(this.gl);
-
-    this.rects.push(s);
+    for(var i = x; i < (x + w); i++) {
+        for(var j = y; j < (y + h); j++) {
+            this.grid[i][j] |= SOLID;
+        }
+    }
 };
 
 Dust.prototype.spawnDust = function(x, y, type) {
@@ -311,6 +240,8 @@ Dust.prototype.spawnDust = function(x, y, type) {
 
     x -= area / 2;
     y -= area / 2;
+
+    if(x < 0 || y < 0 || (x + area) > this.WIDTH || (y + area) > this.HEIGHT) return;
 
     for (var offX = 0; offX < area; offX++) {
         for(var offY = 0; offY < area; offY++) {
@@ -358,6 +289,14 @@ Dust.prototype.getType = function(typeString) {
         default:
             return 0;
     }
+};
+
+Dust.prototype.getMaterial = function(s) {
+    if(s & SAND)  return this.materials.sand;
+    if(s & OIL)   return this.materials.oil;
+    if(s & FIRE)  return this.materials.fire;
+    if(s & WATER) return this.materials.water;
+    if(s & SOLID) return this.materials.solid;
 };
 
 // Returns true if the particle is surrounded by itself
