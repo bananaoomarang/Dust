@@ -46,6 +46,10 @@ function Dust() {
     this.setSandBuffers();
     this.loadIdentity();
     this.mvpMatrix = matrixMultiply(this.modelViewMatrix, this.projectionMatrix);
+    this.gl.uniformMatrix3fv(this.uModelViewProjectionMatrix, false, this.mvpMatrix);
+    
+    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 12, 0);
+    this.gl.vertexAttribPointer(this.colorAttribute, 1, this.gl.FLOAT, false, 12, 8);
 
     this.grid = new Array2D(this.WIDTH, this.HEIGHT);
     this.dustCount = 0;
@@ -195,11 +199,7 @@ Dust.prototype.draw = function() {
         }
     }
 
-    this.gl.vertexAttribPointer(this.positionAttribute, 2, this.gl.FLOAT, false, 12, 0);
-    this.gl.vertexAttribPointer(this.colorAttribute, 1, this.gl.FLOAT, false, 12, 8);
-
     this.gl.bufferData(this.gl.ARRAY_BUFFER, this.sandVertexArray, this.gl.STATIC_DRAW);
-    this.gl.uniformMatrix3fv(this.uModelViewProjectionMatrix, false, this.mvpMatrix);
     this.gl.drawArrays(this.gl.TRIANGLES, 0, vertexCount * 6);
 };
 
