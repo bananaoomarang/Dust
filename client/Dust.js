@@ -72,7 +72,12 @@ function Dust() {
         fire: {
             color: [10, 5, 0],
             friction: 1,
-            desity: 0
+            density: 0
+        },
+        lava: {
+            color: [10, 3, 0],
+            liquid: true,
+            density: 10
         },
         water: {
             color: [0, 5, 10],
@@ -150,7 +155,7 @@ Dust.prototype.update = function(dt) {
             }
 
             // Burn baby burn
-            if(d & FIRE || d & BURNING) {
+            if(d & FIRE || d & LAVA || d & BURNING) {
                 if(Math.random() > 0.5) {
                     this.infect(x, ry, OIL, BURNING);
                     this.infect(x, ry, WATER, STEAM, WATER);
@@ -335,6 +340,8 @@ Dust.prototype.getType = function(typeString) {
             return OIL;
         case 'fire':
             return FIRE;
+        case 'lava':
+            return LAVA;
         case 'water':
             return WATER;
         case 'solid':
@@ -352,7 +359,7 @@ Dust.prototype.getMaterial = function(s) {
     if(s & WATER) return this.materials.water;
     if(s & SOLID) return this.materials.solid;
     if(s & STEAM) return this.materials.steam;
-    if(s & LAVA) return this.materials.steam;
+    if(s & LAVA) return this.materials.lava;
 };
 
 // Returns true if the particle is surrounded by itself
