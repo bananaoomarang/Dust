@@ -57,24 +57,23 @@ function Dust() {
 
     this.materials = {
         sand: {
-            color: [9, 7, 2, 1.0],
+            color: [9, 7, 2],
             friction: 0.99
         },
         oil: {
-            color: [5, 4, 1, 1.0],
-            friction: 1,
-            burnable: true
+            color: [5, 4, 1],
+            friction: 1
         },
         fire: {
-            color: [10, 5, 0, 1.0],
+            color: [10, 5, 0],
             friction: 1
         },
         water: {
-            color: [0, 5, 10, 1.0],
+            color: [0, 5, 10],
             friction: 1
         },
         solid: {
-            color: [0, 0, 0, 1]
+            color: [0, 0, 0]
         }
     };
 
@@ -114,10 +113,40 @@ Dust.prototype.update = function(dt) {
             if(d === 0) continue;
 
             if(d & SOLID) continue;
-
-            if(d & RESTING) continue;
-
+            
             if(this.blacklist[x][ry]) continue;
+            
+            if(d & FIRE) {
+                if(Math.random() > 0.8) this.grid[x][ry] |= BURNING;
+            }
+            
+            if(d & BURNING && Math.random() > 0.8) this.destroy(x, ry);
+            
+            // Burn baby burn
+            if(d & FIRE || d & BURNING) {
+                var n = this.grid[x][ry - 1],
+                    ne = this.grid[x + 1][ry - 1],
+                    e = this.grid[x + 1][ry],
+                    se = this.grid[x + 1][ry + 1],
+                    s = this.grid[x][ry + 1],
+                    sw = this.grid[x - 1][ry + 1],
+                    w = this.grid[x - 1][ry],
+                    nw = this.grid[x - 1][ry - 1];
+
+                if(Math.random() > 0.5) {
+                    if(n & OIL) this.grid[x][ry - 1] |= BURNING;
+                    if(ne & OIL) this.grid[x + 1][ry - 1] |= BURNING;
+                    if(e & OIL) this.grid[x + 1][ry] |= BURNING;
+                    if(se & OIL) this.grid[x + 1][ry + 1] |= BURNING;
+                    if(s & OIL) this.grid[x][ry + 1] |= BURNING;
+                    if(sw & OIL) this.grid[x - 1][ry + 1] |= BURNING;
+                    if(w & OIL) this.grid[x - 1][ry] |= BURNING;
+                    if(nw & OIL) this.grid[x - 1][ry - 1] |= BURNING;
+                }
+            }
+
+ 
+            if(d & RESTING) continue;
 
             if(this.grid[x][ry + 1] === 0) {
                 this.move(x, ry, x, ry + 1);
@@ -132,28 +161,6 @@ Dust.prototype.update = function(dt) {
                 }
             }
 
-            // Burn baby burn
-            if(d & FIRE || d & BURNING) {
-                var n = this.grid[x][ry - 1],
-                    ne = this.grid[x + 1][ry - 1],
-                    e = this.grid[x + 1][ry],
-                    se = this.grid[x + 1][ry + 1],
-                    s = this.grid[x][ry + 1],
-                    sw = this.grid[x - 1][ry + 1],
-                    w = this.grid[x - 1][ry],
-                    nw = this.grid[x - 1][ry - 1];
-
-                if(n & OIL) this.grid[x][ry - 1] |= BURNING;
-                if(ne & OIL) this.grid[x + 1][ry - 1] |= BURNING;
-                if(e & OIL) this.grid[x + 1][ry] |= BURNING;
-                if(se & OIL) this.grid[x + 1][ry + 1] |= BURNING;
-                if(s & OIL) this.grid[x][ry + 1] |= BURNING;
-                if(sw & OIL) this.grid[x - 1][ry + 1] |= BURNING;
-                if(w & OIL) this.grid[x - 1][ry] |= BURNING;
-                if(nw & OIL) this.grid[x - 1][ry - 1] |= BURNING;
-            }
-
-            if(d & BURNING) this.grid[x][ry] = 0;
         }
     }
 
@@ -167,6 +174,7 @@ Dust.prototype.draw = function() {
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 
     var material,
+        color,
         vertexCount = 0;
 
     for (var x = 0; x < this.grid.length; x++) {
@@ -176,34 +184,39 @@ Dust.prototype.draw = function() {
             if(s === 0) continue;
 
             material = this.getMaterial(s);
+            
+            if(s & BURNING) 
+                color = (Math.random() > 0.1) ? [10, material.color[1], material.color[2]] : [material.color[0] + 1, material.color[1], material.color[2]];
+            else 
+                color = material.color;
 
             var offset = vertexCount * 3 * 6;
 
             if(vertexCount < this.MAX_DUST) {
                 this.sandVertexArray[offset]     = x;
                 this.sandVertexArray[offset + 1] = y;
-                this.sandVertexArray[offset + 2] = packColor(material.color);
+                this.sandVertexArray[offset + 2] = packColor(color);
 
                 this.sandVertexArray[offset + 3] = x + 1;
                 this.sandVertexArray[offset + 4] = y;
-                this.sandVertexArray[offset + 5] = packColor(material.color);
+                this.sandVertexArray[offset + 5] = packColor(color);
 
                 this.sandVertexArray[offset + 6] = x;
                 this.sandVertexArray[offset + 7] = y + 1;
-                this.sandVertexArray[offset + 8] = packColor(material.color);
+                this.sandVertexArray[offset + 8] = packColor(color);
 
 
                 this.sandVertexArray[offset + 9]= x;
                 this.sandVertexArray[offset + 10] = y + 1;
-                this.sandVertexArray[offset + 11] = packColor(material.color);
+                this.sandVertexArray[offset + 11] = packColor(color);
 
                 this.sandVertexArray[offset + 12] = x + 1;
                 this.sandVertexArray[offset + 13] = y;
-                this.sandVertexArray[offset + 14] = packColor(material.color);
+                this.sandVertexArray[offset + 14] = packColor(color);
 
                 this.sandVertexArray[offset + 15] = x + 1;
                 this.sandVertexArray[offset + 16] = y + 1;
-                this.sandVertexArray[offset + 17] = packColor(material.color);
+                this.sandVertexArray[offset + 17] = packColor(color);
 
                 vertexCount++;
             }
@@ -270,10 +283,11 @@ Dust.prototype.spawnDust = function(x, y, type) {
                     this.dustCount++;
                 }
             } else {
+                // Eraser
                 if(s.x > 0 && s.x < this.WIDTH && s.y > 0 && s.y < this.HEIGHT) {
                     if(this.grid[s.x][s.y] !== 0) {
                         this.dustCount--;
-                        this.grid[s.x][s.y] = s.type;
+                        this.destroy(this.grid[s.x][s.y]);
                         this.wakeSurrounds(s.x, s.y);
                     }
                 }
@@ -349,6 +363,12 @@ Dust.prototype.shouldLieDown = function(x, y) {
         
         y++;
     }
+};
+
+Dust.prototype.destroy = function(x, y) {
+    this.grid[x][y] = 0;
+
+    this.wakeSurrounds(x, y);
 };
 
 Dust.prototype.clearBlacklist = function() {
