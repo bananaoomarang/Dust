@@ -12,7 +12,8 @@ var SAND = 1,
     FIRE = 4,
     WATER = 8,
     SOLID = 16,
-    RESTING = 32;
+    RESTING = 32,
+    BURNING = 64;
 
 function Dust() {
     var self = this;
@@ -61,7 +62,8 @@ function Dust() {
         },
         oil: {
             color: [5, 4, 1, 1.0],
-            friction: 1
+            friction: 1,
+            burnable: true
         },
         fire: {
             color: [10, 5, 0, 1.0],
@@ -121,12 +123,37 @@ Dust.prototype.update = function(dt) {
                 this.move(x, ry, x, ry + 1);
             } else if(this.grid[x + xDir][ry + 1] === 0) {
                 this.move(x, ry, x + xDir, ry + 1);
+            } else if(this.grid[x - xDir][ry + 1] === 0) {
+                this.move(x, ry, x - xDir, ry + 1);
             } else {
                  // Check if the particle should be RESTING
                 if(this.shouldLieDown(x, ry)) {
                     this.grid[x][ry] |= RESTING;
                 }
             }
+
+            // Burn baby burn
+            if(d & FIRE || d & BURNING) {
+                var n = this.grid[x][ry - 1],
+                    ne = this.grid[x + 1][ry - 1],
+                    e = this.grid[x + 1][ry],
+                    se = this.grid[x + 1][ry + 1],
+                    s = this.grid[x][ry + 1],
+                    sw = this.grid[x - 1][ry + 1],
+                    w = this.grid[x - 1][ry],
+                    nw = this.grid[x - 1][ry - 1];
+
+                if(n & OIL) this.grid[x][ry - 1] |= BURNING;
+                if(ne & OIL) this.grid[x + 1][ry - 1] |= BURNING;
+                if(e & OIL) this.grid[x + 1][ry] |= BURNING;
+                if(se & OIL) this.grid[x + 1][ry + 1] |= BURNING;
+                if(s & OIL) this.grid[x][ry + 1] |= BURNING;
+                if(sw & OIL) this.grid[x - 1][ry + 1] |= BURNING;
+                if(w & OIL) this.grid[x - 1][ry] |= BURNING;
+                if(nw & OIL) this.grid[x - 1][ry - 1] |= BURNING;
+            }
+
+            if(d & BURNING) this.grid[x][ry] = 0;
         }
     }
 
@@ -247,7 +274,7 @@ Dust.prototype.spawnDust = function(x, y, type) {
                     if(this.grid[s.x][s.y] !== 0) {
                         this.dustCount--;
                         this.grid[s.x][s.y] = s.type;
-                        this.wakeSurrounds(s);
+                        this.wakeSurrounds(s.x, s.y);
                     }
                 }
             }
@@ -304,19 +331,12 @@ Dust.prototype.move = function(ox, oy, nx, ny) {
 
 // Wakes the surrounding particles
 Dust.prototype.wakeSurrounds = function(x, y) {
-    var n = new Vector(x, y - 1),
-        e = new Vector(x + 1, y),
-        s = new Vector(x, y + 1),
-        w = new Vector(x - 1, y),
-        se = new Vector(x + 1, y + 1),
-        sw = new Vector(x - 1, y + 1);
-
-    if(this.grid[n.x][n.y] & RESTING) this.grid[n.x][n.y] ^= RESTING;
-    if(this.grid[e.x][e.y] & RESTING) this.grid[e.x][e.y] ^= RESTING;
-    if(this.grid[s.x][s.y] & RESTING) this.grid[s.x][s.y] ^= RESTING;
-    if(this.grid[w.x][w.y] & RESTING) this.grid[w.x][w.y] ^= RESTING;
-    if(this.grid[se.x][se.y] & RESTING) this.grid[se.x][se.y] ^= RESTING;
-    if(this.grid[sw.x][sw.y] & RESTING) this.grid[sw.x][sw.y] ^= RESTING;
+    if(this.grid[x][y - 1] & RESTING) this.grid[x][y - 1] ^= RESTING;
+    if(this.grid[x + 1][y] & RESTING) this.grid[x + 1][y] ^= RESTING;
+    if(this.grid[x][y + 1] & RESTING) this.grid[x][y + 1] ^= RESTING;
+    if(this.grid[x - 1][y] & RESTING) this.grid[x - 1][y] ^= RESTING;
+    if(this.grid[x + 1][y + 1] & RESTING) this.grid[x + 1][y + 1] ^= RESTING;
+    if(this.grid[x - 1][y + 1] & RESTING) this.grid[x - 1][y + 1] ^= RESTING;
 };
 
 // Checks if this particle needs a nap
