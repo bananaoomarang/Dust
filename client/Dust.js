@@ -11,9 +11,10 @@ var SAND = 1,
     OIL = 2,
     FIRE = 4,
     WATER = 8,
-    SOLID = 16,
-    RESTING = 32,
-    BURNING = 64;
+    STEAM = 16,
+    SOLID = 32,
+    RESTING = 64,
+    BURNING = 128;
 
 function Dust() {
     var self = this;
@@ -58,22 +59,29 @@ function Dust() {
     this.materials = {
         sand: {
             color: [9, 7, 2],
-            friction: 0.99
+            friction: 0.99,
+            density: 10
         },
         oil: {
             color: [5, 4, 1],
-            friction: 1
+            friction: 1,
+            density: 5
         },
         fire: {
             color: [10, 5, 0],
-            friction: 1
+            friction: 1,
+            desity: 0
         },
         water: {
             color: [0, 5, 10],
-            friction: 1
+            friction: 1,
+            density: 6
         },
         solid: {
             color: [0, 0, 0]
+        },
+        space: {
+            density: 0
         }
     };
 
@@ -109,6 +117,7 @@ Dust.prototype.update = function(dt) {
             var d = this.grid[x][ry],
                 m = this.getMaterial(d),
                 xDir = Math.round(Math.random()) < 0.5 ? 1 : -1;
+
             
             if(d === 0) continue;
 
@@ -136,6 +145,11 @@ Dust.prototype.update = function(dt) {
                 this.infect(x, ry, BURNING, BURNING);
             }
 
+
+            if(m.density < this.getMaterial(this.grid[x][ry - 1]).density) {
+                this.swap(x, ry, x, ry - 1);
+            }
+
             if(d & RESTING) continue;
 
             if(this.grid[x][ry + 1] === 0) {
@@ -150,7 +164,6 @@ Dust.prototype.update = function(dt) {
                     this.grid[x][ry] |= RESTING;
                 }
             }
-
         }
     }
 
@@ -277,7 +290,7 @@ Dust.prototype.spawnDust = function(x, y, type) {
                 if(s.x > 0 && s.x < this.WIDTH && s.y > 0 && s.y < this.HEIGHT) {
                     if(this.grid[s.x][s.y] !== 0) {
                         this.dustCount--;
-                        this.destroy(this.grid[s.x][s.y]);
+                        this.destroy(spawnX, spawnY);
                         this.wakeSurrounds(s.x, s.y);
                     }
                 }
@@ -307,6 +320,7 @@ Dust.prototype.getType = function(typeString) {
 };
 
 Dust.prototype.getMaterial = function(s) {
+    if(s === 0)   return this.materials.space;
     if(s & SAND)  return this.materials.sand;
     if(s & OIL)   return this.materials.oil;
     if(s & FIRE)  return this.materials.fire;
@@ -333,6 +347,17 @@ Dust.prototype.move = function(ox, oy, nx, ny) {
     this.wakeSurrounds(ox, oy);
 };
 
+Dust.prototype.swap = function(x1, y1, x2, y2) {
+    var d1 = this.grid[x1][y1];
+    var d2 = this.grid[x2][y2];
+
+    this.grid[x1][y1] = d2;
+    this.grid[x2][y2] = d1;
+    
+    this.blacklist[x1][y1] = true;
+    this.blacklist[x2][y2] = true;
+};
+
 // Wakes the surrounding particles
 Dust.prototype.wakeSurrounds = function(x, y) {
     if(this.grid[x][y - 1] & RESTING) this.grid[x][y - 1] ^= RESTING;
@@ -356,9 +381,6 @@ Dust.prototype.shouldLieDown = function(x, y) {
 };
 
 Dust.prototype.destroy = function(x, y) {
-    console.log('x', x);
-    console.log('y', y);
-    console.log('grid', this.grid);
     this.grid[x][y] = 0;
 
     this.wakeSurrounds(x, y);
