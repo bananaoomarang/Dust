@@ -106,7 +106,8 @@ Dust.prototype.update = function(dt) {
             ry = (ry + yIncrement) % (this.grid.length - 1);
             
             var d = this.grid[x][ry],
-                m = this.getMaterial(d);
+                m = this.getMaterial(d),
+                xDir = Math.round(Math.random()) < 0.5 ? 1 : -1;
             
             if(d === 0) continue;
 
@@ -118,10 +119,8 @@ Dust.prototype.update = function(dt) {
 
             if(this.grid[x][ry + 1] === 0) {
                 this.move(x, ry, x, ry + 1);
-            } else if(this.grid[x + 1][ry + 1] === 0) {
-                this.move(x, ry, x + 1, ry + 1);
-            } else if(this.grid[x - 1][ry + 1] === 0) {
-                this.move(x, ry, x - 1, ry + 1);
+            } else if(this.grid[x + xDir][ry + 1] === 0) {
+                this.move(x, ry, x + xDir, ry + 1);
             } else {
                  // Check if the particle should be RESTING
                 if(this.shouldLieDown(x, ry)) {
