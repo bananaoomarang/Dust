@@ -30,8 +30,7 @@ function Dust() {
     this.projectionMatrix = makeProjectionMatrix(this.WIDTH, this.HEIGHT);
     this.modelViewMatrix = [];
     
-    this.uProjectionMatrix = null;
-    this.uModelViewMatrix = null;
+    this.modelViewProjectionMatrix = null;
     this.setUniforms();
 
     this.sandVertexArray = new Float32Array(this.MAX_DUST * 3 * 6);
@@ -52,6 +51,7 @@ function Dust() {
     this.gl.vertexAttribPointer(this.colorAttribute, 1, this.gl.FLOAT, false, 12, 8);
 
     this.grid = new Array2D(this.WIDTH, this.HEIGHT);
+    this.blacklist = new Array2D(this.WIDTH, this.HEIGHT);
     this.dustCount = 0;
 
     this.materials = {
@@ -98,14 +98,13 @@ Dust.prototype.getGL = function() {
 };
 
 Dust.prototype.update = function(dt) {
-    this.blacklist = new Array2D(this.WIDTH, this.HEIGHT);
-
     for (var x = 1; x < this.grid.length - 1; x++) {
         var ry = Math.floor(Math.random() * 500)  % (this.grid.length -1),
             yIncrement = 2;
 
         for (var y = this.grid[x].length - 1; y > 1; y--) {
             ry = (ry + yIncrement) % (this.grid.length - 1);
+            
             var d = this.grid[x][ry],
                 m = this.getMaterial(d);
             
@@ -117,36 +116,22 @@ Dust.prototype.update = function(dt) {
 
             if(this.blacklist[x][ry]) continue;
 
-            var n = new Vector(x, ry - 1),
-                e = new Vector(x + 1, ry),
-                s = new Vector(x, ry + 1),
-                w = new Vector(x - 1, ry),
-                se = new Vector(x + 1, ry + 1),
-                sw = new Vector(x - 1, ry + 1);
-
-            if(!this.sandCollides(s)) {
-                this.move(new Vector(x, ry), s);
-            } else if(!this.sandCollides(se)) {
-                this.move(new Vector(x, ry), se);
-            } else if(!this.sandCollides(sw)) {
-                this.move(new Vector(x, ry), sw);
+            if(this.grid[x][ry + 1] === 0) {
+                this.move(x, ry, x, ry + 1);
+            } else if(this.grid[x + 1][ry + 1] === 0) {
+                this.move(x, ry, x + 1, ry + 1);
+            } else if(this.grid[x - 1][ry + 1] === 0) {
+                this.move(x, ry, x - 1, ry + 1);
             } else {
-                // Check if the particle should be RESTING
-                var bellow = new Vector(x, ry);
-
-                while(bellow.y <= this.HEIGHT) {
-                    if(this.grid[bellow.x][bellow.y] === 0 && this.sandCollides(bellow)) {
-                        this.grid[x][ry] = SAND;
-                        this.grid[x][ry] |= RESTING;
-                        break;
-                    } else if(this.grid[bellow.x][bellow.y] === 0) {
-                        break;
-                    }
-                    bellow.y++;
+                 // Check if the particle should be RESTING
+                if(this.shouldLieDown(x, ry)) {
+                    this.grid[x][ry] |= RESTING;
                 }
             }
         }
     }
+
+    this.clearBlacklist();
 };
 
 
@@ -308,24 +293,24 @@ Dust.prototype.surrounded = function(v) {
         return false;
 };
 
-Dust.prototype.move = function(o, n) {
-    var d = this.grid[o.x][o.y];
+Dust.prototype.move = function(ox, oy, nx, ny) {
+    var d = this.grid[ox][oy];
 
-    this.grid[o.x][o.y] = 0;
-    this.grid[n.x][n.y] = d;
-    this.blacklist[n.x][n.y] = true;
+    this.grid[ox][oy] = 0;
+    this.grid[nx][ny] = d;
+    this.blacklist[nx][ny] = true;
 
-    this.wakeSurrounds(o);
+    this.wakeSurrounds(ox, oy);
 };
 
 // Wakes the surrounding particles
-Dust.prototype.wakeSurrounds = function(v) {
-    var n = new Vector(v.x, v.y - 1),
-        e = new Vector(v.x + 1, v.y),
-        s = new Vector(v.x, v.y + 1),
-        w = new Vector(v.x - 1, v.y),
-        se = new Vector(v.x + 1, v.y + 1),
-        sw = new Vector(v.x - 1, v.y + 1);
+Dust.prototype.wakeSurrounds = function(x, y) {
+    var n = new Vector(x, y - 1),
+        e = new Vector(x + 1, y),
+        s = new Vector(x, y + 1),
+        w = new Vector(x - 1, y),
+        se = new Vector(x + 1, y + 1),
+        sw = new Vector(x - 1, y + 1);
 
     if(this.grid[n.x][n.y] & RESTING) this.grid[n.x][n.y] ^= RESTING;
     if(this.grid[e.x][e.y] & RESTING) this.grid[e.x][e.y] ^= RESTING;
@@ -333,6 +318,26 @@ Dust.prototype.wakeSurrounds = function(v) {
     if(this.grid[w.x][w.y] & RESTING) this.grid[w.x][w.y] ^= RESTING;
     if(this.grid[se.x][se.y] & RESTING) this.grid[se.x][se.y] ^= RESTING;
     if(this.grid[sw.x][sw.y] & RESTING) this.grid[sw.x][sw.y] ^= RESTING;
+};
+
+// Checks if this particle needs a nap
+Dust.prototype.shouldLieDown = function(x, y) {
+    while(y <= this.HEIGHT) {
+        if(this.grid[x][y] & SOLID) 
+            return true;
+        else if(this.grid[x][y] === 0) 
+            return false;
+        
+        y++;
+    }
+};
+
+Dust.prototype.clearBlacklist = function() {
+    for (var x = 0; x < this.blacklist.length; x++) {
+        for (var y = 0; y < this.blacklist[x].length; y++) {
+            this.blacklist[x][y] = false;
+        }
+    }
 };
 
 // If a solid exists here, it will be sandified
