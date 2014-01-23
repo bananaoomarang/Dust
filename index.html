@@ -1,6 +1,7 @@
 <html>
     <head>
-        <link rel="stylesheet" href="style/style.css" />
+        <script src="/socket.io/socket.io.js"></script>
+        <link rel="stylesheet" href="/style/style.css" />
     </head>
     <body>
         <h1 id="title">Dust</h1>
@@ -9,11 +10,12 @@
         <div id="canvainer"></div>
 
         <form id="menu">
-            <input type="radio" name="dustType" value="sand" checked>Sand
-            <input type="radio" name="dustType" value="oil">Oil
-            <input type="radio" name="dustType" value="fire">Fire
-            <input type="radio" name="dustType" value="water">Water
-            <input type="radio" name="dustType" value="eraser">Eraser
+            <input class="menu-item" type="radio" name="dustType" value="sand" checked>Sand</br>
+            <input class="menu-item" type="radio" name="dustType" value="oil">Oil</br>
+            <input class="menu-item" type="radio" name="dustType" value="fire">Fire</br>
+            <input class="menu-item" type="radio" name="dustType" value="water">Water</br>
+            <input class="menu-item" type="radio" name="dustType" value="solid">Solid</br>
+            <input class="menu-item" type="radio" name="dustType" value="eraser">eraser
         </form>
 
         <script src="bundle.js"></script>

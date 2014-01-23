@@ -2,6 +2,7 @@ body {
     background-color: #f0f0f0;
     margin: 0px;
     overflow: hidden;
+    text-align: center;
 }
 
 #canvainer {
@@ -15,7 +16,12 @@ body {
 
 #menu {
     width: 200px;
+    height: 250px;
     float: right;
     margin-top: -500px;
     margin-right: 100px;
+}
+
+.menu-item {
+    float: left;
 }
