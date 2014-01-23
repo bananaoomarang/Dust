@@ -24,7 +24,7 @@ function Dust() {
 
     this.WIDTH  = $('#canvainer').width();
     this.HEIGHT = $('#canvainer').height();
-    this.MAX_DUST = 80000;
+    this.MAX_DUST = 100000;
 
     this.gl = this.getGL();
     this.shaderProgram = this.getShaderProgram(vertShader, fragShader);
@@ -252,6 +252,8 @@ Dust.prototype.draw = function() {
                 this.sandVertexArray[offset + 17] = packColor(color);
 
                 vertexCount++;
+            } else {
+                console.log('adfadf');
             }
         }
     }
@@ -260,8 +262,8 @@ Dust.prototype.draw = function() {
     this.gl.drawArrays(this.gl.TRIANGLES, 0, vertexCount * 6);
 };
 
-Dust.prototype.sandCollides = function(s) {
-    if(this.grid[s.x][s.y] !== 0) 
+Dust.prototype.sandCollides = function(x, y) {
+    if(this.grid[x][y] !== 0) 
         return true;
     else 
         return false;
@@ -282,16 +284,15 @@ Dust.prototype.drawSelection = function(x, y, w, h) {
 Dust.prototype.spawnRect = function(x, y, w, h) {
     for(var i = x; i < (x + w); i++) {
         for(var j = y; j < (y + h); j++) {
-            this.grid[i][j] |= SOLID;
+            if(!this.sandCollides(i, j)) {
+                this.grid[i][j] |= SOLID;
+                this.dustCount++;
+            }
         }
     }
 };
 
 Dust.prototype.spawnDust = function(x, y, type) {
-    if(this.dustCount >= this.MAX_DUST) {
-        return;
-    }
-
     var n = 20,
         area = 10;
 
@@ -299,6 +300,8 @@ Dust.prototype.spawnDust = function(x, y, type) {
     y -= area / 2;
 
     if(x < 0 || y < 0 || (x + area) > this.WIDTH || (y + area) > this.HEIGHT) return;
+
+    if(this.dustCount + 50 >= this.MAX_DUST && type !== 'eraser') return;
 
     for (var offX = 0; offX < area; offX++) {
         for(var offY = 0; offY < area; offY++) {
@@ -311,7 +314,7 @@ Dust.prototype.spawnDust = function(x, y, type) {
             s.type = this.getType(type);
 
             if(s.type !== 0) {
-                if(!this.sandCollides(s)) {
+                if(!this.sandCollides(s.x, s.y)) {
                     this.grid[s.x][s.y] = s.type;
                     this.dustCount++;
                 }
@@ -332,7 +335,7 @@ Dust.prototype.spawnDust = function(x, y, type) {
 // Returns numerical code for material type
 Dust.prototype.getType = function(typeString) {
     switch(typeString) {
-        case 0: // eraser
+        case 'eraser':
             return 0;
         case 'sand':
             return SAND;
