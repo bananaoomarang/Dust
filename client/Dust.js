@@ -10,11 +10,12 @@ module.exports = Dust;
 var SAND = 1,
     OIL = 2,
     FIRE = 4,
-    WATER = 8,
-    STEAM = 16,
-    SOLID = 32,
-    RESTING = 64,
-    BURNING = 128;
+    LAVA = 8,
+    WATER = 16,
+    STEAM = 32,
+    SOLID = 64,
+    RESTING = 128,
+    BURNING = 256;
 
 function Dust() {
     var self = this;
@@ -78,7 +79,7 @@ function Dust() {
             density: 6
         },
         steam: {
-            color: [4, 4, 4],
+            color: [6, 6, 6],
             density: -1
         },
         solid: {
@@ -135,10 +136,15 @@ Dust.prototype.update = function(dt) {
             
             if(d & BURNING && Math.random() > 0.8) this.destroy(x, ry);
 
-            // Chance that steam will condense
-            if(d & STEAM && Math.random() > 0.9999) {
-                this.grid[x][ry] |= WATER;
-                this.grid[x][ry] ^= STEAM;
+            // Chance that steam will condense + it will condense if it's surrounded by steam
+            if(d & STEAM) {
+                if(Math.random() > 0.9999) {
+                    this.grid[x][ry] |= WATER;
+                    this.grid[x][ry] ^= STEAM;
+                } else if(this.surrounded(x, ry)) {
+                    this.grid[x][ry] |= WATER;
+                    this.grid[x][ry] ^= STEAM;
+                }
             }
 
             // Burn baby burn
@@ -152,8 +158,10 @@ Dust.prototype.update = function(dt) {
             // Water baby... errr.... Water?
             if(d & WATER) {
                 // Put out fires
-                //this.runOnSurrounds(x, ry, FIRE, this.destroy);
-                //this.infect(x, ry, BURNING, BURNING);
+                if(Math.random() > 0.5) {
+                    this.runOnSurrounds(x, ry, FIRE, this.destroy);
+                    this.infect(x, ry, BURNING, BURNING);
+                }
             }
 
 
@@ -336,12 +344,13 @@ Dust.prototype.getMaterial = function(s) {
     if(s & WATER) return this.materials.water;
     if(s & SOLID) return this.materials.solid;
     if(s & STEAM) return this.materials.steam;
+    if(s & LAVA) return this.materials.steam;
 };
 
 // Returns true if the particle is surrounded by itself
-Dust.prototype.surrounded = function(v) {
-    if(this.grid[v.x][v.y] === (this.grid[v.x + 1][v.y] && this.grid[v.x - 1][v.y] && this.grid[v.x][v.y + 1] && 
-       this.grid[v.x][v.y - 1] && this.grid[v.x + 1][v.y + 1] && this.grid[v.x + 1][v.y - 1] && this.grid[v.x - 1][v.y + 1] && this.grid[v.x - 1][v.y - 1]))
+Dust.prototype.surrounded = function(x, y) {
+    if(this.grid[x][y] === (this.grid[x + 1][y] && this.grid[x - 1][y] && this.grid[x][y + 1] && 
+       this.grid[x][y - 1] && this.grid[x + 1][y + 1] && this.grid[x + 1][y - 1] && this.grid[x - 1][y + 1] && this.grid[x - 1][y - 1]))
         return true;
     else
         return false;
@@ -380,11 +389,14 @@ Dust.prototype.wakeSurrounds = function(x, y) {
 
 // Checks if this particle needs a nap
 Dust.prototype.shouldLieDown = function(x, y) {
+    if(!this.surrounded(x, y)) return false;
+
     while(y <= this.HEIGHT) {
-        if(this.grid[x][y] & SOLID) 
+        if(this.grid[x][y] & SOLID) {
             return true;
-        else if(this.grid[x][y] === 0) 
+        } else if(this.grid[x][y] === 0) {
             return false;
+        }
         
         y++;
     }
