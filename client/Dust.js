@@ -121,31 +121,21 @@ Dust.prototype.update = function(dt) {
             }
             
             if(d & BURNING && Math.random() > 0.8) this.destroy(x, ry);
-            
+
             // Burn baby burn
             if(d & FIRE || d & BURNING) {
-                var n = this.grid[x][ry - 1],
-                    ne = this.grid[x + 1][ry - 1],
-                    e = this.grid[x + 1][ry],
-                    se = this.grid[x + 1][ry + 1],
-                    s = this.grid[x][ry + 1],
-                    sw = this.grid[x - 1][ry + 1],
-                    w = this.grid[x - 1][ry],
-                    nw = this.grid[x - 1][ry - 1];
-
                 if(Math.random() > 0.5) {
-                    if(n & OIL) this.grid[x][ry - 1] |= BURNING;
-                    if(ne & OIL) this.grid[x + 1][ry - 1] |= BURNING;
-                    if(e & OIL) this.grid[x + 1][ry] |= BURNING;
-                    if(se & OIL) this.grid[x + 1][ry + 1] |= BURNING;
-                    if(s & OIL) this.grid[x][ry + 1] |= BURNING;
-                    if(sw & OIL) this.grid[x - 1][ry + 1] |= BURNING;
-                    if(w & OIL) this.grid[x - 1][ry] |= BURNING;
-                    if(nw & OIL) this.grid[x - 1][ry - 1] |= BURNING;
+                    this.infect(x, ry, OIL, BURNING);
                 }
             }
 
- 
+            // Water baby... errr.... Water?
+            if(d & WATER) {
+                // Put out fires
+                this.runOnSurrounds(x, ry, FIRE, this.destroy);
+                this.infect(x, ry, BURNING, BURNING);
+            }
+
             if(d & RESTING) continue;
 
             if(this.grid[x][ry + 1] === 0) {
@@ -366,9 +356,54 @@ Dust.prototype.shouldLieDown = function(x, y) {
 };
 
 Dust.prototype.destroy = function(x, y) {
+    console.log('x', x);
+    console.log('y', y);
+    console.log('grid', this.grid);
     this.grid[x][y] = 0;
 
     this.wakeSurrounds(x, y);
+};
+
+// 'Infects's' surrounding particles, toggling the second flag providing first is set
+Dust.prototype.infect = function(x, y, flagSet, flagToToggle) {
+    var n = this.grid[x][y - 1],
+        ne = this.grid[x + 1][y - 1],
+        e = this.grid[x + 1][y],
+        se = this.grid[x + 1][y + 1],
+        s = this.grid[x][y + 1],
+        sw = this.grid[x - 1][y + 1],
+        w = this.grid[x - 1][y],
+        nw = this.grid[x - 1][y - 1];
+
+    if(n & flagSet) this.grid[x][y - 1] ^= flagToToggle;
+    if(ne & flagSet) this.grid[x + 1][y - 1] ^= flagToToggle;
+    if(e & flagSet) this.grid[x + 1][y] ^= flagToToggle;
+    if(se & flagSet) this.grid[x + 1][y + 1] ^= flagToToggle;
+    if(s & flagSet) this.grid[x][y + 1] ^= flagToToggle;
+    if(sw & flagSet) this.grid[x - 1][y + 1] ^= flagToToggle;
+    if(w & flagSet) this.grid[x - 1][y] ^= flagToToggle;
+    if(nw & flagSet) this.grid[x - 1][y - 1] ^= flagToToggle;
+};
+
+// Runs a function on surrounding particles providing a flag is set
+Dust.prototype.runOnSurrounds = function(x, y, flag, f) {
+    var n = this.grid[x][y - 1],
+        ne = this.grid[x + 1][y - 1],
+        e = this.grid[x + 1][y],
+        se = this.grid[x + 1][y + 1],
+        s = this.grid[x][y + 1],
+        sw = this.grid[x - 1][y + 1],
+        w = this.grid[x - 1][y],
+        nw = this.grid[x - 1][y - 1];
+
+    if(n & flag)  f.call(this, x, y - 1);
+    if(ne & flag) f.call(this, x + 1, y - 1);
+    if(e & flag)  f.call(this, x + 1, y);
+    if(se & flag) f.call(this, x + 1, y + 1);
+    if(s & flag)  f.call(this, x, y + 1);
+    if(sw & flag) f.call(this, x - 1, y + 1);
+    if(w & flag)  f.call(this, x - 1, y);
+    if(nw & flag) f.call(this, x - 1, y - 1);
 };
 
 Dust.prototype.clearBlacklist = function() {
