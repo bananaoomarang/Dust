@@ -66,6 +66,7 @@ function Dust() {
         oil: {
             color: [5, 4, 1],
             friction: 1,
+            liquid: true,
             density: 5
         },
         fire: {
@@ -76,6 +77,7 @@ function Dust() {
         water: {
             color: [0, 5, 10],
             friction: 1,
+            liquid: true,
             density: 6
         },
         steam: {
@@ -173,12 +175,18 @@ Dust.prototype.update = function(dt) {
 
             if(this.grid[x][ry + 1] === 0) {
                 this.move(x, ry, x, ry + 1);
-            } else if(this.grid[x + xDir][ry + 1] === 0) {
-                this.move(x, ry, x + xDir, ry + 1);
+            } 
+
+            if(m.liquid) {
+                if(this.grid[x + xDir][ry] === 0) this.move(x, ry, x + xDir, ry);
             } else {
-                 // Check if the particle should be RESTING
-                if(this.shouldLieDown(x, ry)) {
-                    this.grid[x][ry] |= RESTING;
+                if(this.grid[x + xDir][ry + 1] === 0) {
+                    this.move(x, ry, x + xDir, ry + 1);
+                } else {
+                    // Check if the particle should be RESTING
+                    if(this.shouldLieDown(x, ry)) {
+                        this.grid[x][ry] |= RESTING;
+                    }
                 }
             }
         }
@@ -375,6 +383,37 @@ Dust.prototype.swap = function(x1, y1, x2, y2) {
     
     this.blacklist[x1][y1] = true;
     this.blacklist[x2][y2] = true;
+};
+
+Dust.prototype.flowOut = function(x, y) {
+    var xOrig = x;
+
+    while(x < this.WIDTH) {
+        if(this.grid[x][y] === 0) break;
+        if(this.grid[x][y] & SOLID) break;
+
+        x++;
+    }
+
+    if(this.grid[x][y] === 0) {
+        console.log('edge', x);
+        this.grid[x][y] |= WATER;
+        this.destroy(xOrig, y);
+    }
+
+    x = xOrig - 1;
+
+    while(x > 0) {
+        if(this.grid[x][y] === 0) break;
+        if(this.grid[x][y] & SOLID) break;
+
+        x--;
+    }
+
+    if(this.grid[x][y] === 0) {
+        this.grid[x][y] |= WATER;
+        this.destroy(xOrig - 1, y);
+    }
 };
 
 // Wakes the surrounding particles
