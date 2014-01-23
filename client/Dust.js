@@ -453,6 +453,7 @@ Dust.prototype.shouldLieDown = function(x, y) {
 
 Dust.prototype.destroy = function(x, y) {
     this.grid[x][y] = 0;
+    this.dustCount--;
 
     this.wakeSurrounds(x, y);
 };
