@@ -77,6 +77,10 @@ function Dust() {
             friction: 1,
             density: 6
         },
+        steam: {
+            color: [4, 4, 4],
+            density: -1
+        },
         solid: {
             color: [0, 0, 0]
         },
@@ -131,23 +135,30 @@ Dust.prototype.update = function(dt) {
             
             if(d & BURNING && Math.random() > 0.8) this.destroy(x, ry);
 
+            // Chance that steam will condense
+            if(d & STEAM && Math.random() > 0.9999) {
+                this.grid[x][ry] |= WATER;
+                this.grid[x][ry] ^= STEAM;
+            }
+
             // Burn baby burn
             if(d & FIRE || d & BURNING) {
                 if(Math.random() > 0.5) {
                     this.infect(x, ry, OIL, BURNING);
+                    this.infect(x, ry, WATER, STEAM, WATER);
                 }
             }
 
             // Water baby... errr.... Water?
             if(d & WATER) {
                 // Put out fires
-                this.runOnSurrounds(x, ry, FIRE, this.destroy);
-                this.infect(x, ry, BURNING, BURNING);
+                //this.runOnSurrounds(x, ry, FIRE, this.destroy);
+                //this.infect(x, ry, BURNING, BURNING);
             }
 
 
             if(m.density < this.getMaterial(this.grid[x][ry - 1]).density) {
-                this.swap(x, ry, x, ry - 1);
+                if(Math.random() < 0.7) this.swap(x, ry, x, ry - 1);
             }
 
             if(d & RESTING) continue;
@@ -156,8 +167,6 @@ Dust.prototype.update = function(dt) {
                 this.move(x, ry, x, ry + 1);
             } else if(this.grid[x + xDir][ry + 1] === 0) {
                 this.move(x, ry, x + xDir, ry + 1);
-            } else if(this.grid[x - xDir][ry + 1] === 0) {
-                this.move(x, ry, x - xDir, ry + 1);
             } else {
                  // Check if the particle should be RESTING
                 if(this.shouldLieDown(x, ry)) {
@@ -326,6 +335,7 @@ Dust.prototype.getMaterial = function(s) {
     if(s & FIRE)  return this.materials.fire;
     if(s & WATER) return this.materials.water;
     if(s & SOLID) return this.materials.solid;
+    if(s & STEAM) return this.materials.steam;
 };
 
 // Returns true if the particle is surrounded by itself
@@ -387,7 +397,7 @@ Dust.prototype.destroy = function(x, y) {
 };
 
 // 'Infects's' surrounding particles, toggling the second flag providing first is set
-Dust.prototype.infect = function(x, y, flagSet, flagToToggle) {
+Dust.prototype.infect = function(x, y, flagSet, flagToToggle, flagToRemove) {
     var n = this.grid[x][y - 1],
         ne = this.grid[x + 1][y - 1],
         e = this.grid[x + 1][y],
@@ -405,6 +415,18 @@ Dust.prototype.infect = function(x, y, flagSet, flagToToggle) {
     if(sw & flagSet) this.grid[x - 1][y + 1] ^= flagToToggle;
     if(w & flagSet) this.grid[x - 1][y] ^= flagToToggle;
     if(nw & flagSet) this.grid[x - 1][y - 1] ^= flagToToggle;
+
+    // Remove an optional flag
+    if(typeof flagToRemove !== 'undefined') {
+        if(n & flagSet) this.grid[x][y - 1] &= ~flagToRemove;
+        if(ne & flagSet) this.grid[x + 1][y - 1] &= ~flagToRemove;
+        if(e & flagSet) this.grid[x + 1][y] &= ~flagToRemove;
+        if(se & flagSet) this.grid[x + 1][y + 1] &= ~flagToRemove;
+        if(s & flagSet) this.grid[x][y + 1] &= ~flagToRemove;
+        if(sw & flagSet) this.grid[x - 1][y + 1] &= ~flagToRemove;
+        if(w & flagSet) this.grid[x - 1][y] &= ~flagToRemove;
+        if(nw & flagSet) this.grid[x - 1][y - 1] &= ~flagToRemove;
+    }
 };
 
 // Runs a function on surrounding particles providing a flag is set
