@@ -102,11 +102,14 @@ function Dust() {
 
     // Walls
 
-    var width = 1;
-    this.spawnRect(0, 0, this.WIDTH, width);
-    this.spawnRect(0, 0, width, this.HEIGHT);
-    this.spawnRect(0, this.HEIGHT - width, this.WIDTH, width);
-    this.spawnRect(this.WIDTH - width, 0, width, this.HEIGHT);
+    //var width = 1;
+    //this.spawnRect(0, 0, this.WIDTH, width);
+    //this.spawnRect(0, 0, width, this.HEIGHT);
+    //this.spawnRect(0, this.HEIGHT - width, this.WIDTH, width);
+    //this.spawnRect(this.WIDTH - width, 0, width, this.HEIGHT);
+
+    this.rot = 0;
+    this.rabout = new Vector(-250, -250);
 }
 
 Dust.prototype.getGL = function() {
@@ -203,7 +206,6 @@ Dust.prototype.update = function(dt) {
     this.clearBlacklist();
 };
 
-
 Dust.prototype.draw = function() {
     var self = this;
 
@@ -212,6 +214,11 @@ Dust.prototype.draw = function() {
     var material,
         color,
         vertexCount = 0;
+
+    this.rot += 0.001;
+    this.mvRotate(this.rot, this.rabout);
+    this.mvpMatrix = matrixMultiply(this.modelViewMatrix, this.projectionMatrix);
+    this.gl.uniformMatrix3fv(this.uModelViewProjectionMatrix, false, this.mvpMatrix);
 
     for (var x = 0; x < this.grid.length; x++) {
         for (var y = 0; y < this.grid[x].length; y++) {
@@ -255,8 +262,6 @@ Dust.prototype.draw = function() {
                 this.sandVertexArray[offset + 17] = packColor(color);
 
                 vertexCount++;
-            } else {
-                console.log('adfadf');
             }
         }
     }
@@ -287,6 +292,24 @@ Dust.prototype.spawnRect = function(x, y, w, h, type) {
 
 Dust.prototype.spawnCircle = function(x, y, type, brushSize) {
     var radius = brushSize || 10;
+
+    //var originMatrix = makeTranslationMatrix(-250, -250),
+        //rotationMatrix = makeRotationMatrix(this.rot);
+    
+    //var matrix = matrixMultiply(originMatrix, rotationMatrix);
+    //matrix = matrixMultiply(matrix, makeTranslationMatrix(x, y));
+    //matrix = matrixMultiply(matrix, makeTranslationMatrix(0, 0));
+    //matrix = matrixMultiply(matrix, makeRotationMatrix(0));
+
+    //x = Math.round(matrix[6]);
+    //y = Math.round(matrix[7]);
+    //console.log(matrix);
+
+    var newX = (x - 250) * Math.cos(this.rot) - (y - 250) * Math.sin(this.rot);
+    var newY = (x - 250) * Math.sin(this.rot) + (y - 250) * Math.cos(this.rot);
+
+    x = Math.round(newX + 250);
+    y = Math.round(newY + 250);
 
     if((x - radius) < 0 || (y - radius) < 0 || (x + radius) > this.WIDTH || (y + radius) > this.HEIGHT) return;
 
@@ -571,6 +594,22 @@ Dust.prototype.mvScale = function(xs, ys) {
     this.modelViewMatrix[4] = ys;
 };
 
+Dust.prototype.mvRotate = function(angle, about) {
+    var c = Math.cos(angle),
+        s = Math.sin(angle);
+
+    var rotationMatrix = [
+        c, -s, 0,
+        s,  c, 0,
+        0,  0, 0
+    ];
+
+    var aboutMatrix = makeTranslationMatrix(about.x, about.y);
+
+    this.loadIdentity();
+    this.modelViewMatrix = matrixMultiply(aboutMatrix, rotationMatrix);
+};
+
 // Assorted functions
 function Array2D(w, h) {
     var array = [];
@@ -593,6 +632,24 @@ function makeProjectionMatrix(width, height) {
     ];
 }
 
+function makeTranslationMatrix(x, y) {
+    return [
+        1, 0, 0,
+        0, 1, 0,
+        x, y, 1
+    ];
+}
+
+function makeRotationMatrix(angle) {
+    var c = Math.cos(angle),
+        s = Math.sin(angle);
+
+    return [
+        c, -s, 0,
+        s,  c, 0,
+        0,  0, 1
+    ];
+}
 
 // Yeah I did steal this one. How did you know?
 function matrixMultiply(a, b) {
