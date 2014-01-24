@@ -179,18 +179,16 @@ Dust.prototype.update = function(dt) {
 
             if(d & RESTING) continue;
 
-            if(this.grid[x][ry + 1] === 0) {
+            if(this.grid[x][ry + 1] === 0)
                 this.move(x, ry, x, ry + 1);
-            } 
-
 
             if(m.liquid) {
                 if(this.grid[x + xDir][ry] === 0) this.move(x, ry, x + xDir, ry);
             } else {
                 if(this.grid[x + xDir][ry + 1] === 0) {
-                    if(d & SAND && Math.random() > 0.8) 
-                        this.grid[x][ry] = (SAND | RESTING);
-                    else
+                    if(this.grid[x][ry] & SAND && Math.random() > 0.8) 
+                        this.grid[x][ry] |= RESTING;
+                    else 
                         this.move(x, ry, x + xDir, ry + 1);
                 } else {
                     // Check if the particle should be RESTING
