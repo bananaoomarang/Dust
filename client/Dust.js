@@ -295,9 +295,9 @@ Dust.prototype.spawnCircle = function(x, y, type, brushSize) {
     var nType = this.getType(type);
 
     for(var r = radius; r > 0; r--) {
-        for(var i = 0; i < 2*Math.PI; i += 0.1) {
-            var spawnX = x + Math.round(r*Math.sin(i)),
-                spawnY = y + Math.round(r*Math.cos(i));
+        for(var i = 0; i < 2*Math.PI; i += 0.01) {
+            var spawnX = x + Math.floor(r*Math.sin(i)),
+                spawnY = y + Math.floor(r*Math.cos(i));
 
             if(nType !== 0) {
                 if(this.grid[spawnX][spawnY] === 0) this.dustCount++;
