@@ -188,7 +188,7 @@ Dust.prototype.update = function(dt) {
                 if(this.grid[x + xDir][ry] === 0) this.move(x, ry, x + xDir, ry);
             } else {
                 if(this.grid[x + xDir][ry + 1] === 0) {
-                    if(d & SAND && Math.random() > 1) 
+                    if(d & SAND && Math.random() > 0.8) 
                         this.grid[x][ry] = (SAND | RESTING);
                     else
                         this.move(x, ry, x + xDir, ry + 1);
