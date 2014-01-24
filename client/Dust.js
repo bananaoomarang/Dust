@@ -122,8 +122,11 @@ Dust.prototype.update = function(dt) {
         var ry = Math.floor(Math.random() * 500)  % (this.grid.length -1),
             yIncrement = 2;
 
-        for (var y = this.grid[x].length - 1; y > 1; y--) {
+        for (var y = this.grid[x].length; y > 0; y--) {
             ry = (ry + yIncrement) % (this.grid.length - 1);
+
+            // If we think we're gonna incur OOBE, get the HELL out of there.
+            if(ry === 0 || ry === this.grid[x].length) continue;
             
             var d = this.grid[x][ry],
                 m = this.getMaterial(d),
@@ -169,7 +172,6 @@ Dust.prototype.update = function(dt) {
                     this.infect(x, ry, BURNING, BURNING);
                 }
             }
-
 
             if(m.density < this.getMaterial(this.grid[x][ry - 1]).density) {
                 if(Math.random() < 0.7) this.swap(x, ry, x, ry - 1);
@@ -288,15 +290,16 @@ Dust.prototype.spawnRect = function(x, y, w, h, type) {
 Dust.prototype.spawnCircle = function(x, y, type, brushSize) {
     var radius = brushSize || 10;
 
-    if(x - radius < 0 || y - radius < 0 || (x + radius) > this.WIDTH || (y + radius) > this.HEIGHT) return;
+    if((x - radius) < 0 || (y - radius) < 0 || (x + radius) > this.WIDTH || (y + radius) > this.HEIGHT) return;
 
     if(this.dustCount + 50 >= this.MAX_DUST && type !== 'eraser') return;
+                
+    var nType = this.getType(type);
 
     for(var r = radius; r > 0; r--) {
         for(var i = 0; i < 2*Math.PI; i += 0.1) {
             var spawnX = x + Math.round(r*Math.sin(i)),
-                spawnY = y + Math.round(r*Math.cos(i)),
-                nType = this.getType(type);
+                spawnY = y + Math.round(r*Math.cos(i));
 
             if(nType !== 0) {
                 if(this.grid[spawnX][spawnY] === 0) this.dustCount++;

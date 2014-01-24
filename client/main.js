@@ -28,14 +28,16 @@ function main() {
                 var x = Math.round(e.pageX - offset.left);
                     y = Math.round(e.pageY - offset.top);
 
-                var type = $('input[name=dustType]:checked', '#menu').val();
-                DUST.spawnCircle(x, y, type);
+                var type = $('input[name=dustType]:checked', '#menu').val(),
+                    brushGirth = parseInt($('input[name=brushSize]', '#menu').val());
+                
+                DUST.spawnCircle(x, y, type, brushGirth);
 
                 $('canvas').mousemove(function(e) {
                     x = Math.round(e.pageX - offset.left);
                     y = Math.round(e.pageY - offset.top);
 
-                    DUST.spawnCircle(x, y, type);
+                    DUST.spawnCircle(x, y, type, brushGirth);
                 });
                 
                 $('canvas').mouseup(function(e) {
