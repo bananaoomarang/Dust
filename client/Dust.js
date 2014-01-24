@@ -87,7 +87,8 @@ function Dust() {
         },
         steam: {
             color: [6, 6, 6],
-            density: -1
+            density: -1,
+            liquid: true
         },
         solid: {
             color: [0, 0, 0]
@@ -96,8 +97,6 @@ function Dust() {
             density: 0
         }
     };
-
-    this.selectionBox = null;
 
     this.spawnRect(250, 200, 200, 20);
 
@@ -182,11 +181,15 @@ Dust.prototype.update = function(dt) {
                 this.move(x, ry, x, ry + 1);
             } 
 
+
             if(m.liquid) {
                 if(this.grid[x + xDir][ry] === 0) this.move(x, ry, x + xDir, ry);
             } else {
                 if(this.grid[x + xDir][ry + 1] === 0) {
-                    this.move(x, ry, x + xDir, ry + 1);
+                    if(d & SAND && Math.random() > 1) 
+                        this.grid[x][ry] = (SAND | RESTING);
+                    else
+                        this.move(x, ry, x + xDir, ry + 1);
                 } else {
                     // Check if the particle should be RESTING
                     if(this.shouldLieDown(x, ry)) {
@@ -269,63 +272,41 @@ Dust.prototype.sandCollides = function(x, y) {
         return false;
 };
 
-Dust.prototype.resizeSelection = function(w, h) {
-    this.selectionBox.resize(w, h);
-};
+Dust.prototype.spawnRect = function(x, y, w, h, type) {
+    var nType = this.getType(type) || SOLID;
 
-Dust.prototype.moveSelection = function(vec) {
-    this.selectionBox.move(vec);
-};
-
-Dust.prototype.drawSelection = function(x, y, w, h) {
-    this.selectionBox = new Rect(x, y, w, h);
-};
-
-Dust.prototype.spawnRect = function(x, y, w, h) {
     for(var i = x; i < (x + w); i++) {
         for(var j = y; j < (y + h); j++) {
             if(!this.sandCollides(i, j)) {
-                this.grid[i][j] |= SOLID;
+                this.grid[i][j] |= nType;
                 this.dustCount++;
             }
         }
     }
 };
 
-Dust.prototype.spawnDust = function(x, y, type) {
-    var n = 20,
-        area = 10;
+Dust.prototype.spawnCircle = function(x, y, type, brushSize) {
+    var radius = brushSize || 10;
 
-    x -= area / 2;
-    y -= area / 2;
-
-    if(x < 0 || y < 0 || (x + area) > this.WIDTH || (y + area) > this.HEIGHT) return;
+    if(x - radius < 0 || y - radius < 0 || (x + radius) > this.WIDTH || (y + radius) > this.HEIGHT) return;
 
     if(this.dustCount + 50 >= this.MAX_DUST && type !== 'eraser') return;
 
-    for (var offX = 0; offX < area; offX++) {
-        for(var offY = 0; offY < area; offY++) {
-            //var spawnX = Math.round(x + area*Math.random()),
-            //spawnY = Math.round(y + area*Math.random());
-            var spawnX = x + offX,
-                spawnY = y + offY;
+    for(var r = radius; r > 0; r--) {
+        for(var i = 0; i < 2*Math.PI; i += 0.1) {
+            var spawnX = x + Math.round(r*Math.sin(i)),
+                spawnY = y + Math.round(r*Math.cos(i)),
+                nType = this.getType(type);
 
-            var s = new Vector(spawnX, spawnY);
-            s.type = this.getType(type);
-
-            if(s.type !== 0) {
-                if(!this.sandCollides(s.x, s.y)) {
-                    this.grid[s.x][s.y] = s.type;
-                    this.dustCount++;
-                }
+            if(nType !== 0) {
+                if(this.grid[spawnX][spawnY] === 0) this.dustCount++;
+                this.grid[spawnX][spawnY] = nType;
             } else {
-                // Eraser
-                if(s.x > 0 && s.x < this.WIDTH && s.y > 0 && s.y < this.HEIGHT) {
-                    if(this.grid[s.x][s.y] !== 0) {
-                        this.dustCount--;
-                        this.destroy(spawnX, spawnY);
-                        this.wakeSurrounds(s.x, s.y);
-                    }
+                //Eraser
+                if(this.grid[spawnX][spawnY] !== 0) {
+                    this.dustCount--;
+                    this.destroy(spawnX, spawnY);
+                    this.wakeSurrounds(spawnX, spawnY);
                 }
             }
         }

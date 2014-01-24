@@ -29,47 +29,19 @@ function main() {
                     y = Math.round(e.pageY - offset.top);
 
                 var type = $('input[name=dustType]:checked', '#menu').val();
-                DUST.spawnDust(x, y, type);
+                DUST.spawnCircle(x, y, type);
 
                 $('canvas').mousemove(function(e) {
                     x = Math.round(e.pageX - offset.left);
                     y = Math.round(e.pageY - offset.top);
 
-                    DUST.spawnDust(x, y, type);
+                    DUST.spawnCircle(x, y, type);
                 });
                 
                 $('canvas').mouseup(function(e) {
                     $('canvas').unbind('mousemove');
                 });
                 break;
-            case 2:
-                var xOrig = Math.round(e.pageX - offset.left),
-                    yOrig = Math.round(e.pageY - offset.top),
-                    w = 0,
-                    h = 0;
-                
-                    DUST.drawSelection(xOrig, yOrig, 0, 0);
-
-                $('canvas').mousemove(function(e) {
-                    w = Math.abs(xOrig - Math.round(e.pageX - offset.left));
-                    h = Math.abs(yOrig - Math.round(e.pageY - offset.top - 20)); //No I'm not entirely clear why that -20 has to be there
-
-                    DUST.resizeSelection(w, h);
-                });
-
-                $('canvas').mouseup(function(e) {
-                    $('canvas').unbind('mousemove');
-
-                    DUST.selectionBox = null;
-
-                    DUST.spawnSolid(xOrig, yOrig, w, h);
-                });
-                break;
-            case 3:
-                x = Math.round(e.pageX - offset.left);
-                y = Math.round(e.pageY - offset.top);
-
-                DUST.sandifySolid(new Vector(x, y));
         }
     });
     
