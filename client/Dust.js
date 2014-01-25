@@ -56,6 +56,11 @@ function Dust() {
     this.grid = new Array2D(this.WIDTH, this.HEIGHT);
     this.blacklist = new Array2D(this.WIDTH, this.HEIGHT);
     this.dustCount = 0;
+    
+    this.rot = 0.0;
+    this.rabout = new Vector(-250, -250);
+
+    this.planets = [];
 
     this.materials = {
         sand: {
@@ -98,7 +103,8 @@ function Dust() {
         }
     };
 
-    this.spawnRect(250, 200, 200, 20);
+    this.spawnPlanet(250, 250, 50);
+    this.spawnPlanet(250, 100, 50);
 
     // Walls
 
@@ -108,8 +114,6 @@ function Dust() {
     //this.spawnRect(0, this.HEIGHT - width, this.WIDTH, width);
     //this.spawnRect(this.WIDTH - width, 0, width, this.HEIGHT);
 
-    this.rot = 0.0;
-    this.rabout = new Vector(-250, -250);
 }
 
 Dust.prototype.getGL = function() {
@@ -135,7 +139,6 @@ Dust.prototype.update = function(dt) {
             var d = this.grid[x][ry],
                 m = this.getMaterial(d),
                 xDir = Math.round(Math.random()) < 0.5 ? 1 : -1;
-
             
             if(d === 0) continue;
 
@@ -143,9 +146,33 @@ Dust.prototype.update = function(dt) {
             
             if(this.blacklist[x][ry]) continue;
             
-            var gravX = -Math.round(Math.sin(this.rot)),
-                gravY = Math.round(Math.cos(this.rot));
+            var gravX = 0,
+                gravY = 0,
+                velocity = new Vector(0, 0),
+                planets = false;
+
             
+            // Figure out which way down is ;)
+            if(this.planets.length > 0) {
+                for (var p = 0; p < this.planets.length; p++) {
+                    var planet = this.planets[p];
+
+                    var delta = new Vector(planet.x - x, planet.y - ry),
+                        direction = delta.normalized(),
+                        distance = Math.sqrt(Math.pow(delta.x, 2) + Math.pow(delta.y, 2));
+
+                    velocity.set(direction.x * (1 /distance), direction.y * (1 / distance));
+                    velocity.round();
+
+                    gravX += velocity.x;
+                    gravY += velocity.y;
+
+                }
+            } else {
+                gravX = -Math.round(Math.sin(this.rot));
+                gravY = Math.round(Math.cos(this.rot));
+            }
+
             if(d & FIRE) {
                 if(Math.random() > 0.8) this.grid[x][ry] |= BURNING;
             }
@@ -193,9 +220,9 @@ Dust.prototype.update = function(dt) {
                 if(this.grid[x + gravY * xDir][ry] === 0) this.move(x, ry, x + gravY * xDir, ry);
             } else {
                 if(this.grid[x + gravY * xDir][ry + gravY - gravX * xDir] === 0) {
-                    if(this.grid[x][ry] & SAND && Math.random() > 0.8) 
-                        this.grid[x][ry] |= RESTING;
-                    else 
+                    //if(this.grid[x][ry] & SAND && Math.random() > 0.8) 
+                        //this.grid[x][ry] |= RESTING;
+                    //else 
                         this.move(x, ry, x + gravY * xDir, ry + gravY - gravX * xDir);
                 } else {
                      //Check if the particle should be RESTING
@@ -304,7 +331,7 @@ Dust.prototype.spawnCircle = function(x, y, type, brushSize) {
 
     if((x - radius) < 0 || (y - radius) < 0 || (x + radius) > this.WIDTH || (y + radius) > this.HEIGHT) return;
 
-    if(this.dustCount + 50 >= this.MAX_DUST && type !== 'eraser') return;
+    if(this.dustCount + Math.round(Math.PI * Math.pow(radius, 2)) >= this.MAX_DUST && type !== 'eraser') return;
                 
     var nType = this.getType(type);
 
@@ -326,6 +353,33 @@ Dust.prototype.spawnCircle = function(x, y, type, brushSize) {
             }
         }
     }
+};
+
+Dust.prototype.spawnPlanet = function(x, y, radius) {
+    var newX = (x + this.rabout.x) * Math.cos(this.rot) - (y + this.rabout.y) * Math.sin(this.rot);
+    var newY = (x + this.rabout.x) * Math.sin(this.rot) + (y + this.rabout.y) * Math.cos(this.rot);
+
+    x = Math.round(newX - this.rabout.x);
+    y = Math.round(newY - this.rabout.y);
+
+    if((x - radius) < 0 || (y - radius) < 0 || (x + radius) > this.WIDTH || (y + radius) > this.HEIGHT) return;
+
+    if(this.dustCount + (Math.PI * Math.pow(radius, 2)) >= this.MAX_DUST) return;
+                
+    for(var r = radius; r > 0; r--) {
+        for(var i = 0; i < 2*Math.PI; i += 0.002) {
+            var spawnX = x + Math.floor(r*Math.sin(i)),
+                spawnY = y + Math.floor(r*Math.cos(i));
+
+            if(this.grid[spawnX][spawnY] === 0) this.dustCount++;
+            this.grid[spawnX][spawnY] = SOLID;
+        }
+    }
+
+    var planet = new Vector(x, y);
+    planet.radius = radius;
+
+    this.planets.push(planet);
 };
 
 // Returns numerical code for material type

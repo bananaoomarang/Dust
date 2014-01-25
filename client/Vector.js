@@ -3,7 +3,14 @@ module.exports = Vector;
 function Vector(x, y) {
     this.x = x;
     this.y = y;
+
+    return this;
 }
+
+Vector.prototype.set = function(x, y) {
+    this.x = x;
+    this.y = y;
+};
 
 Vector.prototype.add = function(vec) {
     this.x += vec.x;
@@ -39,4 +46,15 @@ Vector.prototype.scalar = function(s) {
 // Returns the opposite vector
 Vector.prototype.reverse = function() {
     return new Vector(this.x * -1, this.y * -1);
+};
+
+Vector.prototype.normalize = function() {
+    this.x = this.x / 1;
+    this.y = this.y / 1;
+
+    return this;
+};
+
+Vector.prototype.normalized = function() {
+    return new Vector(this.x / 1, this.y / 1);
 };
