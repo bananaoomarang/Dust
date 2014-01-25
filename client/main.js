@@ -59,6 +59,8 @@ function main() {
             fpsTimer.reset();
             frame = 0;
         }
+        
+        DUST.rot = (parseInt($('input[name=rotation]', '#menu').val())) / 180 * Math.PI;
 
         DUST.update(timer.getTime() / 1000);
 

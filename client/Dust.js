@@ -108,7 +108,7 @@ function Dust() {
     //this.spawnRect(0, this.HEIGHT - width, this.WIDTH, width);
     //this.spawnRect(this.WIDTH - width, 0, width, this.HEIGHT);
 
-    this.rot = 0;
+    this.rot = 0.0;
     this.rabout = new Vector(-250, -250);
 }
 
@@ -119,6 +119,7 @@ Dust.prototype.getGL = function() {
 
     return $('canvas').get(0).getContext('webgl');
 };
+
 
 Dust.prototype.update = function(dt) {
     for (var x = 1; x < this.grid.length - 1; x++) {
@@ -142,64 +143,70 @@ Dust.prototype.update = function(dt) {
             
             if(this.blacklist[x][ry]) continue;
             
-            if(d & FIRE) {
-                if(Math.random() > 0.8) this.grid[x][ry] |= BURNING;
-            }
+            //if(d & FIRE) {
+                //if(Math.random() > 0.8) this.grid[x][ry] |= BURNING;
+            //}
             
-            if(d & BURNING && Math.random() > 0.8) this.destroy(x, ry);
+            //if(d & BURNING && Math.random() > 0.8) this.destroy(x, ry);
 
             // Chance that steam will condense + it will condense if it's surrounded by steam
-            if(d & STEAM) {
-                if(Math.random() > 0.9999) {
-                    this.grid[x][ry] |= WATER;
-                    this.grid[x][ry] ^= STEAM;
-                } else if(this.surrounded(x, ry)) {
-                    this.grid[x][ry] |= WATER;
-                    this.grid[x][ry] ^= STEAM;
-                }
-            }
+            //if(d & STEAM) {
+                //if(Math.random() > 0.9999) {
+                    //this.grid[x][ry] |= WATER;
+                    //this.grid[x][ry] ^= STEAM;
+                //} else if(this.surrounded(x, ry)) {
+                    //this.grid[x][ry] |= WATER;
+                    //this.grid[x][ry] ^= STEAM;
+                //}
+            //}
 
             // Burn baby burn
-            if(d & FIRE || d & LAVA || d & BURNING) {
-                if(Math.random() > 0.5) {
-                    this.infect(x, ry, OIL, BURNING);
-                    this.infect(x, ry, WATER, STEAM, WATER);
-                }
-            }
+            //if(d & FIRE || d & LAVA || d & BURNING) {
+                //if(Math.random() > 0.5) {
+                    //this.infect(x, ry, OIL, BURNING);
+                    //this.infect(x, ry, WATER, STEAM, WATER);
+                //}
+            //}
 
             // Water baby... errr.... Water?
-            if(d & WATER) {
-                // Put out fires
-                if(Math.random() > 0.5) {
-                    this.runOnSurrounds(x, ry, FIRE, this.destroy);
-                    this.infect(x, ry, BURNING, BURNING);
-                }
-            }
+            //if(d & WATER) {
+                 //Put out fires
+                //if(Math.random() > 0.5) {
+                    //this.runOnSurrounds(x, ry, FIRE, this.destroy);
+                    //this.infect(x, ry, BURNING, BURNING);
+                //}
+            //}
 
-            if(m.density < this.getMaterial(this.grid[x][ry - 1]).density) {
-                if(Math.random() < 0.7) this.swap(x, ry, x, ry - 1);
-            }
+            //if(m.density < this.getMaterial(this.grid[x][ry - 1]).density) {
+                //if(Math.random() < 0.7) this.swap(x, ry, x, ry - 1);
+            //}
 
-            if(d & RESTING) continue;
+            //if(d & RESTING) continue;
+            
+            //var newX = (x + this.rabout.x) * Math.cos(0.1 + Math.PI) - (ry + this.rabout.y) * Math.sin(0.1 + Math.PI),
+                //newY = (x + this.rabout.x) * Math.sin(0.1 + Math.PI) + (ry + this.rabout.y) * Math.cos(0.1 + Math.PI);
 
-            if(this.grid[x][ry + 1] === 0)
-                this.move(x, ry, x, ry + 1);
+            var gravX = -Math.round(Math.sin(this.rot)),
+                gravY = Math.round(Math.cos(this.rot));
 
-            if(m.liquid) {
-                if(this.grid[x + xDir][ry] === 0) this.move(x, ry, x + xDir, ry);
-            } else {
-                if(this.grid[x + xDir][ry + 1] === 0) {
-                    if(this.grid[x][ry] & SAND && Math.random() > 0.8) 
-                        this.grid[x][ry] |= RESTING;
-                    else 
-                        this.move(x, ry, x + xDir, ry + 1);
-                } else {
-                    // Check if the particle should be RESTING
-                    if(this.shouldLieDown(x, ry)) {
-                        this.grid[x][ry] |= RESTING;
-                    }
-                }
-            }
+            if(this.grid[x + gravX][ry + gravY] === 0)
+                this.move(x, ry, x + gravX, ry + gravY);
+
+            //if(m.liquid) {
+                //if(this.grid[x + xDir][ry] === 0) this.move(x, ry, x + xDir, ry);
+            //} else {
+                //if(this.grid[x + xDir][ry + 1] === 0) {
+                    //if(this.grid[x][ry] & SAND && Math.random() > 0.8) 
+                        //this.grid[x][ry] |= RESTING;
+                    //else 
+                        //this.move(x, ry, x + xDir, ry + 1);
+                //} else {
+                     //Check if the particle should be RESTING
+                    //if(this.shouldLieDown(x, ry)) {
+                        //this.grid[x][ry] |= RESTING;
+                    //}
+                //}
+            //}
         }
     }
 
@@ -215,7 +222,6 @@ Dust.prototype.draw = function() {
         color,
         vertexCount = 0;
 
-    this.rot += 0.001;
     this.mvRotate(this.rot, this.rabout);
     this.mvpMatrix = matrixMultiply(this.modelViewMatrix, this.projectionMatrix);
     this.gl.uniformMatrix3fv(this.uModelViewProjectionMatrix, false, this.mvpMatrix);
@@ -293,23 +299,11 @@ Dust.prototype.spawnRect = function(x, y, w, h, type) {
 Dust.prototype.spawnCircle = function(x, y, type, brushSize) {
     var radius = brushSize || 10;
 
-    //var originMatrix = makeTranslationMatrix(-250, -250),
-        //rotationMatrix = makeRotationMatrix(this.rot);
-    
-    //var matrix = matrixMultiply(originMatrix, rotationMatrix);
-    //matrix = matrixMultiply(matrix, makeTranslationMatrix(x, y));
-    //matrix = matrixMultiply(matrix, makeTranslationMatrix(0, 0));
-    //matrix = matrixMultiply(matrix, makeRotationMatrix(0));
+    var newX = (x + this.rabout.x) * Math.cos(this.rot) - (y + this.rabout.y) * Math.sin(this.rot);
+    var newY = (x + this.rabout.x) * Math.sin(this.rot) + (y + this.rabout.y) * Math.cos(this.rot);
 
-    //x = Math.round(matrix[6]);
-    //y = Math.round(matrix[7]);
-    //console.log(matrix);
-
-    var newX = (x - 250) * Math.cos(this.rot) - (y - 250) * Math.sin(this.rot);
-    var newY = (x - 250) * Math.sin(this.rot) + (y - 250) * Math.cos(this.rot);
-
-    x = Math.round(newX + 250);
-    y = Math.round(newY + 250);
+    x = Math.round(newX - this.rabout.x);
+    y = Math.round(newY - this.rabout.y);
 
     if((x - radius) < 0 || (y - radius) < 0 || (x + radius) > this.WIDTH || (y + radius) > this.HEIGHT) return;
 
