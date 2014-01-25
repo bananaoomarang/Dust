@@ -143,70 +143,67 @@ Dust.prototype.update = function(dt) {
             
             if(this.blacklist[x][ry]) continue;
             
-            //if(d & FIRE) {
-                //if(Math.random() > 0.8) this.grid[x][ry] |= BURNING;
-            //}
-            
-            //if(d & BURNING && Math.random() > 0.8) this.destroy(x, ry);
-
-            // Chance that steam will condense + it will condense if it's surrounded by steam
-            //if(d & STEAM) {
-                //if(Math.random() > 0.9999) {
-                    //this.grid[x][ry] |= WATER;
-                    //this.grid[x][ry] ^= STEAM;
-                //} else if(this.surrounded(x, ry)) {
-                    //this.grid[x][ry] |= WATER;
-                    //this.grid[x][ry] ^= STEAM;
-                //}
-            //}
-
-            // Burn baby burn
-            //if(d & FIRE || d & LAVA || d & BURNING) {
-                //if(Math.random() > 0.5) {
-                    //this.infect(x, ry, OIL, BURNING);
-                    //this.infect(x, ry, WATER, STEAM, WATER);
-                //}
-            //}
-
-            // Water baby... errr.... Water?
-            //if(d & WATER) {
-                 //Put out fires
-                //if(Math.random() > 0.5) {
-                    //this.runOnSurrounds(x, ry, FIRE, this.destroy);
-                    //this.infect(x, ry, BURNING, BURNING);
-                //}
-            //}
-
-            //if(m.density < this.getMaterial(this.grid[x][ry - 1]).density) {
-                //if(Math.random() < 0.7) this.swap(x, ry, x, ry - 1);
-            //}
-
-            //if(d & RESTING) continue;
-            
-            //var newX = (x + this.rabout.x) * Math.cos(0.1 + Math.PI) - (ry + this.rabout.y) * Math.sin(0.1 + Math.PI),
-                //newY = (x + this.rabout.x) * Math.sin(0.1 + Math.PI) + (ry + this.rabout.y) * Math.cos(0.1 + Math.PI);
-
             var gravX = -Math.round(Math.sin(this.rot)),
                 gravY = Math.round(Math.cos(this.rot));
+            
+            if(d & FIRE) {
+                if(Math.random() > 0.8) this.grid[x][ry] |= BURNING;
+            }
+            
+            if(d & BURNING && Math.random() > 0.8) this.destroy(x, ry);
 
+            // Chance that steam will condense + it will condense if it's surrounded by steam
+            if(d & STEAM) {
+                if(Math.random() > 0.9999) {
+                    this.grid[x][ry] |= WATER;
+                    this.grid[x][ry] ^= STEAM;
+                } else if(this.surrounded(x, ry)) {
+                    this.grid[x][ry] |= WATER;
+                    this.grid[x][ry] ^= STEAM;
+                }
+            }
+
+            // Burn baby burn
+            if(d & FIRE || d & LAVA || d & BURNING) {
+                if(Math.random() > 0.5) {
+                    this.infect(x, ry, OIL, BURNING);
+                    this.infect(x, ry, WATER, STEAM, WATER);
+                }
+            }
+
+            // Water baby... errr.... Water?
+            if(d & WATER) {
+                 //Put out fires
+                if(Math.random() > 0.5) {
+                    this.runOnSurrounds(x, ry, FIRE, this.destroy);
+                    this.infect(x, ry, BURNING, BURNING);
+                }
+            }
+
+            if(m.density < this.getMaterial(this.grid[x - gravX][ry - gravY]).density) {
+                if(Math.random() < 0.7) this.swap(x, ry, x - gravX, ry - gravY);
+            }
+
+            if(d & RESTING) continue;
+            
             if(this.grid[x + gravX][ry + gravY] === 0)
                 this.move(x, ry, x + gravX, ry + gravY);
 
-            //if(m.liquid) {
-                //if(this.grid[x + xDir][ry] === 0) this.move(x, ry, x + xDir, ry);
-            //} else {
-                //if(this.grid[x + xDir][ry + 1] === 0) {
-                    //if(this.grid[x][ry] & SAND && Math.random() > 0.8) 
-                        //this.grid[x][ry] |= RESTING;
-                    //else 
-                        //this.move(x, ry, x + xDir, ry + 1);
-                //} else {
+            if(m.liquid) {
+                if(this.grid[x + gravY * xDir][ry] === 0) this.move(x, ry, x + gravY * xDir, ry);
+            } else {
+                if(this.grid[x + gravY * xDir][ry + gravY - gravX * xDir] === 0) {
+                    if(this.grid[x][ry] & SAND && Math.random() > 0.8) 
+                        this.grid[x][ry] |= RESTING;
+                    else 
+                        this.move(x, ry, x + gravY * xDir, ry + gravY - gravX * xDir);
+                } else {
                      //Check if the particle should be RESTING
                     //if(this.shouldLieDown(x, ry)) {
                         //this.grid[x][ry] |= RESTING;
                     //}
-                //}
-            //}
+                }
+            }
         }
     }
 
