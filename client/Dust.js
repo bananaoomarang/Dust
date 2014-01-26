@@ -16,7 +16,9 @@ var SAND = 1,
     SOLID = 64,
     RESTING = 128,
     BURNING = 256,
-    SPRING = (SOLID | WATER);
+    SPRING = (SOLID | WATER),
+    VOLCANIC = (SOLID | LAVA),
+    OIL_WELL = (SOLID | OIL);
 
 function Dust() {
     var self = this;
@@ -139,6 +141,16 @@ Dust.prototype.update = function(dt) {
             // This is a spring
             if(d & WATER && d & SOLID) {
                 this.infect(x, ry, 0, WATER);
+            }
+            
+            // Oil spring
+            if(d & OIL && d & SOLID) {
+                this.infect(x, ry, 0, OIL);
+            }
+            
+            // Lava spring
+            if(d & LAVA && d & SOLID) {
+                this.infect(x, ry, 0, LAVA);
             }
 
             if(d & SOLID) continue;
@@ -263,8 +275,6 @@ Dust.prototype.draw = function() {
                 this.sandVertexArray[offset + 17] = packColor(color);
 
                 vertexCount++;
-            } else {
-                console.log('adfadf');
             }
         }
     }
@@ -341,6 +351,10 @@ Dust.prototype.getType = function(typeString) {
             return SOLID;
         case 'spring':
             return SPRING;
+        case 'volcanic':
+            return VOLCANIC;
+        case 'oil well':
+            return OIL_WELL;
         default:
             return 0;
     }
@@ -352,9 +366,9 @@ Dust.prototype.getMaterial = function(s) {
     if(s & OIL)   return this.materials.oil;
     if(s & FIRE)  return this.materials.fire;
     if(s & WATER) return this.materials.water;
-    if(s & SOLID) return this.materials.solid;
     if(s & STEAM) return this.materials.steam;
     if(s & LAVA) return this.materials.lava;
+    if(s & SOLID) return this.materials.solid;
 };
 
 // Returns true if the particle is surrounded by itself
@@ -462,14 +476,14 @@ Dust.prototype.infect = function(x, y, flagSet, flagToToggle, flagToRemove) {
         nw = this.grid[x - 1][y - 1];
 
     if(flagSet === 0) {
-        if(n === flagSet) this.grid[x][y - 1] ^= flagToToggle;
-        if(ne === flagSet) this.grid[x + 1][y - 1] ^= flagToToggle;
-        if(e === flagSet) this.grid[x + 1][y] ^= flagToToggle;
-        if(se === flagSet) this.grid[x + 1][y + 1] ^= flagToToggle;
-        if(s === flagSet) this.grid[x][y + 1] ^= flagToToggle;
-        if(sw === flagSet) this.grid[x - 1][y + 1] ^= flagToToggle;
-        if(w === flagSet) this.grid[x - 1][y] ^= flagToToggle;
-        if(nw === flagSet) this.grid[x - 1][y - 1] ^= flagToToggle;
+        if(n === flagSet) this.spawn(x, y - 1, flagToToggle);
+        if(ne === flagSet) this.spawn(x + 1, y - 1, flagToToggle);
+        if(e === flagSet) this.spawn(x + 1, y, flagToToggle);
+        if(se === flagSet) this.spawn(x + 1, y + 1, flagToToggle);
+        if(s === flagSet) this.spawn(x, y + 1, flagToToggle);
+        if(sw === flagSet) this.spawn(x - 1, y + 1, flagToToggle);
+        if(w === flagSet) this.spawn(x - 1, y, flagToToggle);
+        if(nw === flagSet) this.spawn(x - 1, y - 1, flagToToggle);
     } else {
         if(n & flagSet) this.grid[x][y - 1] ^= flagToToggle;
         if(ne & flagSet) this.grid[x + 1][y - 1] ^= flagToToggle;
@@ -520,6 +534,13 @@ Dust.prototype.clearBlacklist = function() {
         for (var y = 0; y < this.blacklist[x].length; y++) {
             this.blacklist[x][y] = false;
         }
+    }
+};
+
+Dust.prototype.spawn = function(x, y, type) {
+    if(!(this.grid[x][y] & type) && this.dustCount <= this.MAX_DUST) {
+        this.grid[x][y] |= type;
+        this.dustCount++;
     }
 };
 
