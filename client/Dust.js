@@ -1,5 +1,6 @@
 var $ = require('jquery-browserify'),
     Vector = require('./Vector'),
+    Timer = require('./Timer'),
     AABB = require('./AABB'),
     fs = require('fs'),
     vertShader = fs.readFileSync(__dirname + '/vert.glsl'),
@@ -16,6 +17,7 @@ var SAND = 1,
     SOLID = 64,
     RESTING = 128,
     BURNING = 256,
+    LIFE = 512,
     SPRING = (SOLID | WATER),
     VOLCANIC = (SOLID | LAVA),
     OIL_WELL = (SOLID | OIL);
@@ -60,6 +62,9 @@ function Dust() {
     this.blacklist = new Array2D(this.WIDTH, this.HEIGHT);
     this.dustCount = 0;
 
+    this.lifeTimer = new Timer();
+    this.lifeTime = 50;
+
     this.materials = {
         sand: {
             color: [9, 7, 2],
@@ -68,12 +73,14 @@ function Dust() {
         },
         oil: {
             color: [5, 4, 1],
+            bColors: [10, 4, 1, 8, 4, 1],
             friction: 1,
             liquid: true,
             density: 5
         },
         fire: {
             color: [10, 5, 0],
+            bColors: [10, 5, 0, 9, 6, 1],
             friction: 1,
             density: 0
         },
@@ -92,6 +99,10 @@ function Dust() {
             color: [6, 6, 6],
             density: -1,
             liquid: true
+        },
+        life: {
+            color: [0, 10, 2],
+            bColors: [10, 7, 1, 7, 6, 1]
         },
         solid: {
             color: [0, 0, 0]
@@ -121,6 +132,8 @@ Dust.prototype.getGL = function() {
 };
 
 Dust.prototype.update = function(dt) {
+    var lived = false;
+
     for (var x = 1; x < this.grid.length - 1; x++) {
         var ry = Math.floor(Math.random() * 500)  % (this.grid.length -1),
             yIncrement = 2;
@@ -138,6 +151,29 @@ Dust.prototype.update = function(dt) {
             
             if(d === 0) continue;
             
+            if(this.blacklist[x][ry]) continue;
+
+            // Gather up all the life particles
+            if(d & LIFE) {
+                if(this.lifeTimer.getTime() >= this.lifeTime) {
+                    lived = true;
+
+                    var neighbours = this.countNeighbours(x, ry, true);
+
+                    if(neighbours < 2) this.destroy(x, ry);
+                    if(neighbours > 3) this.destroy(x, ry);
+
+                    this.runOnSurrounds(x, ry, function(x, y) {
+                        if(!this.blacklist[x][y] && this.grid[x][y] === 0) {
+                            neighbours = this.countNeighbours(x, y);
+
+                            if(neighbours === 3) this.grid[x][y] |= LIFE;
+                            this.blacklist[x][y] = true;
+                        }
+                    });
+                }
+            }
+            
             // This is a spring
             if(d & WATER && d & SOLID) {
                 this.infect(x, ry, 0, WATER);
@@ -153,11 +189,6 @@ Dust.prototype.update = function(dt) {
                 this.infect(x, ry, 0, LAVA);
             }
 
-            if(d & SOLID) continue;
-            
-            
-            if(this.blacklist[x][ry]) continue;
-            
             if(d & FIRE) {
                 if(Math.random() > 0.8) this.grid[x][ry] |= BURNING;
             }
@@ -177,7 +208,9 @@ Dust.prototype.update = function(dt) {
 
             // Burn baby burn
             if(d & FIRE || d & LAVA || d & BURNING) {
-                if(Math.random() > 0.5) {
+                this.infect(x, ry, LIFE, BURNING);
+                
+                if (Math.random() > 0.5) {
                     this.infect(x, ry, OIL, BURNING);
                     this.infect(x, ry, WATER, STEAM, WATER);
                 }
@@ -187,7 +220,7 @@ Dust.prototype.update = function(dt) {
             if(d & WATER) {
                 // Put out fires
                 if(Math.random() > 0.5) {
-                    this.runOnSurrounds(x, ry, FIRE, this.destroy);
+                    this.runOnSurrounds(x, ry, this.destroy, FIRE);
                     this.infect(x, ry, BURNING, BURNING);
                 }
             }
@@ -197,7 +230,7 @@ Dust.prototype.update = function(dt) {
                 if(Math.random() < 0.7) this.swap(x, ry, x, ry - 1);
             }
 
-            if(d & RESTING) continue;
+            if(d & RESTING || d & SOLID || d & LIFE) continue;
 
             if(this.grid[x][ry + 1] === 0)
                 this.move(x, ry, x, ry + 1);
@@ -221,6 +254,11 @@ Dust.prototype.update = function(dt) {
     }
 
     this.clearBlacklist();
+
+    if(lived) {
+        this.lifeTimer.reset();
+        lived = false;
+    }
 };
 
 
@@ -240,9 +278,9 @@ Dust.prototype.draw = function() {
             if(s === 0) continue;
 
             material = this.getMaterial(s);
-            
+
             if(s & BURNING) 
-                color = (Math.random() > 0.1) ? [10, material.color[1], material.color[2]] : [material.color[0] + 1, material.color[1], material.color[2]];
+                color = (Math.random() > 0.1) ? [material.bColors[0], material.bColors[1], material.bColors[2]] : [material.bColors[3], material.bColors[4], material.bColors[5]];
             else 
                 color = material.color;
 
@@ -355,6 +393,8 @@ Dust.prototype.getType = function(typeString) {
             return VOLCANIC;
         case 'oil well':
             return OIL_WELL;
+        case 'life':
+            return LIFE;
         default:
             return 0;
     }
@@ -368,6 +408,7 @@ Dust.prototype.getMaterial = function(s) {
     if(s & WATER) return this.materials.water;
     if(s & STEAM) return this.materials.steam;
     if(s & LAVA) return this.materials.lava;
+    if(s & LIFE) return this.materials.life;
     if(s & SOLID) return this.materials.solid;
 };
 
@@ -401,37 +442,42 @@ Dust.prototype.swap = function(x1, y1, x2, y2) {
     this.blacklist[x2][y2] = true;
 };
 
-Dust.prototype.flowOut = function(x, y) {
-    var xOrig = x;
+Dust.prototype.countNeighbours = function(x, y, exclusive) {
+    var d = this.grid[x][y],
+        n = this.grid[x][y - 1],
+        ne = this.grid[x + 1][y - 1],
+        e = this.grid[x + 1][y],
+        se = this.grid[x + 1][y + 1],
+        s = this.grid[x][y + 1],
+        sw = this.grid[x - 1][y + 1],
+        w = this.grid[x - 1][y],
+        nw = this.grid[x - 1][y - 1];
 
-    while(x < this.WIDTH) {
-        if(this.grid[x][y] === 0) break;
-        if(this.grid[x][y] & SOLID) break;
+    var count = 0;
 
-        x++;
-    }
+    if(exclusive) {
+        // Then only count cells of the same type
+        if(n === d) count++;
+        if(ne === d) count++;
+        if(e === d) count++;
+        if(se === d) count++;
+        if(s === d) count++;
+        if(sw === d) count++;
+        if(w === d) count++;
+        if(nw === d) count++;
+    } else {
+        if(n !== 0) count++;
+        if(ne !== 0) count++;
+        if(e !== 0) count++;
+        if(se !== 0) count++;
+        if(s !== 0) count++;
+        if(sw !== 0) count++;
+        if(w !== 0) count++;
+        if(nw !== 0) count++;
+    } 
 
-    if(this.grid[x][y] === 0) {
-        console.log('edge', x);
-        this.grid[x][y] |= WATER;
-        this.destroy(xOrig, y);
-    }
-
-    x = xOrig - 1;
-
-    while(x > 0) {
-        if(this.grid[x][y] === 0) break;
-        if(this.grid[x][y] & SOLID) break;
-
-        x--;
-    }
-
-    if(this.grid[x][y] === 0) {
-        this.grid[x][y] |= WATER;
-        this.destroy(xOrig - 1, y);
-    }
+    return count;
 };
-
 // Wakes the surrounding particles
 Dust.prototype.wakeSurrounds = function(x, y) {
     if(this.grid[x][y - 1] & RESTING) this.grid[x][y - 1] ^= RESTING;
@@ -509,7 +555,7 @@ Dust.prototype.infect = function(x, y, flagSet, flagToToggle, flagToRemove) {
 };
 
 // Runs a function on surrounding particles providing a flag is set
-Dust.prototype.runOnSurrounds = function(x, y, flag, f) {
+Dust.prototype.runOnSurrounds = function(x, y, f, flag) {
     var n = this.grid[x][y - 1],
         ne = this.grid[x + 1][y - 1],
         e = this.grid[x + 1][y],
@@ -519,14 +565,25 @@ Dust.prototype.runOnSurrounds = function(x, y, flag, f) {
         w = this.grid[x - 1][y],
         nw = this.grid[x - 1][y - 1];
 
-    if(n & flag)  f.call(this, x, y - 1);
-    if(ne & flag) f.call(this, x + 1, y - 1);
-    if(e & flag)  f.call(this, x + 1, y);
-    if(se & flag) f.call(this, x + 1, y + 1);
-    if(s & flag)  f.call(this, x, y + 1);
-    if(sw & flag) f.call(this, x - 1, y + 1);
-    if(w & flag)  f.call(this, x - 1, y);
-    if(nw & flag) f.call(this, x - 1, y - 1);
+    if(flag) {
+        if(n & flag)  f.call(this, x, y - 1);
+        if(ne & flag) f.call(this, x + 1, y - 1);
+        if(e & flag)  f.call(this, x + 1, y);
+        if(se & flag) f.call(this, x + 1, y + 1);
+        if(s & flag)  f.call(this, x, y + 1);
+        if(sw & flag) f.call(this, x - 1, y + 1);
+        if(w & flag)  f.call(this, x - 1, y);
+        if(nw & flag) f.call(this, x - 1, y - 1);
+    } else {
+        f.call(this, x, y - 1);
+        f.call(this, x + 1, y - 1);
+        f.call(this, x + 1, y);
+        f.call(this, x + 1, y + 1);
+        f.call(this, x, y + 1);
+        f.call(this, x - 1, y + 1);
+        f.call(this, x - 1, y);
+        f.call(this, x - 1, y - 1);
+    }
 };
 
 Dust.prototype.clearBlacklist = function() {
