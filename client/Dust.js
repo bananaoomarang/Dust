@@ -82,7 +82,7 @@ function Dust() {
             color: [10, 5, 0],
             bColors: [10, 5, 0, 9, 6, 1],
             friction: 1,
-            density: 0
+            density: -1
         },
         lava: {
             color: [10, 3, 0],
@@ -227,7 +227,13 @@ Dust.prototype.update = function(dt) {
             
 
             if(m.density < this.getMaterial(this.grid[x][ry - 1]).density) {
-                if(Math.random() < 0.7) this.swap(x, ry, x, ry - 1);
+                if(d & FIRE) {
+                    this.swap(x, ry, x, ry -1);
+                } else if(Math.random() < 0.7) {
+                    this.swap(x, ry, x + xDir, ry - 1);
+                } else if(Math.random() < 0.7){
+                    this.swap(x, ry, x, ry -1);
+                }
             }
 
             if(d & RESTING || d & SOLID || d & LIFE) continue;
