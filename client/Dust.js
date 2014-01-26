@@ -15,7 +15,8 @@ var SAND = 1,
     STEAM = 32,
     SOLID = 64,
     RESTING = 128,
-    BURNING = 256;
+    BURNING = 256,
+    SPRING = (SOLID | WATER);
 
 function Dust() {
     var self = this;
@@ -134,8 +135,14 @@ Dust.prototype.update = function(dt) {
 
             
             if(d === 0) continue;
+            
+            // This is a spring
+            if(d & WATER && d & SOLID) {
+                this.infect(x, ry, 0, WATER);
+            }
 
             if(d & SOLID) continue;
+            
             
             if(this.blacklist[x][ry]) continue;
             
@@ -172,6 +179,7 @@ Dust.prototype.update = function(dt) {
                     this.infect(x, ry, BURNING, BURNING);
                 }
             }
+            
 
             if(m.density < this.getMaterial(this.grid[x][ry - 1]).density) {
                 if(Math.random() < 0.7) this.swap(x, ry, x, ry - 1);
@@ -331,6 +339,8 @@ Dust.prototype.getType = function(typeString) {
             return WATER;
         case 'solid':
             return SOLID;
+        case 'spring':
+            return SPRING;
         default:
             return 0;
     }
@@ -451,14 +461,25 @@ Dust.prototype.infect = function(x, y, flagSet, flagToToggle, flagToRemove) {
         w = this.grid[x - 1][y],
         nw = this.grid[x - 1][y - 1];
 
-    if(n & flagSet) this.grid[x][y - 1] ^= flagToToggle;
-    if(ne & flagSet) this.grid[x + 1][y - 1] ^= flagToToggle;
-    if(e & flagSet) this.grid[x + 1][y] ^= flagToToggle;
-    if(se & flagSet) this.grid[x + 1][y + 1] ^= flagToToggle;
-    if(s & flagSet) this.grid[x][y + 1] ^= flagToToggle;
-    if(sw & flagSet) this.grid[x - 1][y + 1] ^= flagToToggle;
-    if(w & flagSet) this.grid[x - 1][y] ^= flagToToggle;
-    if(nw & flagSet) this.grid[x - 1][y - 1] ^= flagToToggle;
+    if(flagSet === 0) {
+        if(n === flagSet) this.grid[x][y - 1] ^= flagToToggle;
+        if(ne === flagSet) this.grid[x + 1][y - 1] ^= flagToToggle;
+        if(e === flagSet) this.grid[x + 1][y] ^= flagToToggle;
+        if(se === flagSet) this.grid[x + 1][y + 1] ^= flagToToggle;
+        if(s === flagSet) this.grid[x][y + 1] ^= flagToToggle;
+        if(sw === flagSet) this.grid[x - 1][y + 1] ^= flagToToggle;
+        if(w === flagSet) this.grid[x - 1][y] ^= flagToToggle;
+        if(nw === flagSet) this.grid[x - 1][y - 1] ^= flagToToggle;
+    } else {
+        if(n & flagSet) this.grid[x][y - 1] ^= flagToToggle;
+        if(ne & flagSet) this.grid[x + 1][y - 1] ^= flagToToggle;
+        if(e & flagSet) this.grid[x + 1][y] ^= flagToToggle;
+        if(se & flagSet) this.grid[x + 1][y + 1] ^= flagToToggle;
+        if(s & flagSet) this.grid[x][y + 1] ^= flagToToggle;
+        if(sw & flagSet) this.grid[x - 1][y + 1] ^= flagToToggle;
+        if(w & flagSet) this.grid[x - 1][y] ^= flagToToggle;
+        if(nw & flagSet) this.grid[x - 1][y - 1] ^= flagToToggle;
+    }
 
     // Remove an optional flag
     if(typeof flagToRemove !== 'undefined') {
