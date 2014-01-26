@@ -23,21 +23,23 @@ function main() {
         e.preventDefault();
         e.stopPropagation();
         $('canvas').unbind('mouseup');
+
         switch(e.which) {
             case 1:
                 var x = Math.round(e.pageX - offset.left);
                     y = Math.round(e.pageY - offset.top);
 
                 var type = $('input[name=dustType]:checked', '#menu').val(),
+                    infect = $('input[name=infectant]:checked', '#menu').val(),
                     brushGirth = parseInt($('input[name=brushSize]', '#menu').val());
                 
-                DUST.spawnCircle(x, y, type, brushGirth);
+                DUST.spawnCircle(x, y, type, brushGirth, infect);
 
                 $('canvas').mousemove(function(e) {
                     x = Math.round(e.pageX - offset.left);
                     y = Math.round(e.pageY - offset.top);
 
-                    DUST.spawnCircle(x, y, type, brushGirth);
+                    DUST.spawnCircle(x, y, type, brushGirth, infect);
                 });
                 
                 $('canvas').mouseup(function(e) {

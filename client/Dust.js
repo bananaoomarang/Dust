@@ -18,6 +18,7 @@ var SAND = 1,
     RESTING = 128,
     BURNING = 256,
     LIFE = 512,
+    INFECTANT = 1024,
     SPRING = (SOLID | WATER),
     VOLCANIC = (SOLID | LAVA),
     OIL_WELL = (SOLID | OIL);
@@ -152,6 +153,29 @@ Dust.prototype.update = function(dt) {
             if(d === 0) continue;
             
             if(this.blacklist[x][ry]) continue;
+
+            if(d & INFECTANT) {
+                if(Math.random() > 0.9) this.infect(x, ry, -1, d, ~d);
+                //this.runOnSurrounds(x, ry, function(x, y) {
+                    //var n = this.grid[x][y - 1],
+                        //ne = this.grid[x + 1][y - 1],
+                        //e = this.grid[x + 1][y],
+                        //se = this.grid[x + 1][y + 1],
+                        //s = this.grid[x][y + 1],
+                        //sw = this.grid[x - 1][y + 1],
+                        //w = this.grid[x - 1][y],
+                        //nw = this.grid[x - 1][y - 1];
+                     
+                     //if(n !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x][y - 1] |= d;
+                     //if(ne !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x + 1][y - 1] |= d;
+                     //if(e !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x + 1][y] |= d;
+                     //if(se !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x + 1][y + 1] |= d;
+                     //if(s !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x][y + 1] |= d;
+                     //if(sw !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x - 1][y + 1] |= d;
+                     //if(w !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x - 1][y] |= d;
+                     //if(nw !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x - 1][y - 1] |= d;
+                //});
+            }
 
             // Gather up all the life particles
             if(d & LIFE) {
@@ -347,14 +371,20 @@ Dust.prototype.spawnRect = function(x, y, w, h, type) {
     }
 };
 
-Dust.prototype.spawnCircle = function(x, y, type, brushSize) {
+Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
     var radius = brushSize || 10;
 
     if((x - radius) < 0 || (y - radius) < 0 || (x + radius) > this.WIDTH || (y + radius) > this.HEIGHT) return;
 
     if(this.dustCount + 50 >= this.MAX_DUST && type !== 'eraser') return;
-                
-    var nType = this.getType(type);
+
+    var nType;
+    
+    if(infect) {
+        nType = (INFECTANT | this.getType(type));
+    } else {
+        nType = this.getType(type);
+    }
 
     for(var r = radius; r > 0; r--) {
         for(var i = 0; i < 2*Math.PI; i += 0.01) {
@@ -425,6 +455,29 @@ Dust.prototype.surrounded = function(x, y) {
         return true;
     else
         return false;
+};
+
+// Returns true if particle is next to another with the flag
+Dust.prototype.nextTo = function(x, y, flag) {
+    var n = this.grid[x][y - 1],
+        ne = this.grid[x + 1][y - 1],
+        e = this.grid[x + 1][y],
+        se = this.grid[x + 1][y + 1],
+        s = this.grid[x][y + 1],
+        sw = this.grid[x - 1][y + 1],
+        w = this.grid[x - 1][y],
+        nw = this.grid[x - 1][y - 1];
+
+    if(n & flag) return true;
+    if(ne & flag) return true; 
+    if(e & flag) return true; 
+    if(se & flag) return true;
+    if(s & flag) return true;
+    if(sw & flag) return true;
+    if(w & flag) return true;
+    if(nw & flag) return true;
+
+    return false;
 };
 
 Dust.prototype.move = function(ox, oy, nx, ny) {
@@ -527,7 +580,18 @@ Dust.prototype.infect = function(x, y, flagSet, flagToToggle, flagToRemove) {
         w = this.grid[x - 1][y],
         nw = this.grid[x - 1][y - 1];
 
-    if(flagSet === 0) {
+    if(flagSet === -1) {
+        // Infect ANYTHING apart from NOTHING
+        if(n !== 0) this.spawn(x, y - 1, flagToToggle);
+        if(ne !== 0) this.spawn(x + 1, y - 1, flagToToggle);
+        if(e !== 0) this.spawn(x + 1, y, flagToToggle);
+        if(se !== 0) this.spawn(x + 1, y + 1, flagToToggle);
+        if(s !== 0) this.spawn(x, y + 1, flagToToggle);
+        if(sw !== 0) this.spawn(x - 1, y + 1, flagToToggle);
+        if(w !== 0) this.spawn(x - 1, y, flagToToggle);
+        if(nw !== 0) this.spawn(x - 1, y - 1, flagToToggle);
+    } else if (flagSet === 0) {
+        // Infect just NOTHING (air)
         if(n === flagSet) this.spawn(x, y - 1, flagToToggle);
         if(ne === flagSet) this.spawn(x + 1, y - 1, flagToToggle);
         if(e === flagSet) this.spawn(x + 1, y, flagToToggle);
@@ -537,6 +601,7 @@ Dust.prototype.infect = function(x, y, flagSet, flagToToggle, flagToRemove) {
         if(w === flagSet) this.spawn(x - 1, y, flagToToggle);
         if(nw === flagSet) this.spawn(x - 1, y - 1, flagToToggle);
     } else {
+        // Infect everything with the flag
         if(n & flagSet) this.grid[x][y - 1] ^= flagToToggle;
         if(ne & flagSet) this.grid[x + 1][y - 1] ^= flagToToggle;
         if(e & flagSet) this.grid[x + 1][y] ^= flagToToggle;
@@ -603,6 +668,7 @@ Dust.prototype.clearBlacklist = function() {
 Dust.prototype.spawn = function(x, y, type) {
     if(!(this.grid[x][y] & type) && this.dustCount <= this.MAX_DUST) {
         this.grid[x][y] |= type;
+        this.blacklist[x][y] = true;
         this.dustCount++;
     }
 };
