@@ -114,14 +114,6 @@ function Dust() {
     };
 
     this.spawnRect(250, 200, 200, 20);
-
-    // Walls
-
-    var width = 1;
-    this.spawnRect(0, 0, this.WIDTH, width);
-    this.spawnRect(0, 0, width, this.HEIGHT);
-    this.spawnRect(0, this.HEIGHT - width, this.WIDTH, width);
-    this.spawnRect(this.WIDTH - width, 0, width, this.HEIGHT);
 }
 
 Dust.prototype.getGL = function() {
@@ -139,6 +131,8 @@ Dust.prototype.update = function(dt) {
         var ry = Math.floor(Math.random() * 500)  % (this.grid.length -1),
             yIncrement = 2;
 
+        if(x === 0 || x === this.grid.length) continue;
+
         for (var y = this.grid[x].length; y > 0; y--) {
             ry = (ry + yIncrement) % (this.grid.length - 1);
 
@@ -149,32 +143,31 @@ Dust.prototype.update = function(dt) {
                 m = this.getMaterial(d),
                 xDir = Math.round(Math.random()) < 0.5 ? 1 : -1;
 
-            
             if(d === 0) continue;
             
             if(this.blacklist[x][ry]) continue;
 
             if(d & INFECTANT) {
-                if(Math.random() > 0.9) this.infect(x, ry, -1, d, ~d);
-                //this.runOnSurrounds(x, ry, function(x, y) {
-                    //var n = this.grid[x][y - 1],
-                        //ne = this.grid[x + 1][y - 1],
-                        //e = this.grid[x + 1][y],
-                        //se = this.grid[x + 1][y + 1],
-                        //s = this.grid[x][y + 1],
-                        //sw = this.grid[x - 1][y + 1],
-                        //w = this.grid[x - 1][y],
-                        //nw = this.grid[x - 1][y - 1];
+                this.runOnSurrounds(x, ry, function(x, y) {
+                    var n = this.grid[x][y - 1],
+                        ne = this.grid[x + 1][y - 1],
+                        e = this.grid[x + 1][y],
+                        se = this.grid[x + 1][y + 1],
+                        s = this.grid[x][y + 1],
+                        sw = this.grid[x - 1][y + 1],
+                        w = this.grid[x - 1][y],
+                        nw = this.grid[x - 1][y - 1],
+                        rand = Math.random();
                      
-                     //if(n !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x][y - 1] |= d;
-                     //if(ne !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x + 1][y - 1] |= d;
-                     //if(e !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x + 1][y] |= d;
-                     //if(se !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x + 1][y + 1] |= d;
-                     //if(s !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x][y + 1] |= d;
-                     //if(sw !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x - 1][y + 1] |= d;
-                     //if(w !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x - 1][y] |= d;
-                     //if(nw !== 0 && ~(n & INFECTANT) && Math.random() > 0.9) this.grid[x - 1][y - 1] |= d;
-                //});
+                     if(n !== 0 && !(n & INFECTANT) && rand > 0.99) this.spawn(x, y - 1, d);
+                     if(ne !== 0 && !(ne & INFECTANT) && rand > 0.99) this.spawn(x + 1, y - 1, d);
+                     if(e !== 0 && !(e & INFECTANT) && rand > 0.99) this.spawn(x + 1, y, d);
+                     if(se !== 0 && !(se & INFECTANT) && rand > 0.99) this.spawn(x + 1, y + 1, d);
+                     if(s !== 0 && !(s & INFECTANT) && rand > 0.99) this.spawn(x, y + 1, d);
+                     if(sw !== 0 && !(sw & INFECTANT) && rand > 0.99) this.spawn(x - 1, y + 1, d);
+                     if(w !== 0 && !(w & INFECTANT) && rand > 0.99) this.spawn(x - 1, y, d);
+                     if(nw !== 0 && !(nw & INFECTANT) && rand > 0.99) this.spawn(x - 1, y - 1, d);
+                });
             }
 
             // Gather up all the life particles
@@ -358,9 +351,15 @@ Dust.prototype.sandCollides = function(x, y) {
         return false;
 };
 
-Dust.prototype.spawnRect = function(x, y, w, h, type) {
-    var nType = this.getType(type) || SOLID;
+Dust.prototype.spawnRect = function(x, y, w, h, type, infect) {
+    var nType;
 
+    if(infect) {
+        nType = (INFECTANT | this.getType(type));
+    } else {
+        nType = this.getType(type) || SOLID;
+    }
+    
     for(var i = x; i < (x + w); i++) {
         for(var j = y; j < (y + h); j++) {
             if(!this.sandCollides(i, j)) {
@@ -383,7 +382,7 @@ Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
     if(infect) {
         nType = (INFECTANT | this.getType(type));
     } else {
-        nType = this.getType(type);
+        nType = this.getType(type) || SOLID;
     }
 
     for(var r = radius; r > 0; r--) {
@@ -539,6 +538,7 @@ Dust.prototype.countNeighbours = function(x, y, exclusive) {
 };
 // Wakes the surrounding particles
 Dust.prototype.wakeSurrounds = function(x, y) {
+    if(this.grid[x][y] & RESTING)     this.grid[x][y] ^= RESTING;
     if(this.grid[x][y - 1] & RESTING) this.grid[x][y - 1] ^= RESTING;
     if(this.grid[x + 1][y] & RESTING) this.grid[x + 1][y] ^= RESTING;
     if(this.grid[x][y + 1] & RESTING) this.grid[x][y + 1] ^= RESTING;
@@ -582,13 +582,13 @@ Dust.prototype.infect = function(x, y, flagSet, flagToToggle, flagToRemove) {
 
     if(flagSet === -1) {
         // Infect ANYTHING apart from NOTHING
-        if(n !== 0) this.spawn(x, y - 1, flagToToggle);
+        if(n !== 0)  this.spawn(x, y - 1, flagToToggle);
         if(ne !== 0) this.spawn(x + 1, y - 1, flagToToggle);
-        if(e !== 0) this.spawn(x + 1, y, flagToToggle);
+        if(e !== 0)  this.spawn(x + 1, y, flagToToggle);
         if(se !== 0) this.spawn(x + 1, y + 1, flagToToggle);
-        if(s !== 0) this.spawn(x, y + 1, flagToToggle);
+        if(s !== 0)  this.spawn(x, y + 1, flagToToggle);
         if(sw !== 0) this.spawn(x - 1, y + 1, flagToToggle);
-        if(w !== 0) this.spawn(x - 1, y, flagToToggle);
+        if(w !== 0)  this.spawn(x - 1, y, flagToToggle);
         if(nw !== 0) this.spawn(x - 1, y - 1, flagToToggle);
     } else if (flagSet === 0) {
         // Infect just NOTHING (air)
@@ -613,7 +613,7 @@ Dust.prototype.infect = function(x, y, flagSet, flagToToggle, flagToRemove) {
     }
 
     // Remove an optional flag
-    if(typeof flagToRemove !== 'undefined') {
+    if(flagToRemove) {
         if(n & flagSet) this.grid[x][y - 1] &= ~flagToRemove;
         if(ne & flagSet) this.grid[x + 1][y - 1] &= ~flagToRemove;
         if(e & flagSet) this.grid[x + 1][y] &= ~flagToRemove;
@@ -667,24 +667,10 @@ Dust.prototype.clearBlacklist = function() {
 
 Dust.prototype.spawn = function(x, y, type) {
     if(!(this.grid[x][y] & type) && this.dustCount <= this.MAX_DUST) {
-        this.grid[x][y] |= type;
+        this.grid[x][y] = type;
         this.blacklist[x][y] = true;
+        this.wakeSurrounds(x, y);
         this.dustCount++;
-    }
-};
-
-// If a solid exists here, it will be sandified
-Dust.prototype.sandifySolid = function(vec) {
-    var s = this.world.collides(vec);
-    if(s) {
-        for (var x = 0; x < s.w; x++) {
-            for (var y = 0; y < s.h; y++) {
-                var sand = new Vector(x + s.pos.x, y + s.pos.y);
-                this.world.pushSand(sand);
-            }
-        }
-        var index = this.world.solids.indexOf(s);
-        this.world.solids.splice(index, 1);
     }
 };
 
