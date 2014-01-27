@@ -32,3 +32,11 @@ body {
 label {
     float: left;
 }
+
+#proTips {
+    padding-top: 20px;
+}
+
+.proTip {
+    font-size: 20px;
+}

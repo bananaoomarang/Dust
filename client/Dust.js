@@ -66,6 +66,8 @@ function Dust() {
     this.lifeTimer = new Timer();
     this.lifeTime = 50;
 
+    this.paused = false;
+
     this.materials = {
         sand: {
             color: [9, 7, 2],

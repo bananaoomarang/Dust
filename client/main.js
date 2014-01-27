@@ -48,7 +48,18 @@ function main() {
                 break;
         }
     });
-    
+
+    $(document).keydown(function(e) {
+        switch(e.which) {
+            // Space
+            case 32:
+                if(DUST.paused)
+                    DUST.paused = false;
+                else
+                    DUST.paused = true;
+                break;
+        }
+    });
     
     tick();
 
@@ -62,7 +73,7 @@ function main() {
             frame = 0;
         }
 
-        DUST.update(timer.getTime() / 1000);
+        if(!DUST.paused) DUST.update(timer.getTime() / 1000);
 
         DUST.draw();
 
