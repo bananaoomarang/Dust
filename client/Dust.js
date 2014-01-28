@@ -291,6 +291,8 @@ Dust.prototype.update = function(dt) {
                 }
             }
 
+            if(d & SOLID || d & LIFE || d & C4) continue;
+
             if(m.density < this.getMaterial(this.grid[x][ry - 1]).density) {
                 if(d & FIRE) {
                     this.swap(x, ry, x, ry -1);
@@ -301,7 +303,7 @@ Dust.prototype.update = function(dt) {
                 }
             }
 
-            if(d & RESTING || d & SOLID || d & LIFE || d & C4) continue;
+            if(d & RESTING) continue;
             
             if(this.grid[x + fX][ry + fY] === 0)
                 this.move(x, ry, x + fX, ry + fY);
@@ -433,7 +435,7 @@ Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
 
     var nType;
     
-    if(infect) {
+    if(infect && type !== 'eraser') {
         nType = (INFECTANT | this.getType(type));
     } else {
         nType = this.getType(type);
@@ -444,7 +446,7 @@ Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
             var spawnX = x + Math.floor(r*Math.sin(i)),
                 spawnY = y + Math.floor(r*Math.cos(i));
 
-            if(nType !== 0) {
+            if(nType) {
                 if(this.grid[spawnX][spawnY] === 0) this.dustCount++;
                 this.grid[spawnX][spawnY] = nType;
             } else {
