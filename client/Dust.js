@@ -64,6 +64,7 @@ function Dust() {
     this.grid = new Array2D(this.WIDTH, this.HEIGHT);
     this.blacklist = new Array2D(this.WIDTH, this.HEIGHT);
     this.explosions = [];
+    this.explosives = [];
     this.dustCount = 0;
 
     this.lifeTimer = new Timer();
@@ -166,9 +167,10 @@ Dust.prototype.update = function(dt) {
                     e--;
                 }
 
-                fX += exp.getXForce(x, ry);
-                fY += exp.getYForce(x, ry);
+                var force = exp.getForce(x, ry);
 
+                fX += force.x;
+                fY += force.y;
             }
 
             if(x + fX <= 1 || x + fX >= this.WIDTH - 1 || y + fY <= 0 || y + fY >= this.HEIGHT -1){
@@ -248,10 +250,11 @@ Dust.prototype.update = function(dt) {
                 if(Math.random() > 0.8) this.grid[x][ry] |= BURNING;
             }
            
-            if(d & BURNING && Math.random() > 0.8 && !this.blacklist[x][ry])
+            if(d & BURNING && Math.random() > 0.8 && !this.blacklist[x][ry]) {
                 this.destroy(x, ry);
-            else
+            } else {
                 this.blacklist[x][ry] = true;
+            }
 
             // Chance that steam will condense + it will condense if it's surrounded by steam
             if(d & STEAM) {
