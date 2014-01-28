@@ -5,6 +5,12 @@ body {
     text-align: center;
 }
 
+h1 {
+    font-family: 'Crimson Text', Georgia, Times, serif;
+    font-size: 40px;
+    line-height: 55px;
+}
+
 #canvainer {
     width: 500px;
     height: 500px;
@@ -27,16 +33,20 @@ body {
 
 .menu-item {
     float: left;
+    margin-left: 10px;
 }
+
 
 label {
+    font-family: 'Crimson Text', Georgia, Times, serif;
+    font-size: 14px;
     float: left;
 }
-
 #proTips {
     padding-top: 20px;
 }
 
 .proTip {
+    font-family: 'Crimson Text', Georgia, Times, serif;
     font-size: 20px;
 }
