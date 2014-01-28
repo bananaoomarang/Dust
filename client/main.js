@@ -33,11 +33,7 @@ function main() {
                     infect = $('input[name=infectant]:checked', '#menu').val(),
                     brushGirth = parseInt($('input[name=brushSize]', '#menu').val());
 
-                if(type === 'explosion') {
-                    DUST.explode(x, y, 10, 100);
-                } else {
-                    DUST.spawnCircle(x, y, type, brushGirth, infect);
-                }
+                DUST.spawnCircle(x, y, type, brushGirth, infect);
 
                 $('canvas').mousemove(function(e) {
                     x = Math.round(e.pageX - offset.left);

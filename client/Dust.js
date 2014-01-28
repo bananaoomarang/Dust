@@ -251,6 +251,8 @@ Dust.prototype.update = function(dt) {
             }
            
             if(d & BURNING && Math.random() > 0.8 && !this.blacklist[x][ry]) {
+                if(d & C4 && this.nextTo(x, ry, -1) && Math.random() > 0.999) this.explode(x, ry, 100, 200);
+
                 this.destroy(x, ry);
             } else {
                 this.blacklist[x][ry] = true;
@@ -520,16 +522,38 @@ Dust.prototype.nextTo = function(x, y, flag) {
         s = this.grid[x][y + 1],
         sw = this.grid[x - 1][y + 1],
         w = this.grid[x - 1][y],
-        nw = this.grid[x - 1][y - 1];
+        nw = this.grid[x - 1][y - 1],
+        d = this.grid[x][y];
 
-    if(n & flag) return true;
-    if(ne & flag) return true; 
-    if(e & flag) return true; 
-    if(se & flag) return true;
-    if(s & flag) return true;
-    if(sw & flag) return true;
-    if(w & flag) return true;
-    if(nw & flag) return true;
+    // Return true if it's not the current material
+    if(flag === -1) {
+        if(!(n & d)) return true;
+        if(!(ne & d)) return true; 
+        if(!(e & d)) return true; 
+        if(!(se & d)) return true;
+        if(!(s & d)) return true;
+        if(!(sw & d)) return true;
+        if(!(w & d)) return true;
+        if(!(nw & d)) return true;
+    } else if(flag === 0) {
+        if(n === 0) return true;
+        if(ne === 0) return true; 
+        if(e === 0) return true; 
+        if(se === 0) return true;
+        if(s === 0) return true;
+        if(sw === 0) return true;
+        if(w === 0) return true;
+        if(nw === 0) return true;
+    } else {
+        if(n & flag) return true;
+        if(ne & flag) return true; 
+        if(e & flag) return true; 
+        if(se & flag) return true;
+        if(s & flag) return true;
+        if(sw & flag) return true;
+        if(w & flag) return true;
+        if(nw & flag) return true;
+    }
 
     return false;
 };
