@@ -5,6 +5,7 @@ var express = require("express"),
     connections = 0;
 
 server.listen(9966);
+console.log('\n   Server listening on 9966');
 
 app.use(express.static(__dirname + "/public"));
 
