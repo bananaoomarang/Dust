@@ -32,8 +32,12 @@ function main() {
                 var type = $('input[name=dustType]:checked', '#menu').val(),
                     infect = $('input[name=infectant]:checked', '#menu').val(),
                     brushGirth = parseInt($('input[name=brushSize]', '#menu').val());
-                
-                DUST.spawnCircle(x, y, type, brushGirth, infect);
+
+                if(type === 'explosion') {
+                    DUST.explode(x, y, 10, 100);
+                } else {
+                    DUST.spawnCircle(x, y, type, brushGirth, infect);
+                }
 
                 $('canvas').mousemove(function(e) {
                     x = Math.round(e.pageX - offset.left);

@@ -2,6 +2,7 @@ var $ = require('jquery-browserify'),
     Vector = require('./Vector'),
     Timer = require('./Timer'),
     AABB = require('./AABB'),
+    Explosion = require('./Explosion'),
     fs = require('fs'),
     vertShader = fs.readFileSync(__dirname + '/vert.glsl'),
     fragShader = fs.readFileSync(__dirname + '/frag.glsl');
@@ -19,6 +20,7 @@ var SAND = 1,
     BURNING = 256,
     LIFE = 512,
     INFECTANT = 1024,
+    C4 = 2048,
     SPRING = (SOLID | WATER),
     VOLCANIC = (SOLID | LAVA),
     OIL_WELL = (SOLID | OIL);
@@ -61,11 +63,12 @@ function Dust() {
 
     this.grid = new Array2D(this.WIDTH, this.HEIGHT);
     this.blacklist = new Array2D(this.WIDTH, this.HEIGHT);
+    this.explosions = [];
     this.dustCount = 0;
 
     this.lifeTimer = new Timer();
     this.lifeTime = 50;
-
+    
     this.paused = false;
 
     this.materials = {
@@ -91,6 +94,10 @@ function Dust() {
             color: [10, 3, 0],
             liquid: true,
             density: 10
+        },
+        C4: {
+            color: [2, 9, 1],
+            bColors: [9, 7, 2, 10, 10, 3]
         },
         water: {
             color: [0, 5, 10],
@@ -133,8 +140,6 @@ Dust.prototype.update = function(dt) {
         var ry = Math.floor(Math.random() * 500)  % (this.grid.length -1),
             yIncrement = 2;
 
-        if(x === 0 || x === this.grid.length) continue;
-
         for (var y = this.grid[x].length; y > 0; y--) {
             ry = (ry + yIncrement) % (this.grid.length - 1);
 
@@ -143,36 +148,60 @@ Dust.prototype.update = function(dt) {
             
             var d = this.grid[x][ry],
                 m = this.getMaterial(d),
+                fX = 0, // External force vector
+                fY = 1,
                 xDir = Math.round(Math.random()) < 0.5 ? 1 : -1;
 
             if(d === 0) continue;
             
             if(this.blacklist[x][ry]) continue;
 
+            for (var e = 0; e < this.explosions.length; e++) {
+                var exp = this.explosions[e];
+
+                if(!exp.updated) exp.update();
+
+                if(exp.force === 0) {
+                    this.explosions.splice(e, 1);
+                    e--;
+                }
+
+                fX += exp.getXForce(x, ry);
+                fY += exp.getYForce(x, ry);
+
+            }
+
+            if(x + fX <= 1 || x + fX >= this.WIDTH - 1 || y + fY <= 0 || y + fY >= this.HEIGHT -1){
+                fX = 0;
+                fY = 0;
+            }
+
+
             if(d & INFECTANT) {
                 this.runOnSurrounds(x, ry, function(x, y) {
-                    var n = this.grid[x][y - 1],
-                        ne = this.grid[x + 1][y - 1],
-                        e = this.grid[x + 1][y],
-                        se = this.grid[x + 1][y + 1],
-                        s = this.grid[x][y + 1],
-                        sw = this.grid[x - 1][y + 1],
-                        w = this.grid[x - 1][y],
-                        nw = this.grid[x - 1][y - 1],
-                        rand = Math.random();
-                     
-                     if(n !== 0 && !(n & INFECTANT) && rand > 0.99) this.spawn(x, y - 1, d);
-                     if(ne !== 0 && !(ne & INFECTANT) && rand > 0.99) this.spawn(x + 1, y - 1, d);
-                     if(e !== 0 && !(e & INFECTANT) && rand > 0.99) this.spawn(x + 1, y, d);
-                     if(se !== 0 && !(se & INFECTANT) && rand > 0.99) this.spawn(x + 1, y + 1, d);
-                     if(s !== 0 && !(s & INFECTANT) && rand > 0.99) this.spawn(x, y + 1, d);
-                     if(sw !== 0 && !(sw & INFECTANT) && rand > 0.99) this.spawn(x - 1, y + 1, d);
-                     if(w !== 0 && !(w & INFECTANT) && rand > 0.99) this.spawn(x - 1, y, d);
-                     if(nw !== 0 && !(nw & INFECTANT) && rand > 0.99) this.spawn(x - 1, y - 1, d);
+                    if(x > 1 && x < this.WIDTH - 1 && y > 1 && y < this.HEIGHT - 1) {
+                        var n = this.grid[x][y - 1],
+                            ne = this.grid[x + 1][y - 1],
+                            e = this.grid[x + 1][y],
+                            se = this.grid[x + 1][y + 1],
+                            s = this.grid[x][y + 1],
+                            sw = this.grid[x - 1][y + 1],
+                            w = this.grid[x - 1][y],
+                            nw = this.grid[x - 1][y - 1],
+                            rand = Math.random();
+
+                            if(n !== 0 && !(n & INFECTANT) && rand > 0.99) this.spawn(x, y - 1, d);
+                            if(ne !== 0 && !(ne & INFECTANT) && rand > 0.99) this.spawn(x + 1, y - 1, d);
+                            if(e !== 0 && !(e & INFECTANT) && rand > 0.99) this.spawn(x + 1, y, d);
+                            if(se !== 0 && !(se & INFECTANT) && rand > 0.99) this.spawn(x + 1, y + 1, d);
+                            if(s !== 0 && !(s & INFECTANT) && rand > 0.99) this.spawn(x, y + 1, d);
+                            if(sw !== 0 && !(sw & INFECTANT) && rand > 0.99) this.spawn(x - 1, y + 1, d);
+                            if(w !== 0 && !(w & INFECTANT) && rand > 0.99) this.spawn(x - 1, y, d);
+                            if(nw !== 0 && !(nw & INFECTANT) && rand > 0.99) this.spawn(x - 1, y - 1, d);
+                    }
                 });
             }
 
-            // Gather up all the life particles
             if(d & LIFE) {
                 if(this.lifeTimer.getTime() >= this.lifeTime) {
                     lived = true;
@@ -183,11 +212,18 @@ Dust.prototype.update = function(dt) {
                     if(neighbours > 3) this.destroy(x, ry);
 
                     this.runOnSurrounds(x, ry, function(x, y) {
-                        if(!this.blacklist[x][y] && this.grid[x][y] === 0) {
-                            neighbours = this.countNeighbours(x, y);
+                        if(x > 1 && x < this.WIDTH - 1 && y > 1 && y < this.HEIGHT - 1) {
+                            if(!this.blacklist[x][y] && this.grid[x][y] === 0) {
+                                neighbours = this.countNeighbours(x, y);
 
-                            if(neighbours === 3) this.grid[x][y] |= LIFE;
-                            this.blacklist[x][y] = true;
+                                if(neighbours === 3) {
+                                    this.grid[x][y] = LIFE;
+                                    this.dustCount++;
+                                }
+
+                                // Not a misatake, this makes it work better
+                                this.blacklist[x][y] = true;
+                            }
                         }
                     });
                 }
@@ -211,8 +247,11 @@ Dust.prototype.update = function(dt) {
             if(d & FIRE) {
                 if(Math.random() > 0.8) this.grid[x][ry] |= BURNING;
             }
-            
-            if(d & BURNING && Math.random() > 0.8) this.destroy(x, ry);
+           
+            if(d & BURNING && Math.random() > 0.8 && !this.blacklist[x][ry])
+                this.destroy(x, ry);
+            else
+                this.blacklist[x][ry] = true;
 
             // Chance that steam will condense + it will condense if it's surrounded by steam
             if(d & STEAM) {
@@ -227,7 +266,10 @@ Dust.prototype.update = function(dt) {
 
             // Burn baby burn
             if(d & FIRE || d & LAVA || d & BURNING) {
-                this.infect(x, ry, LIFE, BURNING);
+                if(!this.blacklist[x][ry]) {
+                    this.infect(x, ry, LIFE, BURNING);
+                    this.infect(x, ry, C4, BURNING);
+                }
                 
                 if (Math.random() > 0.5) {
                     this.infect(x, ry, OIL, BURNING);
@@ -243,7 +285,6 @@ Dust.prototype.update = function(dt) {
                     this.infect(x, ry, BURNING, BURNING);
                 }
             }
-            
 
             if(m.density < this.getMaterial(this.grid[x][ry - 1]).density) {
                 if(d & FIRE) {
@@ -255,18 +296,20 @@ Dust.prototype.update = function(dt) {
                 }
             }
 
-            if(d & RESTING || d & SOLID || d & LIFE) continue;
-
-            if(this.grid[x][ry + 1] === 0)
-                this.move(x, ry, x, ry + 1);
+            if(d & RESTING || d & SOLID || d & LIFE || d & C4) continue;
+            
+            if(this.grid[x + fX][ry + fY] === 0)
+                this.move(x, ry, x + fX, ry + fY);
 
             if(m.liquid) {
-                if(this.grid[x + xDir][ry] === 0) this.move(x, ry, x + xDir, ry);
+                if(this.grid[x + xDir][ry] === 0) {
+                    this.move(x, ry, x + xDir, ry);
+                }
             } else {
                 if(this.grid[x + xDir][ry + 1] === 0) {
-                    if(this.grid[x][ry] & SAND && Math.random() > 0.8) 
-                        this.grid[x][ry] |= RESTING;
-                    else 
+                    //if(this.grid[x][ry] & SAND && Math.random() > 0.8) 
+                        //this.grid[x][ry] |= RESTING;
+                    //else 
                         this.move(x, ry, x + xDir, ry + 1);
                 } else {
                     // Check if the particle should be RESTING
@@ -279,6 +322,10 @@ Dust.prototype.update = function(dt) {
     }
 
     this.clearBlacklist();
+
+    for (e = 0; e < this.explosions.length; e++) {
+        this.explosions[e].updated = false;
+    }
 
     if(lived) {
         this.lifeTimer.reset();
@@ -384,7 +431,7 @@ Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
     if(infect) {
         nType = (INFECTANT | this.getType(type));
     } else {
-        nType = this.getType(type) || SOLID;
+        nType = this.getType(type);
     }
 
     for(var r = radius; r > 0; r--) {
@@ -432,6 +479,8 @@ Dust.prototype.getType = function(typeString) {
             return OIL_WELL;
         case 'life':
             return LIFE;
+        case 'C4':
+            return C4;
         default:
             return 0;
     }
@@ -446,6 +495,7 @@ Dust.prototype.getMaterial = function(s) {
     if(s & STEAM) return this.materials.steam;
     if(s & LAVA) return this.materials.lava;
     if(s & LIFE) return this.materials.life;
+    if(s & C4) return this.materials.C4;
     if(s & SOLID) return this.materials.solid;
 };
 
@@ -572,7 +622,7 @@ Dust.prototype.destroy = function(x, y) {
 };
 
 // 'Infects's' surrounding particles, toggling the second flag providing first is set
-Dust.prototype.infect = function(x, y, flagSet, flagToToggle, flagToRemove) {
+Dust.prototype.infect = function(x, y, flagSet, flagToSet, flagToRemove) {
     var n = this.grid[x][y - 1],
         ne = this.grid[x + 1][y - 1],
         e = this.grid[x + 1][y],
@@ -584,34 +634,34 @@ Dust.prototype.infect = function(x, y, flagSet, flagToToggle, flagToRemove) {
 
     if(flagSet === -1) {
         // Infect ANYTHING apart from NOTHING
-        if(n !== 0)  this.spawn(x, y - 1, flagToToggle);
-        if(ne !== 0) this.spawn(x + 1, y - 1, flagToToggle);
-        if(e !== 0)  this.spawn(x + 1, y, flagToToggle);
-        if(se !== 0) this.spawn(x + 1, y + 1, flagToToggle);
-        if(s !== 0)  this.spawn(x, y + 1, flagToToggle);
-        if(sw !== 0) this.spawn(x - 1, y + 1, flagToToggle);
-        if(w !== 0)  this.spawn(x - 1, y, flagToToggle);
-        if(nw !== 0) this.spawn(x - 1, y - 1, flagToToggle);
+        if(n !== 0)  this.spawn(x, y - 1, flagToSet);
+        if(ne !== 0) this.spawn(x + 1, y - 1, flagToSet);
+        if(e !== 0)  this.spawn(x + 1, y, flagToSet);
+        if(se !== 0) this.spawn(x + 1, y + 1, flagToSet);
+        if(s !== 0)  this.spawn(x, y + 1, flagToSet);
+        if(sw !== 0) this.spawn(x - 1, y + 1, flagToSet);
+        if(w !== 0)  this.spawn(x - 1, y, flagToSet);
+        if(nw !== 0) this.spawn(x - 1, y - 1, flagToSet);
     } else if (flagSet === 0) {
         // Infect just NOTHING (air)
-        if(n === flagSet) this.spawn(x, y - 1, flagToToggle);
-        if(ne === flagSet) this.spawn(x + 1, y - 1, flagToToggle);
-        if(e === flagSet) this.spawn(x + 1, y, flagToToggle);
-        if(se === flagSet) this.spawn(x + 1, y + 1, flagToToggle);
-        if(s === flagSet) this.spawn(x, y + 1, flagToToggle);
-        if(sw === flagSet) this.spawn(x - 1, y + 1, flagToToggle);
-        if(w === flagSet) this.spawn(x - 1, y, flagToToggle);
-        if(nw === flagSet) this.spawn(x - 1, y - 1, flagToToggle);
+        if(n === flagSet) this.spawn(x, y - 1, flagToSet);
+        if(ne === flagSet) this.spawn(x + 1, y - 1, flagToSet);
+        if(e === flagSet) this.spawn(x + 1, y, flagToSet);
+        if(se === flagSet) this.spawn(x + 1, y + 1, flagToSet);
+        if(s === flagSet) this.spawn(x, y + 1, flagToSet);
+        if(sw === flagSet) this.spawn(x - 1, y + 1, flagToSet);
+        if(w === flagSet) this.spawn(x - 1, y, flagToSet);
+        if(nw === flagSet) this.spawn(x - 1, y - 1, flagToSet);
     } else {
         // Infect everything with the flag
-        if(n & flagSet) this.grid[x][y - 1] ^= flagToToggle;
-        if(ne & flagSet) this.grid[x + 1][y - 1] ^= flagToToggle;
-        if(e & flagSet) this.grid[x + 1][y] ^= flagToToggle;
-        if(se & flagSet) this.grid[x + 1][y + 1] ^= flagToToggle;
-        if(s & flagSet) this.grid[x][y + 1] ^= flagToToggle;
-        if(sw & flagSet) this.grid[x - 1][y + 1] ^= flagToToggle;
-        if(w & flagSet) this.grid[x - 1][y] ^= flagToToggle;
-        if(nw & flagSet) this.grid[x - 1][y - 1] ^= flagToToggle;
+        if(n & flagSet) this.grid[x][y - 1] |= flagToSet;
+        if(ne & flagSet) this.grid[x + 1][y - 1] |= flagToSet;
+        if(e & flagSet) this.grid[x + 1][y] |= flagToSet;
+        if(se & flagSet) this.grid[x + 1][y + 1] |= flagToSet;
+        if(s & flagSet) this.grid[x][y + 1] |= flagToSet;
+        if(sw & flagSet) this.grid[x - 1][y + 1] |= flagToSet;
+        if(w & flagSet) this.grid[x - 1][y] ^= flagToSet;
+        if(nw & flagSet) this.grid[x - 1][y - 1] |= flagToSet;
     }
 
     // Remove an optional flag
@@ -657,6 +707,13 @@ Dust.prototype.runOnSurrounds = function(x, y, f, flag) {
         f.call(this, x - 1, y);
         f.call(this, x - 1, y - 1);
     }
+};
+
+// It's not even a hyperbolic name this time. This is the real deal.
+Dust.prototype.explode = function(x, y, f, r) {
+    var explosion = new Explosion(x, y, f, r);
+
+    this.explosions.push(explosion);
 };
 
 Dust.prototype.clearBlacklist = function() {
