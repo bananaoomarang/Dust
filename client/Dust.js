@@ -149,8 +149,6 @@ Dust.prototype.update = function(dt) {
             
             var d = this.grid[x][ry],
                 m = this.getMaterial(d),
-                fX = 0, // External force vector
-                fY = 1,
                 xDir = Math.round(Math.random()) < 0.5 ? 1 : -1;
 
             if(d === 0) continue;
@@ -171,12 +169,6 @@ Dust.prototype.update = function(dt) {
                 }
 
             }
-
-            if(x + fX <= 1 || x + fX >= this.WIDTH - 1 || y + fY <= 0 || y + fY >= this.HEIGHT -1){
-                fX = 0;
-                fY = 0;
-            }
-
 
             if(d & INFECTANT) {
                 this.runOnSurrounds(x, ry, function(x, y) {
@@ -304,8 +296,8 @@ Dust.prototype.update = function(dt) {
 
             if(d & RESTING) continue;
             
-            if(this.grid[x + fX][ry + fY] === 0)
-                this.move(x, ry, x + fX, ry + fY);
+            if(this.grid[x][ry + 1] === 0)
+                this.move(x, ry, x, ry + 1);
 
             if(m.liquid) {
                 if(this.grid[x + xDir][ry] === 0) {
