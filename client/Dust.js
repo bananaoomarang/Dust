@@ -286,6 +286,8 @@ Dust.prototype.update = function(dt) {
 
             if(d & SOLID || d & LIFE || d & C4) continue;
 
+            if(!m) console.log(d);
+
             if(m.density < this.getMaterial(this.grid[rx][ry - 1]).density) {
                 if(d & FIRE) {
                     this.swap(rx, ry, rx, ry -1);
@@ -465,11 +467,10 @@ Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
             
             if(spawnX <= 0 || spawnY <= 0 || spawnX >= this.WIDTH || spawnY >= this.HEIGHT) continue;
 
-            if(nType) {
+            if(nType !== 'eraser') {
                 if(this.grid[spawnX][spawnY] === 0) this.dustCount++;
                 this.grid[spawnX][spawnY] = nType;
-            } else {
-                //Eraser
+            } else{
                 if(this.grid[spawnX][spawnY] !== 0) {
                     this.dustCount--;
                     this.destroy(spawnX, spawnY);
