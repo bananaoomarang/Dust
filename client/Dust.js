@@ -302,7 +302,7 @@ Dust.prototype.update = function(dt) {
                 this.move(rx, ry, rx, ry + 1);
 
             // NB This code is paraphrased from http://pok5.de/elementdots/js/dots.js, so full credit where it's due. 
-            if(m.liquid) {
+            if(m.liquid && rx + 3 < this.WIDTH && rx - 3 > 0) {
                 var r1 = this.grid[rx+1][ry];
                 var r2 = this.grid[rx+2][ry];
                 var r3 = this.grid[rx+3][ry]; 
