@@ -135,10 +135,15 @@ Dust.prototype.getGL = function() {
 
 Dust.prototype.update = function(dt) {
     var lived = false;
+        
+    var rx = Math.floor(Math.random() * 500)  % (this.grid.length -1),
+        xIncrement = 7;
 
     for (var x = 1; x < this.grid.length - 1; x++) {
-        var ry = Math.floor(Math.random() * 500)  % (this.grid.length -1),
+        var ry = Math.floor(Math.random() * 500)  % (this.grid[x].length -1),
             yIncrement = 2;
+
+        rx = (rx + xIncrement) % (this.grid.length - 1);
 
         for (var y = this.grid[x].length; y > 0; y--) {
             ry = (ry + yIncrement) % (this.grid.length - 1);
@@ -146,13 +151,13 @@ Dust.prototype.update = function(dt) {
             // If we think we're gonna incur OOBE, get the HELL out of there.
             if(ry === 0 || ry === this.grid[x].length) continue;
             
-            var d = this.grid[x][ry],
+            var d = this.grid[rx][ry],
                 m = this.getMaterial(d),
-                xDir = Math.round(Math.random()) < 0.5 ? 1 : -1;
+                xDir = Math.random() < 0.5 ? 1 : -1;
 
             if(d === 0) continue;
             
-            if(this.blacklist[x][ry]) continue;
+            if(this.blacklist[rx][ry]) continue;
 
             for (var e = 0; e < this.explosions.length; e++) {
                 var exp = this.explosions[e];
@@ -170,7 +175,7 @@ Dust.prototype.update = function(dt) {
             }
 
             if(d & INFECTANT) {
-                this.runOnSurrounds(x, ry, function(x, y) {
+                this.runOnSurrounds(rx, ry, function(x, y) {
                     if(x > 1 && x < this.WIDTH - 1 && y > 1 && y < this.HEIGHT - 1) {
                         var n = this.grid[x][y - 1],
                             ne = this.grid[x + 1][y - 1],
@@ -198,12 +203,12 @@ Dust.prototype.update = function(dt) {
                 if(this.lifeTimer.getTime() >= this.lifeTime) {
                     lived = true;
 
-                    var neighbours = this.countNeighbours(x, ry, true);
+                    var neighbours = this.countNeighbours(rx, ry, true);
 
-                    if(neighbours < 2) this.destroy(x, ry);
-                    if(neighbours > 3) this.destroy(x, ry);
+                    if(neighbours < 2) this.destroy(rx, ry);
+                    if(neighbours > 3) this.destroy(rx, ry);
 
-                    this.runOnSurrounds(x, ry, function(x, y) {
+                    this.runOnSurrounds(rx, ry, function(x, y) {
                         if(x > 1 && x < this.WIDTH - 1 && y > 1 && y < this.HEIGHT - 1) {
                             if(!this.blacklist[x][y] && this.grid[x][y] === 0) {
                                 neighbours = this.countNeighbours(x, y);
@@ -223,50 +228,50 @@ Dust.prototype.update = function(dt) {
             
             // This is a spring
             if(d & WATER && d & SOLID) {
-                this.infect(x, ry, 0, WATER);
+                this.infect(rx, ry, 0, WATER);
             }
             
             // Oil spring
             if(d & OIL && d & SOLID) {
-                this.infect(x, ry, 0, OIL);
+                this.infect(rx, ry, 0, OIL);
             }
             
             // Lava spring
             if(d & LAVA && d & SOLID) {
-                this.infect(x, ry, 0, LAVA);
+                this.infect(rx, ry, 0, LAVA);
             }
 
             if(d & FIRE) {
-                if(Math.random() > 0.8) this.grid[x][ry] |= BURNING;
+                if(Math.random() > 0.8) this.grid[rx][ry] |= BURNING;
             }
            
-            if(d & BURNING && Math.random() > 0.8 && !this.blacklist[x][ry]) {
-                if(d & C4) this.explode(x, ry, 40, 100);
+            if(d & BURNING && Math.random() > 0.8 && !this.blacklist[rx][ry]) {
+                if(d & C4) this.explode(rx, ry, 40, 100);
 
-                this.destroy(x, ry);
+                this.destroy(rx, ry);
             } else {
-                this.blacklist[x][ry] = true;
+                this.blacklist[rx][ry] = true;
             }
 
             // Chance that steam will condense + it will condense if it's surrounded by steam
             if(d & STEAM) {
                 if(Math.random() > 0.9999) {
-                    this.grid[x][ry] |= WATER;
-                    this.grid[x][ry] ^= STEAM;
-                } else if(this.surrounded(x, ry)) {
-                    this.grid[x][ry] |= WATER;
-                    this.grid[x][ry] ^= STEAM;
+                    this.grid[rx][ry] |= WATER;
+                    this.grid[rx][ry] ^= STEAM;
+                } else if(this.surrounded(rx, ry)) {
+                    this.grid[rx][ry] |= WATER;
+                    this.grid[rx][ry] ^= STEAM;
                 }
             }
 
             // Burn baby burn
             if(d & FIRE || d & LAVA || d & BURNING) {
-                this.infect(x, ry, LIFE, BURNING);
-                this.infect(x, ry, C4, BURNING);
+                this.infect(rx, ry, LIFE, BURNING);
+                this.infect(rx, ry, C4, BURNING);
                 
                 if (Math.random() > 0.5) {
-                    this.infect(x, ry, OIL, BURNING);
-                    this.infect(x, ry, WATER, STEAM, WATER);
+                    this.infect(rx, ry, OIL, BURNING);
+                    this.infect(rx, ry, WATER, STEAM, WATER);
                 }
             }
 
@@ -274,56 +279,65 @@ Dust.prototype.update = function(dt) {
             if(d & WATER) {
                 // Put out fires
                 if(Math.random() > 0.5) {
-                    this.runOnSurrounds(x, ry, this.destroy, FIRE);
-                    this.infect(x, ry, BURNING, BURNING);
+                    this.runOnSurrounds(rx, ry, this.destroy, FIRE);
+                    this.infect(rx, ry, BURNING, BURNING);
                 }
             }
 
             if(d & SOLID || d & LIFE || d & C4) continue;
 
-            if(m.density < this.getMaterial(this.grid[x][ry - 1]).density) {
+            if(m.density < this.getMaterial(this.grid[rx][ry - 1]).density) {
                 if(d & FIRE) {
-                    this.swap(x, ry, x, ry -1);
+                    this.swap(rx, ry, rx, ry -1);
                 } else if(Math.random() < 0.7) {
-                    this.swap(x, ry, x + xDir, ry - 1);
+                    this.swap(rx, ry, rx + xDir, ry - 1);
                 } else if(Math.random() < 0.7){
-                    this.swap(x, ry, x, ry -1);
+                    this.swap(rx, ry, rx, ry -1);
                 }
             }
 
             if(d & RESTING) continue;
             
+            if(this.grid[rx][ry + 1] === 0)
+                this.move(rx, ry, rx, ry + 1);
+
+            // NB This code is paraphrased from http://pok5.de/elementdots/js/dots.js, so full credit where it's due. 
             if(m.liquid) {
-                if(this.grid[x][ry + 1] !== 0) {
-                    if(this.grid[x + 1][ry] === 0 && this.grid[x - 1][ry] === 0) {
-                        //do something clever
-                    } else if(this.grid[x + 1][ry] !== 0 && this.grid[x - 1][ry] !== 0) {
-                        //do something else clever
-                    } else if(this.grid[x + 1][ry] === 0) {
-                        this.move(x, ry, x + 1, ry);
-                    } else if(this.grid[x - 1][ry] === 0) {
-                        this.move(x, ry, x - 1, ry);
-                    }
+                var r1 = this.grid[rx+1][ry];
+                var r2 = this.grid[rx+2][ry];
+                var r3 = this.grid[rx+3][ry]; 
+                var l1 = this.grid[rx-1][ry];
+                var l2 = this.grid[rx-2][ry];
+                var l3 = this.grid[rx-3][ry]; 
+                var c = this.grid[rx][ry];
+
+                var w = ((r1==c)?1:0) + ((r2==c)?1:0) + ((r3==c)?1:0) - ((l1==c)?1:0) - ((l2==c)?1:0) - ((l3==c)?1:0);
+
+                if (w<=0 && Math.random()<0.5) {
+                    if (r1===0 && this.grid[rx+1][ry-1] !== c) 
+                        this.move(rx,ry,rx+1,ry);
+                    else if (r2===0 && this.grid[rx+2][ry-1] !== c) 
+                        this.move(rx,ry,rx+2,ry);
+                    else if (r3===0 && this.grid[rx+3][ry-1] !== c) 
+                        this.move(rx,ry,rx+3,ry);
+                } else if (w>=0 && Math.random()<0.5) {
+                    if (l1===0 && this.grid[rx-1][ry-1] !== c) 
+                        this.move(rx,ry,rx-1,ry);
+                    else if (l2===0 && this.grid[rx-2][ry-1] !== c) 
+                        this.move(rx,ry,rx-2,ry);
+                    else if (l3===0 && this.grid[rx-3][ry-1] !== c) 
+                        this.move(rx,ry,rx-3,ry);
                 }
-            }
-
-            if(this.grid[x][ry + 1] === 0)
-                this.move(x, ry, x, ry + 1);
-
-            if(m.liquid) {
-                //if(this.grid[x + xDir][ry] === 0) {
-                //    this.move(x, ry, x + xDir, ry);
-                //}
             } else {
-                if(this.grid[x + xDir][ry + 1] === 0) {
+                if(this.grid[rx + xDir][ry + 1] === 0) {
                     //if(this.grid[x][ry] & SAND && Math.random() > 0.8) 
                         //this.grid[x][ry] |= RESTING;
                     //else 
-                        this.move(x, ry, x + xDir, ry + 1);
+                        this.move(rx, ry, rx + xDir, ry + 1);
                 } else {
                     // Check if the particle should be RESTING
-                    if(this.shouldLieDown(x, ry)) {
-                        this.grid[x][ry] |= RESTING;
+                    if(this.shouldLieDown(rx, ry)) {
+                        this.grid[rx][ry] |= RESTING;
                     }
                 }
             }
