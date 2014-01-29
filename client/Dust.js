@@ -261,10 +261,8 @@ Dust.prototype.update = function(dt) {
 
             // Burn baby burn
             if(d & FIRE || d & LAVA || d & BURNING) {
-                if(!this.blacklist[x][ry]) {
-                    this.infect(x, ry, LIFE, BURNING);
-                    this.infect(x, ry, C4, BURNING);
-                }
+                this.infect(x, ry, LIFE, BURNING);
+                this.infect(x, ry, C4, BURNING);
                 
                 if (Math.random() > 0.5) {
                     this.infect(x, ry, OIL, BURNING);
