@@ -293,13 +293,27 @@ Dust.prototype.update = function(dt) {
 
             if(d & RESTING) continue;
             
+            if(m.liquid) {
+                if(this.grid[x][ry + 1] !== 0) {
+                    if(this.grid[x + 1][ry] === 0 && this.grid[x - 1][ry] === 0) {
+                        //do something clever
+                    } else if(this.grid[x + 1][ry] !== 0 && this.grid[x - 1][ry] !== 0) {
+                        //do something else clever
+                    } else if(this.grid[x + 1][ry] === 0) {
+                        this.move(x, ry, x + 1, ry);
+                    } else if(this.grid[x - 1][ry] === 0) {
+                        this.move(x, ry, x - 1, ry);
+                    }
+                }
+            }
+
             if(this.grid[x][ry + 1] === 0)
                 this.move(x, ry, x, ry + 1);
 
             if(m.liquid) {
-                if(this.grid[x + xDir][ry] === 0) {
-                    this.move(x, ry, x + xDir, ry);
-                }
+                //if(this.grid[x + xDir][ry] === 0) {
+                //    this.move(x, ry, x + xDir, ry);
+                //}
             } else {
                 if(this.grid[x + xDir][ry + 1] === 0) {
                     //if(this.grid[x][ry] & SAND && Math.random() > 0.8) 
