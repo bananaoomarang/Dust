@@ -64,7 +64,6 @@ function Dust() {
     this.grid = new Array2D(this.WIDTH, this.HEIGHT);
     this.blacklist = new Array2D(this.WIDTH, this.HEIGHT);
     this.explosions = [];
-    this.explosives = [];
     this.dustCount = 0;
 
     this.lifeTimer = new Timer();
@@ -160,7 +159,7 @@ Dust.prototype.update = function(dt) {
 
                 if(!exp.updated) {
                     exp.update();
-                    this.spawnHollowCircle(exp.x, exp.y, FIRE, exp.radius);
+                    this.spawnCircle(exp.x, exp.y, FIRE, exp.radius);
                 }
 
                 if(exp.force === 0) {
@@ -242,7 +241,7 @@ Dust.prototype.update = function(dt) {
             }
            
             if(d & BURNING && Math.random() > 0.8 && !this.blacklist[x][ry]) {
-                if(d & C4) this.explode(x, ry, 10, 100);
+                if(d & C4) this.explode(x, ry, 40, 100);
 
                 this.destroy(x, ry);
             } else {
@@ -420,11 +419,12 @@ Dust.prototype.spawnRect = function(x, y, w, h, type, infect) {
 Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
     var radius = brushSize || 10;
 
-    if((x - radius) < 0 || (y - radius) < 0 || (x + radius) > this.WIDTH || (y + radius) > this.HEIGHT) return;
 
-    if(this.dustCount + Math.round(2*Math.PI*Math.pow(radius, 2)) >= this.MAX_DUST && type !== 'eraser') return;
+    //if(this.dustCount + Math.round(2*Math.PI*Math.pow(radius, 2)) >= this.MAX_DUST && type !== 'eraser') return;
 
-    var nType;
+    var nType,
+        segments = 500,
+        step = (2*Math.PI) / segments;
     
     if(infect && type !== 'eraser') {
         nType = (INFECTANT | this.getType(type));
@@ -433,9 +433,11 @@ Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
     }
 
     for(var r = radius; r > 0; r--) {
-        for(var i = 0; i < 2*Math.PI; i += 0.01) {
+        for(var i = 0; i < 2*Math.PI; i += step) {
             var spawnX = x + Math.floor(r*Math.sin(i)),
                 spawnY = y + Math.floor(r*Math.cos(i));
+            
+            if(spawnX <= 0 || spawnY <= 0 || spawnX >= this.WIDTH || spawnY >= this.HEIGHT) continue;
 
             if(nType) {
                 if(this.grid[spawnX][spawnY] === 0) this.dustCount++;

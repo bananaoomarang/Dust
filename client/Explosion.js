@@ -1,5 +1,3 @@
-var Timer = require('./Timer');
-
 module.exports = Explosion;
 
 function Explosion(x, y, f, radius) {
@@ -12,11 +10,11 @@ function Explosion(x, y, f, radius) {
 }
 
 Explosion.prototype.update = function() {
-    this.radius += 1 * (this.force);
+    this.radius += this.force;
 
     this.updated = true;
-
-    if(this.radius > this.radiusLimit) {
+    
+    if(this.radius >= this.radiusLimit) {
         this.force = 0;
     }
 };
