@@ -160,17 +160,16 @@ Dust.prototype.update = function(dt) {
             for (var e = 0; e < this.explosions.length; e++) {
                 var exp = this.explosions[e];
 
-                if(!exp.updated) exp.update();
+                if(!exp.updated) {
+                    exp.update();
+                    this.spawnHollowCircle(exp.x, exp.y, FIRE, exp.radius);
+                }
 
                 if(exp.force === 0) {
                     this.explosions.splice(e, 1);
                     e--;
                 }
 
-                var force = exp.getForce(x, ry);
-
-                fX += force.x;
-                fY += force.y;
             }
 
             if(x + fX <= 1 || x + fX >= this.WIDTH - 1 || y + fY <= 0 || y + fY >= this.HEIGHT -1){
@@ -251,7 +250,7 @@ Dust.prototype.update = function(dt) {
             }
            
             if(d & BURNING && Math.random() > 0.8 && !this.blacklist[x][ry]) {
-                if(d & C4 && this.nextTo(x, ry, -1) && Math.random() > 0.999) this.explode(x, ry, 100, 200);
+                if(d & C4) this.explode(x, ry, 10, 100);
 
                 this.destroy(x, ry);
             } else {
@@ -431,14 +430,14 @@ Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
 
     if((x - radius) < 0 || (y - radius) < 0 || (x + radius) > this.WIDTH || (y + radius) > this.HEIGHT) return;
 
-    if(this.dustCount + 50 >= this.MAX_DUST && type !== 'eraser') return;
+    if(this.dustCount + Math.round(2*Math.PI*Math.pow(radius, 2)) >= this.MAX_DUST && type !== 'eraser') return;
 
     var nType;
     
     if(infect && type !== 'eraser') {
         nType = (INFECTANT | this.getType(type));
     } else {
-        nType = this.getType(type);
+        nType = this.getType(type) || type;
     }
 
     for(var r = radius; r > 0; r--) {
@@ -459,6 +458,23 @@ Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
             }
         }
     }
+};
+
+Dust.prototype.spawnHollowCircle = function(x, y, type, radius) {
+    if((x - radius) < 0 || (y - radius) < 0 || (x + radius) > this.WIDTH || (y + radius) > this.HEIGHT) return;
+
+    var nType = this.getType(type) || type;
+
+    for(var i = 0; i < 2*Math.PI; i += 0.01) {
+        var spawnX = x + Math.floor(radius*Math.sin(i)),
+            spawnY = y + Math.floor(radius*Math.cos(i));
+
+        if(nType) {
+            if(this.grid[spawnX][spawnY] === 0) this.dustCount++;
+            this.grid[spawnX][spawnY] = nType;
+        }
+    }
+
 };
 
 // Returns numerical code for material type
