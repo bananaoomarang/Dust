@@ -65,12 +65,16 @@ function main() {
         var name = $('input[name=levelName]', '#saveMenu').val();
 
         DUST.saveLevel(name);
+        
+        $('#saveButton').blur();
     });
     
     $('#loadButton').click(function() {
         var name = $('input[name=levelName]', '#saveMenu').val();
 
         DUST.loadLevel(name);
+
+        $('#loadButton').blur();
     });
     
     tick();
