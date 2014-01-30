@@ -60,6 +60,14 @@ function main() {
                 break;
         }
     });
+
+    $('#saveButton').click(function() {
+        DUST.saveLevel();
+    });
+    
+    $('#loadButton').click(function() {
+        DUST.loadLevel();
+    });
     
     tick();
 
@@ -80,18 +88,17 @@ function main() {
         timer.reset();
     }
     
-    DUST.socket.on('client connected', function(data) {
-        var ip = "192.168.1.77";
+    //DUST.socket.on('client connected', function(data) {
+        //var ip = "192.168.1.77";
 
-        if(data === 1) {
-            DUST.client = new Client(ip, "red");
-            DUST.client.turn = true;
-        } else if(data === 2) {
-            DUST.client = new Client(ip, "blue");
-        } else if(data > 2) {
-            DUST.client = new Client(ip);
-        }
+        //if(data === 1) {
+            //DUST.client = new Client(ip, "red");
+            //DUST.client.turn = true;
+        //} else if(data === 2) {
+            //DUST.client = new Client(ip, "blue");
+        //} else if(data > 2) {
+            //DUST.client = new Client(ip);
+        //}
 
-    });
-
+    //});
 }

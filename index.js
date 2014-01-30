@@ -1,13 +1,46 @@
 var express = require("express"),
-    app = require("express")(),
+    app = express(),
     server = require('http').createServer(app),
     io = require("socket.io").listen(server),
+    levelup = require('level'),
     connections = 0;
+
+var db = levelup('./leveldb');
 
 server.listen(9966);
 console.log('\n   Server listening on 9966');
 
+app.configure(function() {
+    app.use(express.bodyParser());
+    app.use(app.router);
+});
+
 app.use(express.static(__dirname + "/public"));
+
+app.post('/saveLevel/:name', function(req, res) {
+    if(!req.body) return console.error("Oh my... Didn't receive the data :'(");
+
+    var grid = req.body;
+
+
+    db.put(req.params.name, JSON.stringify(grid), function(err) {
+        if(err) return console.error("Ooopsie ", err);
+    });
+
+    res.status(200);
+    res.end();
+});
+
+app.get('/loadLevel/:name', function(req, res) {
+    db.get(req.params.name, function(err, grid) {
+        if(err) return console.error("Ooopsie ", err);
+
+        res.contentType('json');
+        res.send(JSON.stringify(grid));
+        res.status(200);
+        res.end();
+    });
+});
 
 io.sockets.on('connection', function (socket) {
     connections++;

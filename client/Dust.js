@@ -28,7 +28,7 @@ var SAND = 1,
 function Dust() {
     var self = this;
 
-    this.socket = io.connect('http://192.168.1.77:9966');
+    //this.socket = io.connect('http://192.168.1.77:9966');
 
     this.WIDTH  = $('#canvainer').width();
     this.HEIGHT = $('#canvainer').height();
@@ -851,6 +851,27 @@ Dust.prototype.mvTranslate = function(x, y) {
 Dust.prototype.mvScale = function(xs, ys) {
     this.modelViewMatrix[0] = xs;
     this.modelViewMatrix[4] = ys;
+};
+
+Dust.prototype.saveLevel = function() {
+    $.ajax({
+        type: "POST",
+        url: "/saveLevel/potato",
+        contentType: 'application/json',
+        data: JSON.stringify(this.grid),
+        success: function(data) {
+            console.log(data);
+        }
+    });
+};
+
+Dust.prototype.loadLevel = function() {
+    var self = this;
+
+    $.get("/loadLevel/potato", function(grid) {
+        self.grid = JSON.parse(grid);
+        //self.grid = grid;
+    });
 };
 
 // Assorted functions

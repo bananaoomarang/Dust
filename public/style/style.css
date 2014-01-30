@@ -25,7 +25,7 @@ h1 {
 
 #menu {
     width: 300px;
-    height: 250px;
+    height: 500px;
     float: right;
     margin-top: -500px;
     margin-right: 100px;
@@ -42,6 +42,7 @@ label {
     font-size: 14px;
     float: left;
 }
+
 #proTips {
     padding-top: 20px;
 }
@@ -49,4 +50,38 @@ label {
 .proTip {
     font-family: 'Crimson Text', Georgia, Times, serif;
     font-size: 20px;
+}
+
+button {
+    -webkit-font-smoothing: antialiased;
+    font-smoothing: antialiased;
+    font-family: 'Crimson Text', Georgia, Times, serif;
+    color: #FFFFFF;
+    text-shadow: 0px 2px 0px rgba(0, 0, 0, 0.2);
+    border: 2px solid #eee;
+    width: 100px;
+    height: 40px;
+    background: #47A8FC;
+
+    -webkit-border-radius: 30px;
+    -moz-border-radius: 30px;
+    border-radius: 30px;
+   
+    background-image: -webkit-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2));
+    background-image: -moz-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2));
+    background-image: -o-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2));
+    background-image: -ms-linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2));
+    background-image: linear-gradient(top, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.2));
+}
+
+button:hover {
+}
+
+button:active {
+    text-shadow: 0px 0px 0px rgba(0, 0, 0, 0.0);
+    background-image: -webkit-linear-gradient(bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
+    background-image: -moz-linear-gradient(bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
+    background-image: -o-linear-gradient(bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
+    background-image: -ms-linear-gradient(bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
+    background-image: linear-gradient(bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.4));
 }

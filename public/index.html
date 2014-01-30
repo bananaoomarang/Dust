@@ -9,6 +9,9 @@
         <a id="fps"></a>
 
         <a href="https://github.com/bananaoomarang/Dust"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub"></a>
+        
+        <button id="saveButton" class="menu-item" type="button" name="save">Save Level</button>
+        <button id="loadButton" class="menu-item" type="button" name="load">Load Level</button>
 
         <div id="canvainer"></div>
 
@@ -35,14 +38,17 @@
             <label for="life">Life Itself</label></br>
             <input class="menu-item" type="radio" name="dustType" value="C4">
             <label for="C4">C4 ;)</label></br>
+
             <input class="menu-item" type="radio" name="dustType" value="eraser">
             <label for="eraser">Eraser</label></br>
+
             <input class="menu-item" type="checkbox" name="infectant" value="infectant">
             <label for="infectant">Infectant</label></br>
-            <input class="menu-item" type="range" name="brushSize" min=1 max=20 step=1 value=10>
-            <label for="brushSize">Brush Size</label>
-        </form>
 
+            <input class="menu-item" type="range" name="brushSize" min=1 max=20 step=1 value=10>
+            <label for="brushSize">Brush Size</label></br>
+        </form>
+            
         <div id="proTips">
             <a class="proTip">Press space to pause</a>
         </div>
