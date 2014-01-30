@@ -144,6 +144,8 @@ Dust.prototype.update = function(dt) {
             yIncrement = 2;
 
         rx = (rx + xIncrement) % (this.grid.length - 1);
+            
+        if(rx === 0 || rx === this.grid[x].length) continue;
 
         for (var y = this.grid[x].length; y > 0; y--) {
             ry = (ry + yIncrement) % (this.grid.length - 1);
