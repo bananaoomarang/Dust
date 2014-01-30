@@ -10,8 +10,13 @@
 
         <a href="https://github.com/bananaoomarang/Dust"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub"></a>
         
-        <button id="saveButton" class="menu-item" type="button" name="save">Save Level</button>
-        <button id="loadButton" class="menu-item" type="button" name="load">Load Level</button>
+        <form id="saveMenu">
+            <button id="saveButton" class="menu-item" type="button" name="save">Save Level</button>
+            <button id="loadButton" class="menu-item" type="button" name="load">Load Level</button>
+
+            <input class="menu-item" type="text" name="levelName" value="potato">
+            <label for="levelName">Level Name</label></br>
+        </form>
 
         <div id="canvainer"></div>
 

@@ -853,10 +853,10 @@ Dust.prototype.mvScale = function(xs, ys) {
     this.modelViewMatrix[4] = ys;
 };
 
-Dust.prototype.saveLevel = function() {
+Dust.prototype.saveLevel = function(name) {
     $.ajax({
         type: "POST",
-        url: "/saveLevel/potato",
+        url: "/saveLevel/" + name,
         contentType: 'application/json',
         data: JSON.stringify(this.grid),
         success: function(data) {
@@ -865,12 +865,12 @@ Dust.prototype.saveLevel = function() {
     });
 };
 
-Dust.prototype.loadLevel = function() {
+Dust.prototype.loadLevel = function(name) {
     var self = this;
 
-    $.get("/loadLevel/potato", function(grid) {
+    $.get("/loadLevel/" + name, function(grid) {
         self.grid = JSON.parse(grid);
-        //self.grid = grid;
+        self.paused = true;
     });
 };
 

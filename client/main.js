@@ -62,11 +62,15 @@ function main() {
     });
 
     $('#saveButton').click(function() {
-        DUST.saveLevel();
+        var name = $('input[name=levelName]', '#saveMenu').val();
+
+        DUST.saveLevel(name);
     });
     
     $('#loadButton').click(function() {
-        DUST.loadLevel();
+        var name = $('input[name=levelName]', '#saveMenu').val();
+
+        DUST.loadLevel(name);
     });
     
     tick();
