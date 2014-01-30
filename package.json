@@ -5,6 +5,7 @@
     "dependencies": {
         "express": "3.3.5",
         "socket.io": "0.9.16",
+        "browserify": "2.34.0",
         "jquery-browserify": "*",
         "brfs": "0.0.8"
     },
