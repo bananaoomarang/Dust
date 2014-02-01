@@ -11,47 +11,61 @@
         <a href="https://github.com/bananaoomarang/Dust"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub"></a>
         
         <form id="saveMenu">
-            <button id="saveButton" class="menu-item" type="button" name="save">Save Level</button>
-            <button id="loadButton" class="menu-item" type="button" name="load">Load Level</button>
+            <div class="buttonDiv">
+                <button id="saveButton" class="menu-item" type="button" name="save">Save Level</button>
+            </div>
+            <div class="buttonDiv">
+                <button id="loadButton" class="menu-item" type="button" name="load">Load Level</button>
+            </div>
 
-            <input class="menu-item" type="text" name="levelName" value="potato">
-            <label for="levelName">Level Name</label></br>
+            <input class="menu-item" type="text" name="levelName" id="levelName" value="potato">
+            <label class="textLabel" for="levelName">Level Name</label></br>
         </form>
 
         <div id="canvainer"></div>
 
         <form id="menu">
-            <input class="menu-item" type="radio" name="dustType" value="sand" checked>
-            <label for="sand">Sand</label></br>
-            <input class="menu-item" type="radio" name="dustType" value="oil">
-            <label for="oil">Oil</label></br>
-            <input class="menu-item" type="radio" name="dustType" value="fire">
-            <label for="fire">Fire</label></br>
-            <input class="menu-item" type="radio" name="dustType" value="water">
-            <label for="water">Water</label></br>
-            <input class="menu-item" type="radio" name="dustType" value="solid">
-            <label for="solid">Solid</label></br>
-            <input class="menu-item" type="radio" name="dustType" value="lava">
-            <label for="lava">Lava</label></br>
-            <input class="menu-item" type="radio" name="dustType" value="spring">
-            <label for="spring">Spring</label></br>
-            <input class="menu-item" type="radio" name="dustType" value="volcanic">
-            <label for="volcanic">Volcanic</label></br>
-            <input class="menu-item" type="radio" name="dustType" value="oil well">
-            <label for="oil well">Oil Well</label></br>
-            <input class="menu-item" type="radio" name="dustType" value="life">
-            <label for="life">Life Itself</label></br>
-            <input class="menu-item" type="radio" name="dustType" value="C4">
-            <label for="C4">C4 ;)</label></br>
+            <input class="menu-item" type="radio" name="dustType" id="sand" value="sand" checked>
+            <label class="radioLabel" for="sand">Sand</label></br>
 
-            <input class="menu-item" type="radio" name="dustType" value="eraser">
-            <label for="eraser">Eraser</label></br>
+            <input class="menu-item" type="radio" name="dustType" id="oil" value="oil">
+            <label class="radioLabel" for="oil">Oil</label></br>
 
-            <input class="menu-item" type="checkbox" name="infectant" value="infectant">
-            <label for="infectant">Infectant</label></br>
+            <input class="menu-item" type="radio" name="dustType" id="fire" value="fire">
+            <label class="radioLabel" class=for="fire">Fire</label></br>
 
-            <input class="menu-item" type="range" name="brushSize" min=1 max=20 step=1 value=10>
-            <label for="brushSize">Brush Size</label></br>
+            <input class="menu-item" type="radio" name="dustType" id="water" value="water">
+            <label class="radioLabel" for="water">Water</label></br>
+
+            <input class="menu-item" type="radio" name="dustType" id="solid" value="solid">
+            <label class="radioLabel" for="solid">Solid</label></br>
+
+            <input class="menu-item" type="radio" name="dustType" id="lava" value="lava">
+            <label class="radioLabel" for="lava">Lava</label></br>
+
+            <input class="menu-item" type="radio" name="dustType" id="spring" value="spring">
+            <label class="radioLabel" for="spring">Spring</label></br>
+
+            <input class="menu-item" type="radio" name="dustType" id="volcanic" value="volcanic">
+            <label class="radioLabel" for="volcanic">Volcanic</label></br>
+
+            <input class="menu-item" type="radio" name="dustType" id="oil well" value="oil well">
+            <label class="radioLabel" for="oil well">Oil Well</label></br>
+
+            <input class="menu-item" type="radio" name="dustType" id="life" value="life">
+            <label class="radioLabel" for="life">Life Itself</label></br>
+
+            <input class="menu-item" type="radio" name="dustType" id="C4" value="C4">
+            <label class="radioLabel" for="C4">C4 ;)</label></br>
+
+            <input class="menu-item" type="radio" name="dustType" id="eraser" value="eraser">
+            <label class="radioLabel" for="eraser">Eraser</label></br>
+
+            <input class="menu-item" type="checkbox" name="infectant" id="infectant" value="infectant">
+            <label class="radioLabel" for="infectant">Infectant</label></br>
+
+            <input class="menu-item" type="range" name="brushSize" id="brushSize" min=1 max=20 step=1 value=10>
+            <label class="sliderLabel" for="brushSize">Brush Size</label></br>
         </form>
             
         <div id="proTips">
