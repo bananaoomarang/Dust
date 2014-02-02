@@ -302,7 +302,7 @@ Dust.prototype.update = function(dt) {
             }
 
             if(d & RESTING) continue;
-            
+
             if(this.grid[rx][ry + 1] === 0)
                 this.move(rx, ry, rx, ry + 1);
 
