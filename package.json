@@ -7,20 +7,18 @@
   "dependencies": {
     "express": "3.3.5",
     "socket.io": "0.9.16",
-    "level": "0.18.0"
+    "level": "0.18.0",
+    "browserify-shim": "~3.2.2",
+    "brfs": "0.0.8",
+    "browserify": "~3.24.10"
   },
 
   "scripts": {
     "start": "browserify . -d -o public/bundle.js && node index.js"
   },
 
-  "devDependencies": {
-    "browserify-shim": "~3.2.2",
-    "brfs": "0.0.8",
-    "browserify": "~3.24.10"
-  },
-
   "main": "./client/main.js",
+  
   "browser": {
       "nouislider": "./client/lib/jquery.nouislider.min.js"
   },
