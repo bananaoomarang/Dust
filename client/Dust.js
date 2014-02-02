@@ -449,7 +449,6 @@ Dust.prototype.spawnRect = function(x, y, w, h, type, infect) {
 Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
     var radius = brushSize || 10;
 
-
     //if(this.dustCount + Math.round(2*Math.PI*Math.pow(radius, 2)) >= this.MAX_DUST && type !== 'eraser') return;
 
     var nType,

@@ -2,8 +2,9 @@ var $ = require('jquery'),
     Client = require('./Client'),
     Dust = require('./Dust'),
     Timer = require('./Timer'),
-    Vector = require('./Vector'),
-    nouislider = require('nouislider');
+    Vector = require('./Vector');
+
+require('nouislider');
 
 $(document).ready(main);
 
@@ -21,9 +22,10 @@ function main() {
     var offset = $('canvas').offset();
 
     $('#brushSize').noUiSlider({
-        range: [0, 100],
-        start: [20, 80],
-        connect: true
+        range: [1, 60],
+        start: 10,
+        connect: "lower",
+        handles: 1
     });
 
     $('canvas').mousedown(function(e) {
@@ -38,7 +40,7 @@ function main() {
 
                 var type = $('input[name=dustType]:checked', '#menu').val(),
                     infect = $('input[name=infectant]:checked', '#menu').val(),
-                    brushGirth = parseInt($('input[name=brushSize]', '#menu').val());
+                    brushGirth = parseInt($('#brushSize').val());
 
                 DUST.spawnCircle(x, y, type, brushGirth, infect);
 
