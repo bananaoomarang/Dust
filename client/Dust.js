@@ -258,11 +258,9 @@ Dust.prototype.update = function(dt) {
             // Chance that steam will condense + it will condense if it's surrounded by steam
             if(d & STEAM) {
                 if(Math.random() > 0.9999) {
-                    this.grid[rx][ry] |= WATER;
-                    this.grid[rx][ry] ^= STEAM;
+                    this.spawn(rx, ry, WATER);
                 } else if(this.surrounded(rx, ry)) {
-                    this.grid[rx][ry] |= WATER;
-                    this.grid[rx][ry] ^= STEAM;
+                    this.spawn(rx, ry, WATER);
                 }
             }
 
@@ -288,15 +286,15 @@ Dust.prototype.update = function(dt) {
 
             if(d & SOLID || d & LIFE || d & C4) continue;
 
-            if(!m) console.log(d);
-
             if(m.density < this.getMaterial(this.grid[rx][ry - 1]).density) {
-                if(d & FIRE) {
-                    this.swap(rx, ry, rx, ry -1);
-                } else if(Math.random() < 0.7) {
-                    this.swap(rx, ry, rx + xDir, ry - 1);
-                } else if(Math.random() < 0.7){
-                    this.swap(rx, ry, rx, ry -1);
+                if(!(this.grid[rx][ry - 1] & SOLID) && !(this.grid[rx][ry - 1] & LIFE) && !(this.grid[rx][ry - 1] & C4)) {
+                    if(d & FIRE) {
+                        this.swap(rx, ry, rx, ry -1);
+                    } else if(Math.random() < 0.7) {
+                        this.swap(rx, ry, rx + xDir, ry - 1);
+                    } else if(Math.random() < 0.7){
+                        this.swap(rx, ry, rx, ry -1);
+                    }
                 }
             }
 
