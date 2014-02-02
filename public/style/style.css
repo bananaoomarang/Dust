@@ -8,6 +8,7 @@ body {
 h1 {
     font-family: 'Crimson Text', Georgia, Times, serif;
     font-size: 40px;
+    line-height: 50px;
 }
 
 #canvainer {
