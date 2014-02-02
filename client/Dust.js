@@ -286,8 +286,11 @@ Dust.prototype.update = function(dt) {
 
             if(d & SOLID || d & LIFE || d & C4) continue;
 
-            if(m.density < this.getMaterial(this.grid[rx][ry - 1]).density) {
-                if(!(this.grid[rx][ry - 1] & SOLID) && !(this.grid[rx][ry - 1] & LIFE) && !(this.grid[rx][ry - 1] & C4)) {
+            var um = this.getMaterial(this.grid[rx][ry - 1]),
+                uxDirm = this.getMaterial(this.grid[rx + xDir][ry - 1]);
+
+            if(typeof um.density !== 'undefined' && typeof uxDirm.density !== 'undefined') {
+                if(m.density < um.density) {
                     if(d & FIRE) {
                         this.swap(rx, ry, rx, ry -1);
                     } else if(Math.random() < 0.7) {
@@ -530,7 +533,7 @@ Dust.prototype.getType = function(typeString) {
 };
 
 Dust.prototype.getMaterial = function(s) {
-    if(s === 0)   return this.materials.space;
+    if(s === 0) return this.materials.space;
     if(s & SAND)  return this.materials.sand;
     if(s & OIL)   return this.materials.oil;
     if(s & FIRE)  return this.materials.fire;
