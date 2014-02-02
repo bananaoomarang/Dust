@@ -1,4 +1,4 @@
-var $ = require('jquery-browserify'),
+var $ = require('jquery'),
     Vector = require('./Vector'),
     Timer = require('./Timer'),
     AABB = require('./AABB'),

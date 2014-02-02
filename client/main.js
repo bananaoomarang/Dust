@@ -1,8 +1,9 @@
-var Client = require('./Client'),
+var $ = require('jquery'),
+    Client = require('./Client'),
     Dust = require('./Dust'),
-    $ = require('jquery-browserify'),
     Timer = require('./Timer'),
-    Vector = require('./Vector');
+    Vector = require('./Vector'),
+    nouislider = require('nouislider');
 
 $(document).ready(main);
 
@@ -18,6 +19,12 @@ function main() {
 
     $('#fps').html(0 + 'fps');
     var offset = $('canvas').offset();
+
+    $('#brushSize').noUiSlider({
+        range: [0, 100],
+        start: [20, 80],
+        connect: true
+    });
 
     $('canvas').mousedown(function(e) {
         e.preventDefault();

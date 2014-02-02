@@ -1,17 +1,33 @@
 {
-    "name": "Dust",
-    "description": "Massively Multiplayer Physics Simulation",
-    "version": "0.0.1",
-    "dependencies": {
-        "express": "3.3.5",
-        "socket.io": "0.9.16",
-        "browserify": "2.34.0",
-        "jquery-browserify": "*",
-        "brfs": "0.0.8",
-        "level": "0.18.0"
-    },
-    "scripts": {
-        "start": "browserify -d -t brfs client/main.js -o public/bundle.js && node index.js"
-    },
-    "license": "MIT"
+  "name": "Dust",
+  "description": "Massively Multiplayer Physics Simulation",
+  "version": "0.0.1",
+  "license": "MIT",
+
+  "dependencies": {
+    "express": "3.3.5",
+    "socket.io": "0.9.16",
+    "level": "0.18.0"
+  },
+
+  "scripts": {
+    "start": "browserify . -d -o public/bundle.js && node index.js"
+  },
+
+  "devDependencies": {
+    "browserify-shim": "~3.2.2",
+    "brfs": "0.0.8",
+    "browserify": "~3.24.10"
+  },
+
+  "main": "./client/main.js",
+  "browser": {
+      "nouislider": "./client/lib/jquery.nouislider.min.js"
+  },
+  "browserify-shim": {
+      "jquery": "global: $"
+  },
+  "browserify": {
+      "transform": ["brfs", "browserify-shim"]
+  }
 }
