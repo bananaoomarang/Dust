@@ -5,6 +5,7 @@ var $ = require('jquery'),
     Vector = require('./Vector');
 
 require('nouislider');
+require('autocomplete');
 
 $(document).ready(main);
 
@@ -85,7 +86,16 @@ function main() {
 
         $('#loadButton').blur();
     });
-    
+
+    var lookupStrings = ["Anser", "Carion", "Love", "Seralius", "Lumen", "Spiriadne"];
+
+    $('#levelName').autocomplete({
+        serviceUrl: '/listLevels',
+        onSelect: function(suggestion) {
+            console.log('user selected', suggestion.value);
+        }
+    });
+
     tick();
 
     function tick() {

@@ -78,6 +78,26 @@ label {
     height: 50px;
 }
 
+.autocomplete-suggestions { 
+    /*border: 1px solid #999; */
+    background: #fff; 
+    cursor: default; 
+    overflow: auto; 
+}
+.autocomplete-suggestion { 
+    font-size: 14px; 
+    white-space: nowrap; 
+    overflow: hidden; 
+    border: 0.5px solid #999; 
+}
+.autocomplete-selected { 
+    background: #f0f0f0; 
+}
+.autocomplete-suggestions strong { 
+    font-weight: normal; 
+    color: #47A8FC;
+}
+
 button {
     display: block;
     -webkit-font-smoothing: antialiased;

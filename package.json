@@ -20,7 +20,8 @@
   "main": "./client/main.js",
   
   "browser": {
-      "nouislider": "./client/lib/jquery.nouislider.min.js"
+      "nouislider": "./client/lib/jquery.nouislider.min.js",
+      "autocomplete": "./client/lib/jquery.autocomplete.min.js"
   },
   "browserify-shim": {
       "jquery": "global: $"

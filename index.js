@@ -44,6 +44,22 @@ app.get('/loadLevel/:name', function(req, res) {
     });
 });
 
+app.get('/listLevels', function(req, res) {
+    var levelList = [],
+        query = req.query.query,
+        match = new RegExp(query, 'i');
+
+    db.createKeyStream().on('data', function(key) {
+        if(key.match(match)) levelList.push(key);
+    }).on('error', function(err) {
+        res.write("Holy mother of Javascript, CAN'T READ THE DAMN LEVEL LIST: ", err);
+    }).on('end', function() {
+        res.send({ suggestions: levelList });
+        res.status(200);
+        res.end();
+    });
+});
+
 io.sockets.on('connection', function (socket) {
     connections++;
     socket.emit('client connected', connections);
