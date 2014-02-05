@@ -7,10 +7,10 @@ var express = require("express"),
 
 var db = levelup('./leveldb');
 
-var PORT = process.env.PORT || 9966;
+var PORT = process.env.PORT || 2368;
 
 server.listen(PORT);
-console.log('\n   Server listening on ' + process.env.PORT || 9966);
+console.log('\n   Server listening on ' + PORT);
 
 app.configure(function() {
     app.use(express.bodyParser());
