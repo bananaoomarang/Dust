@@ -467,7 +467,7 @@ Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
             var spawnX = x + Math.floor(r*Math.sin(i)),
                 spawnY = y + Math.floor(r*Math.cos(i));
             
-            if(spawnX <= 0 || spawnY <= 0 || spawnX >= this.WIDTH || spawnY >= this.HEIGHT) continue;
+            if(spawnX <= 0 || spawnY <= 0 || spawnX >= this.WIDTH - 1|| spawnY >= this.HEIGHT - 1) continue;
 
             if(nType !== 'eraser') {
                 if(this.grid[spawnX][spawnY] === 0) this.dustCount++;
@@ -600,6 +600,8 @@ Dust.prototype.nextTo = function(x, y, flag) {
 };
 
 Dust.prototype.move = function(ox, oy, nx, ny) {
+    if(nx === 0 || nx >= this.WIDTH - 1 || ny === 0 || ny >= this.HEIGHT - 1) return;
+
     var d = this.grid[ox][oy];
 
     this.grid[ox][oy] = 0;
@@ -610,6 +612,8 @@ Dust.prototype.move = function(ox, oy, nx, ny) {
 };
 
 Dust.prototype.swap = function(x1, y1, x2, y2) {
+    if(x2 === 0 || x2 >= this.WIDTH - 1 || y2 === 0 || y2 >= this.HEIGHT - 1) return;
+    
     var d1 = this.grid[x1][y1];
     var d2 = this.grid[x2][y2];
 
@@ -793,6 +797,8 @@ Dust.prototype.clearBlacklist = function() {
 };
 
 Dust.prototype.spawn = function(x, y, type) {
+    if(nx === 0 || nx === this.WIDTH - 1 || ny === 0 || ny === this.HEIGHT - 1) return;
+    
     if(!(this.grid[x][y] & type) && this.dustCount <= this.MAX_DUST) {
         this.grid[x][y] = type;
         this.blacklist[x][y] = true;

@@ -94,7 +94,7 @@ label {
     background: #f0f0f0; 
 }
 .autocomplete-suggestions strong { 
-    font-weight: normal; 
+    font-weight: bold; 
     color: #47A8FC;
 }
 
