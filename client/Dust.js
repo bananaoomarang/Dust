@@ -797,7 +797,7 @@ Dust.prototype.clearBlacklist = function() {
 };
 
 Dust.prototype.spawn = function(x, y, type) {
-    if(nx === 0 || nx === this.WIDTH - 1 || ny === 0 || ny === this.HEIGHT - 1) return;
+    if(x === 0 || x === this.WIDTH - 1 || y === 0 || y === this.HEIGHT - 1) return;
     
     if(!(this.grid[x][y] & type) && this.dustCount <= this.MAX_DUST) {
         this.grid[x][y] = type;

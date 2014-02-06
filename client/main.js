@@ -96,8 +96,6 @@ function main() {
         }
     });
 
-    tick();
-
     function tick() {
         requestAnimationFrame(tick);
 
@@ -114,6 +112,8 @@ function main() {
 
         timer.reset();
     }
+    
+    tick();
     
     //DUST.socket.on('client connected', function(data) {
         //var ip = "192.168.1.77";
