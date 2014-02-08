@@ -254,6 +254,8 @@ Dust.prototype.update = function(dt) {
             } else {
                 this.blacklist[rx][ry] = true;
             }
+            
+            if(d & SOLID || d & LIFE || d & C4) continue;
 
             // Chance that steam will condense + it will condense if it's surrounded by steam
             if(d & STEAM) {
@@ -283,8 +285,6 @@ Dust.prototype.update = function(dt) {
                     this.infect(rx, ry, BURNING, BURNING);
                 }
             }
-
-            if(d & SOLID || d & LIFE || d & C4) continue;
 
             var um = this.getMaterial(this.grid[rx][ry - 1]),
                 uxDirm = this.getMaterial(this.grid[rx + xDir][ry - 1]);
