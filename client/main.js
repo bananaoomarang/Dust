@@ -68,6 +68,14 @@ function main() {
                 else
                     DUST.paused = true;
                 break;
+            // R
+            case 82:
+                for (var x = 0; x < DUST.grid.length; x++) {
+                    for (var y = 0; y < DUST.grid[x].length; y++) {
+                        DUST.grid[x][y] = 0;
+                    }
+                }
+                break;
         }
     });
 
