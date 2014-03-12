@@ -451,7 +451,7 @@ Dust.prototype.spawnRect = function(x, y, w, h, type, infect) {
 Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
     var radius = brushSize || 10;
 
-    if(this.dustCount + radius >= this.MAX_DUST && type !== 'eraser') return;
+    if(this.dustCount >= this.MAX_DUST && type !== 'eraser') return;
 
     var nType,
         segments = 500,
@@ -463,7 +463,7 @@ Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
         nType = this.getType(type) || type;
     }
 
-    for(var r = radius; r > 0; r--) {
+    for(var r = 0; r < radius; r++) {
         for(var i = 0; i < 2*Math.PI; i += step) {
             var spawnX = x + Math.floor(r*Math.sin(i)),
                 spawnY = y + Math.floor(r*Math.cos(i));
@@ -471,11 +471,9 @@ Dust.prototype.spawnCircle = function(x, y, type, brushSize, infect) {
             if(spawnX <= 0 || spawnY <= 0 || spawnX >= this.WIDTH - 1|| spawnY >= this.HEIGHT - 1) continue;
 
             if(nType !== 'eraser') {
-                if(this.grid[spawnX][spawnY] === 0) this.dustCount++;
-                this.grid[spawnX][spawnY] = nType;
+                this.spawn(spawnX, spawnY, nType);
             } else{
                 if(this.grid[spawnX][spawnY] !== 0) {
-                    this.dustCount--;
                     this.destroy(spawnX, spawnY);
                     this.wakeSurrounds(spawnX, spawnY);
                 }
@@ -688,10 +686,13 @@ Dust.prototype.shouldLieDown = function(x, y) {
 };
 
 Dust.prototype.destroy = function(x, y) {
-    this.grid[x][y] = 0;
-    this.dustCount--;
+    if(this.grid[x][y] !== 0) {
+        this.dustCount--;
 
-    this.wakeSurrounds(x, y);
+        this.grid[x][y] = 0;
+
+        this.wakeSurrounds(x, y);
+    }
 };
 
 // 'Infects's' surrounding particles, toggling the second flag providing first is set
@@ -801,10 +802,11 @@ Dust.prototype.spawn = function(x, y, type) {
     if(x === 0 || x === this.WIDTH - 1 || y === 0 || y === this.HEIGHT - 1) return;
     
     if(!(this.grid[x][y] & type) && this.dustCount <= this.MAX_DUST) {
+        if(this.grid[x][y] === 0) this.dustCount++;
+
         this.grid[x][y] = type;
         this.blacklist[x][y] = true;
         this.wakeSurrounds(x, y);
-        this.dustCount++;
     }
 };
 
