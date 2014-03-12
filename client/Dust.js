@@ -255,6 +255,17 @@ Dust.prototype.update = function(dt) {
                 this.blacklist[rx][ry] = true;
             }
             
+            // Burn baby burn
+            if(d & FIRE || d & LAVA || d & BURNING) {
+                this.infect(rx, ry, LIFE, BURNING);
+                this.infect(rx, ry, C4, BURNING);
+                
+                if (Math.random() > 0.5) {
+                    this.infect(rx, ry, OIL, BURNING);
+                    this.infect(rx, ry, WATER, STEAM, WATER);
+                }
+            }
+            
             if(d & SOLID || d & LIFE || d & C4) continue;
 
             // Chance that steam will condense + it will condense if it's surrounded by steam
@@ -266,16 +277,6 @@ Dust.prototype.update = function(dt) {
                 }
             }
 
-            // Burn baby burn
-            if(d & FIRE || d & LAVA || d & BURNING) {
-                this.infect(rx, ry, LIFE, BURNING);
-                this.infect(rx, ry, C4, BURNING);
-                
-                if (Math.random() > 0.5) {
-                    this.infect(rx, ry, OIL, BURNING);
-                    this.infect(rx, ry, WATER, STEAM, WATER);
-                }
-            }
 
             // Water baby... errr.... Water?
             if(d & WATER) {
