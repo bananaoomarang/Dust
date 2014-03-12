@@ -40,20 +40,20 @@ function main() {
 
         switch(e.which) {
             case 1:
-                if(DUST.dustCount >= DUST.MAX_DUST) {
+                var type = $('input[name=dustType]:checked', '#menu').val(),
+                    infect = $('input[name=infectant]:checked', '#menu').val(),
+                    brushGirth = parseInt($('#brushSize').val());
+
+                if(DUST.dustCount >= DUST.MAX_DUST && type !== 'eraser') {
                     $('#limitReached').show();
                 } else {
                     var x = Math.round(e.pageX - offset.left);
                         y = Math.round(e.pageY - offset.top);
 
-                    var type = $('input[name=dustType]:checked', '#menu').val(),
-                        infect = $('input[name=infectant]:checked', '#menu').val(),
-                        brushGirth = parseInt($('#brushSize').val());
-
                     DUST.spawnCircle(x, y, type, brushGirth, infect);
 
                     $('canvas').mousemove(function(e) {
-                        if(DUST.dustCount >= DUST.MAX_DUST) {
+                        if(DUST.dustCount >= DUST.MAX_DUST && type !== 'eraser') {
                             $('#limitReached').show(); 
                         } else {
                             x = Math.round(e.pageX - offset.left);
