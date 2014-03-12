@@ -33,7 +33,7 @@ function main() {
         handles: 1
     });
 
-    $(document).mousedown(function(e) {
+    $('canvas').mousedown(function(e) {
         e.preventDefault();
         e.stopPropagation();
         $(document).unbind('mouseup');

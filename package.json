@@ -14,7 +14,8 @@
   },
 
   "scripts": {
-    "start": "browserify . -d -o public/bundle.js && node index.js"
+    "start": "browserify . -d -o public/bundle.js && node index.js",
+    "build": "browserify . -d -o public/bundle.js"
   },
 
   "main": "./client/main.js",
