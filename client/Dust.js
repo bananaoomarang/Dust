@@ -336,10 +336,7 @@ Dust.prototype.update = function(dt) {
                 }
             } else {
                 if(this.grid[rx + xDir][ry + 1] === 0) {
-                    //if(this.grid[x][ry] & SAND && Math.random() > 0.8) 
-                        //this.grid[x][ry] |= RESTING;
-                    //else 
-                        this.move(rx, ry, rx + xDir, ry + 1);
+                    this.move(rx, ry, rx + xDir, ry + 1);
                 } else {
                     // Check if the particle should be RESTING
                     if(this.shouldLieDown(rx, ry)) {
