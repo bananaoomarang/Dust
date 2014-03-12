@@ -36,6 +36,10 @@ h1 {
     right: 0;
 }
 
+#limitReached {
+    top: 50px;
+}
+
 #menu {
     width: 300px;
     height: 500px;
