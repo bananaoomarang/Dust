@@ -160,6 +160,23 @@ Dust.prototype.update = function(dt) {
             if(d === 0) continue;
             
             if(this.blacklist[rx][ry]) continue;
+            
+            // This is a spring
+            if(d & WATER && d & SOLID) {
+                this.infect(rx, ry, 0, WATER);
+            }
+            
+            // Oil spring
+            if(d & OIL && d & SOLID) {
+                this.infect(rx, ry, 0, OIL);
+            }
+            
+            // Lava spring
+            if(d & LAVA && d & SOLID) {
+                this.infect(rx, ry, 0, LAVA);
+            }
+
+            if(d & SOLID) continue;
 
             for (var e = 0; e < this.explosions.length; e++) {
                 var exp = this.explosions[e];
@@ -216,8 +233,7 @@ Dust.prototype.update = function(dt) {
                                 neighbours = this.countNeighbours(x, y);
 
                                 if(neighbours === 3) {
-                                    this.grid[x][y] = LIFE;
-                                    this.dustCount++;
+                                    this.spawn(x, y, LIFE);
                                 }
 
                                 // Not a misatake, this makes it work better
@@ -226,21 +242,6 @@ Dust.prototype.update = function(dt) {
                         }
                     });
                 }
-            }
-            
-            // This is a spring
-            if(d & WATER && d & SOLID) {
-                this.infect(rx, ry, 0, WATER);
-            }
-            
-            // Oil spring
-            if(d & OIL && d & SOLID) {
-                this.infect(rx, ry, 0, OIL);
-            }
-            
-            // Lava spring
-            if(d & LAVA && d & SOLID) {
-                this.infect(rx, ry, 0, LAVA);
             }
 
             if(d & FIRE) {
@@ -266,7 +267,7 @@ Dust.prototype.update = function(dt) {
                 }
             }
             
-            if(d & SOLID || d & LIFE || d & C4) continue;
+            if(d & LIFE || d & C4) continue;
 
             // Chance that steam will condense + it will condense if it's surrounded by steam
             if(d & STEAM) {
@@ -276,7 +277,6 @@ Dust.prototype.update = function(dt) {
                     this.spawn(rx, ry, WATER);
                 }
             }
-
 
             // Water baby... errr.... Water?
             if(d & WATER) {
