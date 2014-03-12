@@ -804,6 +804,8 @@ Dust.prototype.spawn = function(x, y, type) {
         this.grid[x][y] = type;
         this.blacklist[x][y] = true;
         this.wakeSurrounds(x, y);
+    } else {
+        //$('#limitReached').show();
     }
 };
 

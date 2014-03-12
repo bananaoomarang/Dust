@@ -22,6 +22,7 @@ function main() {
     $('#fps').html(0 + 'fps');
                     
     $('#paused').hide();
+    $('#limitReached').hide();
 
     var offset = $('canvas').offset();
 
@@ -32,32 +33,42 @@ function main() {
         handles: 1
     });
 
-    $('canvas').mousedown(function(e) {
+    $(document).mousedown(function(e) {
         e.preventDefault();
         e.stopPropagation();
-        $('canvas').unbind('mouseup');
+        $(document).unbind('mouseup');
 
         switch(e.which) {
             case 1:
-                var x = Math.round(e.pageX - offset.left);
-                    y = Math.round(e.pageY - offset.top);
+                if(DUST.dustCount >= DUST.MAX_DUST) {
+                    $('#limitReached').show();
+                } else {
+                    var x = Math.round(e.pageX - offset.left);
+                        y = Math.round(e.pageY - offset.top);
 
-                var type = $('input[name=dustType]:checked', '#menu').val(),
-                    infect = $('input[name=infectant]:checked', '#menu').val(),
-                    brushGirth = parseInt($('#brushSize').val());
-
-                DUST.spawnCircle(x, y, type, brushGirth, infect);
-
-                $('canvas').mousemove(function(e) {
-                    x = Math.round(e.pageX - offset.left);
-                    y = Math.round(e.pageY - offset.top);
+                    var type = $('input[name=dustType]:checked', '#menu').val(),
+                        infect = $('input[name=infectant]:checked', '#menu').val(),
+                        brushGirth = parseInt($('#brushSize').val());
 
                     DUST.spawnCircle(x, y, type, brushGirth, infect);
-                });
-                
-                $('canvas').mouseup(function(e) {
+
+                    $('canvas').mousemove(function(e) {
+                        if(DUST.dustCount >= DUST.MAX_DUST) {
+                            $('#limitReached').show(); 
+                        } else {
+                            x = Math.round(e.pageX - offset.left);
+                            y = Math.round(e.pageY - offset.top);
+
+                            DUST.spawnCircle(x, y, type, brushGirth, infect);
+                        }
+                    });
+                }
+
+                $(document).mouseup(function(e) {
                     $('canvas').unbind('mousemove');
+                    $('#limitReached').hide();
                 });
+
                 break;
         }
     });

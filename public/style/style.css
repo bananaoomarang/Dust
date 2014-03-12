@@ -24,7 +24,7 @@ h1 {
     text-align: center;
 }
 
-#paused {
+.notice {
     font-family: 'Crimson Text', Georgia, Times, serif;
     font-size: 28px;
     height: 28px;
