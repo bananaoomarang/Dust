@@ -20,6 +20,9 @@ function main() {
     $('#fps').css('left', $('canvas').position().left - 50);
 
     $('#fps').html(0 + 'fps');
+                    
+    $('#paused').hide();
+
     var offset = $('canvas').offset();
 
     $('#brushSize').noUiSlider({
@@ -63,10 +66,13 @@ function main() {
         switch(e.which) {
             // Space
             case 32:
-                if(DUST.paused)
+                if(DUST.paused) {
+                    $('#paused').hide();
                     DUST.paused = false;
-                else
+                } else {
+                    $('#paused').show();
                     DUST.paused = true;
+                }
                 break;
             // R
             case 82:
