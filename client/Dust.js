@@ -881,6 +881,7 @@ Dust.prototype.loadLevel = function(name) {
     $.get("/loadLevel/" + name, function(grid) {
         self.grid = JSON.parse(grid);
         self.paused = true;
+        $('#paused').show();
     });
 };
 

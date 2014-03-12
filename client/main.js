@@ -112,8 +112,6 @@ function main() {
         $('#loadButton').blur();
     });
 
-    var lookupStrings = ["Anser", "Carion", "Love", "Seralius", "Lumen", "Spiriadne"];
-
     $('#levelName').autocomplete({
         serviceUrl: '/listLevels',
         onSelect: function(suggestion) {
