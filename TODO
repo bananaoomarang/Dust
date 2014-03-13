@@ -1,3 +1,2 @@
 * Better level browsing UI
-* Fix not being able to draw under/in line with paused text
 * Tear apart update loop for optimization?

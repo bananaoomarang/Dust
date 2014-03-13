@@ -33,7 +33,7 @@ function main() {
         handles: 1
     });
 
-    $('canvas').mousedown(function(e) {
+    $('#canvainer').mousedown(function(e) {
         e.preventDefault();
         e.stopPropagation();
         $(document).unbind('mouseup');
@@ -52,7 +52,7 @@ function main() {
 
                     DUST.spawnCircle(x, y, type, brushGirth, infect);
 
-                    $('canvas').mousemove(function(e) {
+                    $('#canvainer').mousemove(function(e) {
                         if(DUST.dustCount >= DUST.MAX_DUST && type !== 'eraser') {
                             $('#limitReached').show(); 
                         } else {
@@ -65,7 +65,7 @@ function main() {
                 }
 
                 $(document).mouseup(function(e) {
-                    $('canvas').unbind('mousemove');
+                    $('#canvainer').unbind('mousemove');
                     $('#limitReached').hide();
                 });
 
