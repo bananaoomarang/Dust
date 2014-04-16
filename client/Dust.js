@@ -397,7 +397,6 @@ Dust.prototype.draw = function() {
                 this.sandVertexArray[offset + 7] = y + 1;
                 this.sandVertexArray[offset + 8] = packColor(color);
 
-
                 this.sandVertexArray[offset + 9]= x;
                 this.sandVertexArray[offset + 10] = y + 1;
                 this.sandVertexArray[offset + 11] = packColor(color);

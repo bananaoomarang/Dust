@@ -92,6 +92,7 @@ function main() {
                         DUST.grid[x][y] = 0;
                     }
                 }
+                DUST.dustCount = 0;
                 break;
         }
     });
