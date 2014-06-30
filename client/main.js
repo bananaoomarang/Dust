@@ -200,18 +200,4 @@ function main() {
     }
     
     tick();
-    
-    //DUST.socket.on('client connected', function(data) {
-        //var ip = "192.168.1.77";
-
-        //if(data === 1) {
-            //DUST.client = new Client(ip, "red");
-            //DUST.client.turn = true;
-        //} else if(data === 2) {
-            //DUST.client = new Client(ip, "blue");
-        //} else if(data > 2) {
-            //DUST.client = new Client(ip);
-        //}
-
-    //});
 }

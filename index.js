@@ -1,8 +1,8 @@
 var express = require("express"),
     app = express(),
     server = require('http').createServer(app),
-    io = require("socket.io").listen(server),
     levelup = require('level'),
+    Jpeg = require('jpeg'),
     connections = 0;
 
 var db = levelup('./leveldb');
@@ -57,24 +57,5 @@ app.get('/listLevels', function(req, res) {
         res.send({ suggestions: levelList });
         res.status(200);
         res.end();
-    });
-});
-
-io.sockets.on('connection', function (socket) {
-    connections++;
-    socket.emit('client connected', connections);
-    
-    socket.on('disconnect', function (socket) {
-        connections--;
-        io.sockets.emit('client disconnected', connections);
-    });
-
-    socket.on('grid hit', function(data) {
-        socket.broadcast.emit('new grid hit', data);
-        socket.broadcast.emit('turn ended');
-    });
-
-    socket.on('client won', function() {
-        io.sockets.emit('game ended');
     });
 });
