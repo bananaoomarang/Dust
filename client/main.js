@@ -47,6 +47,7 @@ function main() {
         switch(e.which) {
             case 1:
                 var type = $('input[name=dustType]:checked', '#menu').val(),
+                    brushType = $('input[name=brushType]:checked', '#menu2').val(),
                     infect = $('input[name=infectant]:checked', '#menu').val(),
                     brushGirth = parseInt($('#brushSize').val());
 
@@ -56,7 +57,16 @@ function main() {
                     var x = Math.round(e.pageX - offset.left);
                         y = Math.round(e.pageY - offset.top);
 
-                    DUST.spawnCircle(x, y, type, brushGirth, infect);
+                    switch(brushType) {
+                        case 'circle':
+                            DUST.spawnCircle(x, y, type, brushGirth, infect);
+                            break;
+                        case 'square':
+                            DUST.spawnRect(x - (brushGirth / 2), y - (brushGirth / 2), brushGirth, brushGirth, type, infect);
+                            break;
+                        case 'boxfill':
+                            break;
+                    }
 
                     $('#canvainer').mousemove(function(e) {
                         if(DUST.dustCount >= DUST.MAX_DUST && type !== 'eraser') {
@@ -65,7 +75,16 @@ function main() {
                             x = Math.round(e.pageX - offset.left);
                             y = Math.round(e.pageY - offset.top);
 
-                            DUST.spawnCircle(x, y, type, brushGirth, infect);
+                            switch(brushType) {
+                                case 'circle':
+                                    DUST.spawnCircle(x, y, type, brushGirth, infect);
+                                    break;
+                                case 'square':
+                                    DUST.spawnRect(x - (brushGirth / 2), y - (brushGirth / 2), brushGirth, brushGirth, type, infect);
+                                    break;
+                                case 'boxfill':
+                                    break;
+                            }
                         }
                     });
                 }
