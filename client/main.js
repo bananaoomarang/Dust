@@ -29,6 +29,7 @@ function main() {
                     
     $('#paused').hide();
     $('#limitReached').hide();
+    $('#selectionBox').hide();
 
     var offset = $('canvas').offset();
 
@@ -65,6 +66,16 @@ function main() {
                             DUST.spawnRect(x - (brushGirth / 2), y - (brushGirth / 2), brushGirth, brushGirth, type, infect);
                             break;
                         case 'boxfill':
+                            x = Math.round(e.pageX);
+                            y = Math.round(e.pageY);
+
+                            $('#selectionBox').show();
+                            $('#selectionBox').css({
+                                'top': x,
+                                'left': y,
+                                'width': 0,
+                                'height': 0
+                            });
                             break;
                     }
 
@@ -72,17 +83,32 @@ function main() {
                         if(DUST.dustCount >= DUST.MAX_DUST && type !== 'eraser') {
                             $('#limitReached').show(); 
                         } else {
-                            x = Math.round(e.pageX - offset.left);
-                            y = Math.round(e.pageY - offset.top);
+                            newX = Math.round(e.pageX - offset.left);
+                            newY = Math.round(e.pageY - offset.top);
 
                             switch(brushType) {
                                 case 'circle':
-                                    DUST.spawnCircle(x, y, type, brushGirth, infect);
+                                    DUST.spawnCircle(newX, newY, type, brushGirth, infect);
                                     break;
                                 case 'square':
-                                    DUST.spawnRect(x - (brushGirth / 2), y - (brushGirth / 2), brushGirth, brushGirth, type, infect);
+                                    DUST.spawnRect(newX - (brushGirth / 2), newY - (brushGirth / 2), brushGirth, brushGirth, type, infect);
                                     break;
                                 case 'boxfill':
+                                    newX = Math.round(e.pageX);
+                                    newY = Math.round(e.pageY);
+
+                                    var width = Math.abs(newX - x),
+                                        height = Math.abs(newY - y);
+
+                                    newX = (newX < x) ? (x - width) : x;
+                                    newY = (newY < y) ? (y - height) : y;
+
+                                    $('#selectionBox').css({
+                                        'width': width,
+                                        'height': height,
+                                        'top': newY,
+                                        'left': newX
+                                    });
                                     break;
                             }
                         }
@@ -92,6 +118,17 @@ function main() {
                 $(document).mouseup(function(e) {
                     $('#canvainer').unbind('mousemove');
                     $('#limitReached').hide();
+
+                    if(brushType === 'boxfill') {
+                        var $sb = $('#selectionBox');
+
+                        x = Math.round($sb.position().left - $('canvas').position().left);
+                        y = Math.round($sb.position().top - $('canvas').position().top);
+
+                        DUST.spawnRect(x, y, $sb.width(), $sb.height(), type, infect);
+
+                        $sb.hide();
+                    }
                 });
 
                 break;
