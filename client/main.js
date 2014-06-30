@@ -15,11 +15,17 @@ function main() {
         frame = 0,
         fpsTimer = new Timer();
 
+    // Hack CSS because Jesus man CSS is screwed up
     $('#fps').css('position', 'absolute');
     $('#fps').css('top', $('canvas').position().top + 10);
     $('#fps').css('left', $('canvas').position().left - 50);
-
     $('#fps').html(0 + 'fps');
+    
+    $('#menu').css('top', $('canvas').position().top);
+    $('#menu').css('left', $('canvas').position().left + DUST.WIDTH + 10);
+    
+    $('#menu2').css('top', $('canvas').position().top);
+    $('#menu2').css('left', $('canvas').position().left + DUST.WIDTH + 10 + 120 + 10); // 120 is the width of the forms
                     
     $('#paused').hide();
     $('#limitReached').hide();
