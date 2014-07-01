@@ -63,7 +63,10 @@ function main() {
                             DUST.spawnCircle(x, y, type, brushGirth, infect);
                             break;
                         case 'square':
-                            DUST.spawnRect(x - (brushGirth / 2), y - (brushGirth / 2), brushGirth, brushGirth, type, infect);
+                            if(type !== 'eraser')
+                                DUST.spawnRect(x - (brushGirth / 2), y - (brushGirth / 2), brushGirth, brushGirth, type, infect);
+                            else
+                                DUST.destroyRect(x - (brushGirth / 2), y - (brushGirth / 2), brushGirth, brushGirth);
                             break;
                         case 'boxfill':
                             x = Math.round(e.pageX);
@@ -91,7 +94,10 @@ function main() {
                                     DUST.spawnCircle(newX, newY, type, brushGirth, infect);
                                     break;
                                 case 'square':
-                                    DUST.spawnRect(newX - (brushGirth / 2), newY - (brushGirth / 2), brushGirth, brushGirth, type, infect);
+                                    if(type !== 'eraser')
+                                        DUST.spawnRect(newX - (brushGirth / 2), newY - (brushGirth / 2), brushGirth, brushGirth, type, infect);
+                                    else
+                                        DUST.destroyRect(newX - (brushGirth / 2), newY - (brushGirth / 2), brushGirth, brushGirth);
                                     break;
                                 case 'boxfill':
                                     newX = Math.round(e.pageX);
@@ -125,7 +131,10 @@ function main() {
                         x = Math.round($sb.position().left - $('canvas').position().left);
                         y = Math.round($sb.position().top - $('canvas').position().top);
 
-                        DUST.spawnRect(x, y, $sb.width(), $sb.height(), type, infect);
+                        if(type !== 'eraser')
+                            DUST.spawnRect(x, y, $sb.width(), $sb.height(), type, infect);
+                        else
+                            DUST.destroyRect(x, y, $sb.width(), $sb.height());
 
                         $sb.hide();
                     }

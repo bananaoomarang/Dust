@@ -691,6 +691,14 @@ Dust.prototype.destroy = function(x, y) {
     }
 };
 
+Dust.prototype.destroyRect = function(x, y, w, h) {
+    for(var i = x; i < (x + w); i++) {
+        for(var j = y; j < (y + h); j++) {
+            this.grid[i][j] = 0;
+        }
+    }
+};
+
 // 'Infects's' surrounding particles, toggling the second flag providing first is set
 Dust.prototype.infect = function(x, y, flagSet, flagToSet, flagToRemove) {
     var n = this.grid[x][y - 1],
