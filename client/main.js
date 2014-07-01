@@ -26,10 +26,16 @@ function main() {
     
     $('#menu2').css('top', $('canvas').position().top);
     $('#menu2').css('left', $('canvas').position().left + DUST.WIDTH + 10 + 120 + 10); // 120 is the width of the forms
+    
+    //$('#thumbnail').css('left', $('input[name=levelName]', '#saveMenu').position().left + 10 + 100);
+    
+    $('#thumbnail').css('top', $('canvas').position().top);
+    $('#thumbnail').css('left', $('#fps').position().left - 125 - 10); // 125 is the width of the thumbnail
                     
     $('#paused').hide();
     $('#limitReached').hide();
     $('#selectionBox').hide();
+    $('#thumbnail').hide();
 
     var offset = $('canvas').offset();
 
@@ -180,6 +186,7 @@ function main() {
         var name = $('input[name=levelName]', '#saveMenu').val();
 
         DUST.loadLevel(name);
+        DUST.getLevelThumb(name);
 
         $('#loadButton').blur();
     });
@@ -188,7 +195,13 @@ function main() {
         serviceUrl: '/listLevels',
         onSelect: function(suggestion) {
             console.log('user selected', suggestion.value);
+            DUST.getLevelThumb(suggestion.value);
+            $('#thumbnail').show();
         }
+    });
+
+    $('#levelName').on('input', function(e) {
+        $('#thumbnail').hide();
     });
 
     function tick() {
@@ -209,18 +222,4 @@ function main() {
     }
     
     tick();
-    
-    //DUST.socket.on('client connected', function(data) {
-        //var ip = "192.168.1.77";
-
-        //if(data === 1) {
-            //DUST.client = new Client(ip, "red");
-            //DUST.client.turn = true;
-        //} else if(data === 2) {
-            //DUST.client = new Client(ip, "blue");
-        //} else if(data > 2) {
-            //DUST.client = new Client(ip);
-        //}
-
-    //});
 }

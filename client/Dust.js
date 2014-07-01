@@ -28,8 +28,6 @@ var SAND = 1,
 function Dust() {
     var self = this;
 
-    //this.socket = io.connect('http://192.168.1.77:9966');
-
     this.WIDTH  = $('#canvainer').width();
     this.HEIGHT = $('#canvainer').height();
     this.MAX_DUST = 100000;
@@ -901,6 +899,11 @@ Dust.prototype.loadLevel = function(name) {
         self.paused = true;
         $('#paused').show();
     });
+};
+
+Dust.prototype.getLevelThumb = function(name) {
+    $('#thumbnail').html('<img src="imgs/' + name + '.jpg"></img>');
+    $('#thumbnail').show();
 };
 
 // Assorted functions

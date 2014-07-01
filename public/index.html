@@ -1,7 +1,6 @@
 <html>
     <head>
         <title>Dust</title>
-        <script src="/socket.io/socket.io.js"></script>
         <link rel="stylesheet" href="/style/style.css" />
         <link rel="stylesheet" href="/style/jquery.nouislider.min.css" />
         <link href="http://fonts.googleapis.com/css?family=Crimson+Text" rel="stylesheet" type="text/css">
@@ -22,8 +21,7 @@
                 <button id="loadButton" class="menu-item" type="button" name="load">Load Level</button>
             </div>
 
-            <input class="menu-item" type="text" name="levelName" id="levelName" value="potato">
-            <label class="textLabel" for="levelName">Level Name</label></br>
+            <input class="menu-item" type="text" name="levelName" id="levelName" placeholder="Level Name">
         </form>
 
         <div id="canvainer">
@@ -96,6 +94,7 @@
         </div>
 
         <div id="selectionBox"></div>
+        <div id="thumbnail"></div>
 
         <script src="bundle.js"></script>
     </body>
