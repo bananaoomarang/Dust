@@ -57,6 +57,8 @@ app.post('/saveLevel/:name', function(req, res) {
                 g,
                 b;
 
+            if(val & INFECTANT) val &= ~INFECTANT;
+
             // Map materials to RGB values. No I didn't think of this when I wrote the client.
             switch(val) {
                 case SAND:
