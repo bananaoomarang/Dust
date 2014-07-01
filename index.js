@@ -153,7 +153,7 @@ function smallify(path) {
         height: 125
     }, function(err) {
         if(err) throw err;
-        else console.log('yup');
+        else console.log(path);
     });
 }
 
@@ -183,3 +183,104 @@ app.get('/listLevels', function(req, res) {
         res.end();
     });
 });
+
+function genPreviews() {
+    db.createKeyStream().on('data', function(key) {
+        db.get(key, function(err, grid) {
+            grid = JSON.parse(grid);
+            // Generate and store JPeg
+            var arr = [];
+
+            for (var y = 0; y < grid[0].length; y++) {
+                for (var x = 0; x < grid[0].length; x++) {
+                    var val = grid[x][y],
+            r,
+            g,
+            b;
+
+        if(val & INFECTANT) val &= ~INFECTANT;
+
+        // Map materials to RGB values. No I didn't think of this when I wrote the client.
+        switch(val) {
+            case SAND:
+                r = 230;
+                g = 179;
+                b = 51;
+                break;
+            case OIL:
+                r = 128;
+                g = 102;
+                b = 26;
+                break;
+            case FIRE:
+                r = 255;
+                g = 128;
+                b = 0;
+                break;
+            case LAVA:
+                r = 255;
+                g = 77;
+                b = 0;
+                break;
+            case WATER:
+                r = 0;
+                g = 128;
+                b = 255;
+                break;
+            case STEAM:
+                r = 153;
+                g = 153;
+                b = 153;
+                break;
+            case SOLID:
+                r = 0;
+                g = 0;
+                b = 0;
+                break;
+            case BURNING:
+                r = 255;
+                g = 128;
+                b = 0;
+                break;
+            case LIFE:
+                r = 0;
+                g = 255;
+                b = 51;
+                break;
+            case C4:
+                r = 51;
+                g = 230;
+                b = 26;
+                break;
+            default:
+                r = 255;
+                g = 255;
+                b = 255;
+                break;
+        }
+
+        arr.push(r, g, b);
+                }
+            }
+
+            var buff = new Buffer(arr);
+
+            var jpeg = new Jpeg(buff, 500, 500, 'rgb');
+
+            jpeg.encode(function(img, err) {
+                if(err) {
+                    console.log(err);
+                } else {
+                    fs.writeFile('public/imgs/' + key + '.jpg', img, 0, function(err) {
+                        if(err) {
+                            console.log(err);
+                        } else {
+
+                            smallify('public/imgs/' + key + '.jpg');
+                        } 
+                    });
+                }
+            });
+        });
+    });
+}
