@@ -893,6 +893,11 @@ Dust.prototype.loadLevel = function(name) {
     });
 };
 
+Dust.prototype.getLevelThumb = function(name) {
+    $('#thumbnail').html('<img src="imgs/' + name + '.jpg"></img>');
+    $('#thumbnail').show();
+};
+
 // Assorted functions
 function Array2D(w, h) {
     var array = [];

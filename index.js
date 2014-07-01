@@ -128,11 +128,12 @@ app.post('/saveLevel/:name', function(req, res) {
         if(err) {
             console.log(err);
         } else {
-            fs.writeFile('imgs/' + req.params.name + '.jpg', img, 0, function(err) {
+            fs.writeFile('public/imgs/' + req.params.name + '.jpg', img, 0, function(err) {
                 if(err) {
                     console.log(err);
                 } else {
-                    smallify('img' + req.params.name + '.jpg');
+
+                    smallify('public/imgs/' + req.params.name + '.jpg');
                 } 
             });
         }
@@ -146,8 +147,8 @@ function smallify(path) {
     im.resize({
         srcPath: path,
         dstPath: path,
-        width: 250,
-        height: 250
+        width: 125,
+        height: 125
     }, function(err) {
         if(err) throw err;
         else console.log('yup');
