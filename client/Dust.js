@@ -132,7 +132,8 @@ Dust.prototype.getGL = function() {
 };
 
 Dust.prototype.update = function(dt) {
-    var lived = false;
+    var lived = false,
+        self = this;
         
     var rx = Math.floor(Math.random() * 500)  % (this.grid.length -1),
         xIncrement = 7;
@@ -193,25 +194,11 @@ Dust.prototype.update = function(dt) {
 
             if(d & INFECTANT) {
                 this.runOnSurrounds(rx, ry, function(x, y) {
-                    if(x > 1 && x < this.WIDTH - 1 && y > 1 && y < this.HEIGHT - 1) {
-                        var n = this.grid[x][y - 1],
-                            ne = this.grid[x + 1][y - 1],
-                            e = this.grid[x + 1][y],
-                            se = this.grid[x + 1][y + 1],
-                            s = this.grid[x][y + 1],
-                            sw = this.grid[x - 1][y + 1],
-                            w = this.grid[x - 1][y],
-                            nw = this.grid[x - 1][y - 1],
-                            rand = Math.random();
+                    if(x > 1 && x < self.WIDTH - 1 && y > 1 && y < self.HEIGHT - 1) {
+                        var rand = Math.random(),
+                            cell = self.grid[x][y];
 
-                            if(n !== 0 && !(n & INFECTANT) && rand > 0.99) this.spawn(x, y - 1, d);
-                            if(ne !== 0 && !(ne & INFECTANT) && rand > 0.99) this.spawn(x + 1, y - 1, d);
-                            if(e !== 0 && !(e & INFECTANT) && rand > 0.99) this.spawn(x + 1, y, d);
-                            if(se !== 0 && !(se & INFECTANT) && rand > 0.99) this.spawn(x + 1, y + 1, d);
-                            if(s !== 0 && !(s & INFECTANT) && rand > 0.99) this.spawn(x, y + 1, d);
-                            if(sw !== 0 && !(sw & INFECTANT) && rand > 0.99) this.spawn(x - 1, y + 1, d);
-                            if(w !== 0 && !(w & INFECTANT) && rand > 0.99) this.spawn(x - 1, y, d);
-                            if(nw !== 0 && !(nw & INFECTANT) && rand > 0.99) this.spawn(x - 1, y - 1, d);
+                        if(cell !== 0 && !(cell & INFECTANT) && rand > 0.92) self.spawn(x, y, d);
                     }
                 });
             }
@@ -226,16 +213,16 @@ Dust.prototype.update = function(dt) {
                     if(neighbours > 3) this.destroy(rx, ry);
 
                     this.runOnSurrounds(rx, ry, function(x, y) {
-                        if(x > 1 && x < this.WIDTH - 1 && y > 1 && y < this.HEIGHT - 1) {
-                            if(!this.blacklist[x][y] && this.grid[x][y] === 0) {
-                                neighbours = this.countNeighbours(x, y);
+                        if(x > 1 && x < self.WIDTH - 1 && y > 1 && y < self.HEIGHT - 1) {
+                            if(!self.blacklist[x][y] && self.grid[x][y] === 0) {
+                                neighbours = self.countNeighbours(x, y);
 
                                 if(neighbours === 3) {
-                                    this.spawn(x, y, LIFE);
+                                    self.spawn(x, y, LIFE);
                                 }
 
-                                // Not a misatake, this makes it work better
-                                this.blacklist[x][y] = true;
+                                // Not a misatake, self makes it work better
+                                self.blacklist[x][y] = true;
                             }
                         }
                     });
@@ -765,23 +752,23 @@ Dust.prototype.runOnSurrounds = function(x, y, f, flag) {
         nw = this.grid[x - 1][y - 1];
 
     if(flag) {
-        if(n & flag)  f.call(this, x, y - 1);
-        if(ne & flag) f.call(this, x + 1, y - 1);
-        if(e & flag)  f.call(this, x + 1, y);
-        if(se & flag) f.call(this, x + 1, y + 1);
-        if(s & flag)  f.call(this, x, y + 1);
-        if(sw & flag) f.call(this, x - 1, y + 1);
-        if(w & flag)  f.call(this, x - 1, y);
-        if(nw & flag) f.call(this, x - 1, y - 1);
+        if(n & flag)  f(x, y - 1);
+        if(ne & flag) f(x + 1, y - 1);
+        if(e & flag)  f(x + 1, y);
+        if(se & flag) f(x + 1, y + 1);
+        if(s & flag)  f(x, y + 1);
+        if(sw & flag) f(x - 1, y + 1);
+        if(w & flag)  f(x - 1, y);
+        if(nw & flag) f(x - 1, y - 1);
     } else {
-        f.call(this, x, y - 1);
-        f.call(this, x + 1, y - 1);
-        f.call(this, x + 1, y);
-        f.call(this, x + 1, y + 1);
-        f.call(this, x, y + 1);
-        f.call(this, x - 1, y + 1);
-        f.call(this, x - 1, y);
-        f.call(this, x - 1, y - 1);
+        f(x, y - 1);
+        f(x + 1, y - 1);
+        f(x + 1, y);
+        f(x + 1, y + 1);
+        f(x, y + 1);
+        f(x - 1, y + 1);
+        f(x - 1, y);
+        f(x - 1, y - 1);
     }
 };
 
