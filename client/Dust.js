@@ -192,20 +192,18 @@ Dust.prototype.update = function(dt) {
 
             }
 
-            if(d & INFECTANT) {
-                if(!this.surrounded(rx, ry, INFECTANT)) {
-                    this.runOnSurrounds(rx, ry, function(x, y) {
-                        var cell = self.grid[x][y];
+            if(d & INFECTANT && !this.surrounded(rx, ry)) {
+                this.runOnSurrounds(rx, ry, function(x, y) {
+                    var cell = self.grid[x][y];
 
-                        if(cell & INFECTANT) return;
+                    if(cell & INFECTANT) return;
 
-                        if(x > 1 && x < self.WIDTH - 1 && y > 1 && y < self.HEIGHT - 1) {
-                            var rand = Math.random();
+                    if(x > 1 && x < self.WIDTH - 1 && y > 1 && y < self.HEIGHT - 1) {
+                        var rand = Math.random();
 
-                            if(cell !== 0 && rand > 0.91) self.spawn(x, y, d);
-                        }
-                    });
-                }
+                        if(cell !== 0 && rand > 0.91) self.spawn(x, y, d);
+                    }
+                });
             }
 
             if(d & LIFE) {
@@ -226,7 +224,7 @@ Dust.prototype.update = function(dt) {
                                     self.spawn(x, y, LIFE);
                                 }
 
-                                // Not a misatake, self makes it work better
+                                // Not a misatake, this makes it work better
                                 self.blacklist[x][y] = true;
                             }
                         }
