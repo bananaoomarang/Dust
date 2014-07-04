@@ -194,11 +194,14 @@ Dust.prototype.update = function(dt) {
 
             if(d & INFECTANT) {
                 this.runOnSurrounds(rx, ry, function(x, y) {
-                    if(x > 1 && x < self.WIDTH - 1 && y > 1 && y < self.HEIGHT - 1) {
-                        var rand = Math.random(),
-                            cell = self.grid[x][y];
+                    var cell = self.grid[x][y];
 
-                        if(cell !== 0 && !(cell & INFECTANT) && rand > 0.92) self.spawn(x, y, d);
+                    if(cell & INFECTANT) return;
+                    
+                    if(x > 1 && x < self.WIDTH - 1 && y > 1 && y < self.HEIGHT - 1) {
+                        var rand = Math.random();
+
+                        if(cell !== 0 && rand > 0.91) self.spawn(x, y, d);
                     }
                 });
             }
@@ -788,16 +791,18 @@ Dust.prototype.clearBlacklist = function() {
 };
 
 Dust.prototype.spawn = function(x, y, type) {
-    if(x === 0 || x === this.WIDTH - 1 || y === 0 || y === this.HEIGHT - 1) return;
-    
-    if(!(this.grid[x][y] & type) && this.dustCount <= this.MAX_DUST) {
-        if(this.grid[x][y] === 0) this.dustCount++;
+    if(x === 0 || x === this.WIDTH - 1 || y === 0 || y === this.HEIGHT - 1 || this.grid[x][y] & type) return;
+
+    if(this.dustCount <= this.MAX_DUST && this.grid[x][y] === 0) {
+        this.dustCount++;
 
         this.grid[x][y] = type;
         this.blacklist[x][y] = true;
         this.wakeSurrounds(x, y);
-    } else {
-        //$('#limitReached').show();
+    } else if(this.grid[x][y] !== 0){
+        this.grid[x][y] = type;
+        this.blacklist[x][y] = true;
+        this.wakeSurrounds(x, y);
     }
 };
 
