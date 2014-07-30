@@ -416,6 +416,11 @@ Dust.prototype.sandCollides = function(x, y) {
 Dust.prototype.spawnRect = function(x, y, w, h, type, infect) {
     var nType;
 
+    x = Math.round(x);
+    y = Math.round(y);
+    w = Math.round(w);
+    h = Math.round(h);
+
     if(infect) {
         nType = (INFECTANT | this.getType(type));
     } else {
@@ -680,12 +685,20 @@ Dust.prototype.destroy = function(x, y) {
 };
 
 Dust.prototype.destroyRect = function(x, y, w, h) {
+    x = Math.round(x);
+    y = Math.round(y);
+    w = Math.round(w);
+    h = Math.round(h);
+
     for(var i = x; i < (x + w); i++) {
         for(var j = y; j < (y + h); j++) {
-            this.grid[i][j] = 0;
+            if(this.grid[i][j] !== 0) {
+                this.grid[i][j] = 0;
+                this.dustCount--;
+            }
         }
     }
-};
+}
 
 // 'Infects's' surrounding particles, toggling the second flag providing first is set
 Dust.prototype.infect = function(x, y, flagSet, flagToSet, flagToRemove) {
