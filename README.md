@@ -1,4 +1,4 @@
-### Pretty Glitchy Sand
+### Cellular Automata Sandbox
 
 HTML5 clone of those 'Falling Sand' games using WebGL. 
 
