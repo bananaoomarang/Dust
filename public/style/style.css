@@ -1,7 +1,6 @@
 body {
     background-color: #f0f0f0;
     margin: 0px;
-    overflow: hidden;
     text-align: center;
 }
 
@@ -9,6 +8,10 @@ h1 {
     font-family: 'Crimson Text', Georgia, Times, serif;
     font-size: 40px;
     line-height: 50px;
+}
+
+::-webkit-scrollbar {
+  display: none; 
 }
 
 #canvainer {
